@@ -116,6 +116,11 @@
       }
 
     </style>
+    <!-- Load React and ReactDOM from CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Load Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -125,10 +130,932 @@
   }
 }
 </script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
   <body class="bg-slate-900 text-gray-100">
     <div id="root"></div>
-    <script type="text/babel" data-presets="react,typescript" data-type="module" src="./index.tsx"></script>
+    <script type="text/babel" data-presets="react,typescript">
+const { useState, useEffect, useCallback, useMemo, useRef, StrictMode } = React;
+
+// === FROM types.ts ===
+const Currency = {
+  Stardust: 'Stardust',
+  NebulaGas: 'Nebula Gas',
+  Antimatter: 'Antimatter',
+};
+
+const UpgradeType = {
+  Click: 'Click',
+  Passive: 'Passive',
+  Utility: 'Utility',
+  Prestige: 'Prestige',
+};
+
+
+// === FROM utils/format.ts ===
+const formatNumber = (num) => {
+    if (num < 1000) {
+        return num.toFixed(1).replace(/\.0$/, '');
+    }
+    const si = [
+        { value: 1, symbol: "" },
+        { value: 1E3, symbol: "K" },
+        { value: 1E6, symbol: "M" },
+        { value: 1E9, symbol: "B" },
+        { value: 1E12, symbol: "T" },
+        { value: 1E15, symbol: "P" },
+        { value: 1E18, symbol: "E" }
+    ];
+    const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+    let i;
+    for (i = si.length - 1; i > 0; i--) {
+        if (num >= si[i].value) {
+            break;
+        }
+    }
+    return (num / si[i].value).toFixed(2).replace(rx, "$1") + si[i].symbol;
+};
+
+// === FROM components/icons.tsx ===
+const StardustIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z" clipRule="evenodd" />
+  </svg>
+);
+
+const NebulaGasIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M6.061 3.144C7.035 1.833 8.835 1.48 10.29 2.213L11 2.667l.71-.453c1.454-.733 3.255-.38 4.228.931s.913 3.233-.043 4.54L15.41 8.5l.485.647c1.157 1.543 1.293 3.695.38 5.433s-2.73 2.613-4.48 2.373l-.855-.117-.855.117c-1.75.24-3.57.067-4.48-2.373s-.777-3.89.38-5.433L6.59 8.5l-.485-.809c-.957-1.307-.753-3.233.228-4.54zM4.5 15.75c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h15c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-15z" />
+    </svg>
+);
+
+
+const AntimatterIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 000-4z" />
+        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010 16z" transform="rotate(45 12 12)"/>
+    </svg>
+);
+
+const StatsIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+    </svg>
+);
+
+// === FROM hooks/useGameLoop.ts ===
+const useGameLoop = (callback, interval) => {
+  const savedCallback = useRef(callback);
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    const tick = () => {
+      savedCallback.current();
+    };
+    if (interval !== null) {
+      const id = setInterval(tick, interval);
+      return () => clearInterval(id);
+    }
+  }, [interval]);
+};
+
+// === FROM components/UpgradeButton.tsx ===
+const getCurrencyIcon = (currency) => {
+  switch (currency) {
+    case Currency.Stardust:
+      return <StardustIcon />;
+    case Currency.NebulaGas:
+      return <NebulaGasIcon />;
+    case Currency.Antimatter:
+      return <AntimatterIcon />;
+  }
+};
+
+const getCurrencyColor = (currency) => {
+  switch (currency) {
+    case Currency.Stardust:
+      return '#fde047';
+    case Currency.NebulaGas:
+      return '#d8b4fe';
+    case Currency.Antimatter:
+      return '#f87171';
+  }
+}
+
+const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
+  const isMaxLevel = upgrade.maxLevel && upgrade.level >= upgrade.maxLevel;
+
+  return (
+    <button
+      onClick={() => onPurchase(upgrade.id)}
+      disabled={!canAfford || isMaxLevel}
+      className="upgrade-button"
+    >
+      <style>{`
+        .upgrade-button {
+          width: 100%;
+          text-align: left;
+          padding: 0.75rem;
+          background-color: rgba(15, 23, 42, 0.5);
+          border-radius: 0.5rem;
+          border: 1px solid #334155;
+          transition: all 200ms;
+        }
+        .upgrade-button:hover:not(:disabled) {
+          background-color: rgba(51, 65, 85, 0.5);
+          border-color: #22d3ee;
+        }
+        .upgrade-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>
+      <div style={{pointerEvents: 'none'}}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <h4 className="font-orbitron" style={{fontWeight: 'bold'}}>{upgrade.name}</h4>
+          <span style={{
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            padding: '0.25rem 0.5rem',
+            borderRadius: '0.25rem',
+            backgroundColor: isMaxLevel ? '#16a34a' : '#334155',
+            color: isMaxLevel ? 'white' : 'inherit'
+          }}>
+              {isMaxLevel ? 'MAX' : `Lvl ${upgrade.level}`}
+          </span>
+        </div>
+        <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem'}}>{upgrade.description}</p>
+        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', fontWeight: 600, color: getCurrencyColor(upgrade.currency)}}>
+          {!isMaxLevel && (
+              <>
+                  <div style={{width: '1rem', height: '1rem'}}>{getCurrencyIcon(upgrade.currency)}</div>
+                  <span>{formatNumber(upgrade.cost)}</span>
+              </>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+};
+
+
+// === FROM components/UpgradesPanel.tsx ===
+const TabButton = ({ tab, activeTab, onClick, icon }) => (
+    <button
+      onClick={() => onClick(tab)}
+      className="tab-button"
+      data-active={activeTab === tab}
+      aria-pressed={activeTab === tab}
+    >
+      <style>{`
+        .tab-button {
+          display: flex;
+          flex: 1 1 0%;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 0.75rem;
+          font-size: 0.875rem;
+          font-weight: bold;
+          border-bottom: 2px solid;
+          transition: color 200ms, border-color 200ms;
+          border-color: transparent;
+          color: #94a3b8;
+        }
+        .tab-button:hover {
+          color: #67e8f9;
+        }
+        .tab-button[data-active="true"] {
+          border-color: #22d3ee;
+          color: #22d3ee;
+        }
+      `}</style>
+        <div style={{width: '1.25rem', height: '1.25rem', pointerEvents: 'none'}}>{icon}</div>
+        <span style={{pointerEvents: 'none'}}>{tab}</span>
+    </button>
+);
+
+const StatDisplay = ({ label, value }) => (
+    <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
+        <dt style={{fontSize: '0.875rem', color: '#94a3b8'}}>{label}</dt>
+        <dd className="font-orbitron" style={{fontWeight: 'bold', color: '#67e8f9'}}>{value}</dd>
+    </div>
+);
+
+const StatsPanel = ({ data, stats, onReset }) => {
+    const points = data.map(d => d.totalStardust);
+    const maxY = Math.max(...points, 1);
+    const minY = data.length > 0 ? Math.min(...points) : 0;
+    const range = maxY - minY;
+
+    const getPathData = () => {
+        if (range <= 0) return 'M 0,50 L 300,50'; // Flat line in the middle if no change
+        return points.map((p, i) => {
+            const x = (i / (points.length - 1)) * 300;
+            const y = 100 - ((p - minY) / range) * 100;
+            return `${x},${y}`;
+        }).join(' L ');
+    };
+    
+    const pathData = data.length < 2 ? 'M 0,50 L 300,50' : getPathData();
+
+    return (
+        <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+            <div>
+                <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: '#67e8f9'}}>Stardust Total</h3>
+                {data.length < 2 ? (
+                    <div style={{textAlign: 'center', padding: '2rem', color: '#94a3b8'}}>Collecte des données...</div>
+                ) : (
+                    <div style={{position: 'relative', height: '6rem'}}>
+                        <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4"/>
+                                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <path d={'M ' + pathData} fill="none" stroke="#06b6d4" strokeWidth="2" />
+                            <path d={`M ${pathData.split(' ')[0]} L ${pathData} L 300,100 L 0,100 Z`} fill="url(#areaGradient)" />
+                        </svg>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(maxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(minY)}</div>
+                    </div>
+                )}
+            </div>
+            <dl style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                <StatDisplay label="Stardust/sec" value={formatNumber(stats.stardustPerSecond)} />
+                <StatDisplay label="Stardust/clic" value={formatNumber(stats.stardustPerClick)} />
+                <StatDisplay label="Bonus de Prestige" value={stats.prestigeBonus} />
+                <StatDisplay label="Clics totaux" value={formatNumber(stats.totalClicks)} />
+                <StatDisplay label="Supernovas" value={stats.supernovaCount} />
+                <StatDisplay label="Temps de jeu" value={stats.playTime} />
+            </dl>
+            <div style={{paddingTop: '1rem', marginTop: '1rem', borderTop: '1px solid #334155'}}>
+              <button
+                onClick={onReset}
+                className="button-reset"
+              >
+                <style>{`
+                  .button-reset {
+                    width: 100%;
+                    background-color: #4b5563;
+                    color: white;
+                    font-weight: bold;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.5rem;
+                    transition: background-color 200ms;
+                  }
+                  .button-reset:hover {
+                    background-color: #6b7280;
+                  }
+                `}</style>
+                Réinitialiser la Sauvegarde
+              </button>
+            </div>
+        </div>
+    );
+};
+
+const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats, onResetSave }) => {
+  const [activeTab, setActiveTab] = useState(Currency.Stardust);
+
+  const isUpgradeUnlocked = (upgrade) => {
+    if (!upgrade.requirement) return true;
+    const requiredUpgrade = upgrades[upgrade.requirement.upgradeId];
+    return requiredUpgrade && requiredUpgrade.level >= upgrade.requirement.level;
+  };
+  
+  const filteredUpgrades = Object.values(upgrades)
+    .filter((u) => u.currency === activeTab && isUpgradeUnlocked(u));
+
+  return (
+    <div style={{backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column'}}>
+      <div style={{display: 'flex', borderBottom: '1px solid #334155'}}>
+        <TabButton tab={Currency.Stardust} activeTab={activeTab} onClick={setActiveTab} icon={<StardustIcon />} />
+        <TabButton tab={Currency.NebulaGas} activeTab={activeTab} onClick={setActiveTab} icon={<NebulaGasIcon />} />
+        <TabButton tab={Currency.Antimatter} activeTab={activeTab} onClick={setActiveTab} icon={<AntimatterIcon />} />
+        <TabButton tab={'Stats'} activeTab={activeTab} onClick={setActiveTab} icon={<StatsIcon />} />
+      </div>
+
+      <div style={{flexGrow: 1, overflowY: 'auto'}}>
+        {activeTab !== Currency.Antimatter && activeTab !== 'Stats' && (
+          <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+            {filteredUpgrades.map((upgrade) => (
+              <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'Stats' && <StatsPanel data={history} stats={detailedStats} onReset={onResetSave} />}
+
+        {activeTab === Currency.Antimatter && (
+            <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)'}}>
+                    <h3 className="font-orbitron" style={{fontSize: '1.125rem', color: '#f87171'}}>SUPERNOVA</h3>
+                    <p style={{fontSize: '0.875rem', color: '#d1d5db', marginTop: '0.5rem'}}>Réinitialisez votre progression pour gagner de l'Antimatière et débloquer de puissantes améliorations permanentes.</p>
+                    <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem'}}>Requiert {formatNumber(prestigeCost)} Stardust total.</p>
+                    <button 
+                        onClick={onPrestige}
+                        disabled={!canPrestige}
+                        className="supernova-button"
+                    >
+                      <style>{`
+                        .supernova-button {
+                          margin-top: 1rem;
+                          width: 100%;
+                          background-color: #dc2626;
+                          color: white;
+                          font-weight: bold;
+                          padding: 0.5rem 1rem;
+                          border-radius: 0.5rem;
+                          transition: all 200ms;
+                          box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2), 0 4px 6px -2px rgba(239, 68, 68, 0.2);
+                        }
+                        .supernova-button:hover:not(:disabled) {
+                          background-color: #ef4444;
+                        }
+                        .supernova-button:disabled {
+                          background-color: #991b1b;
+                          color: #94a3b8;
+                          cursor: not-allowed;
+                          box-shadow: none;
+                        }
+                      `}</style>
+                        Go Supernova
+                    </button>
+                </div>
+                {filteredUpgrades.map((upgrade) => (
+                    <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
+                ))}
+            </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// === FROM components/MainGameArea.tsx ===
+const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick }) => {
+  const hueShift = Math.min(starPowerLevel * 0.25, 45); 
+  const baseHue = 50;
+  
+  const fromColor = `hsl(${baseHue - hueShift}, 100%, 60%)`;
+  const viaColor = `hsl(${30 - hueShift}, 95%, 55%)`;
+  const toColor = `hsl(${10 - hueShift}, 90%, 50%)`;
+
+  const starStyle = {
+    background: `radial-gradient(circle at 30% 30%, ${fromColor}, ${viaColor}, ${toColor})`,
+    position: 'relative',
+    width: '75%',
+    height: '75%',
+    borderRadius: '9999px',
+    boxShadow: '0 25px 50px -12px rgba(234, 179, 8, 0.3)',
+    transition: 'transform 100ms ease-in-out',
+  };
+  
+  const orbStyle = {
+    position: 'absolute',
+    width: '3rem',
+    height: '3rem',
+    borderRadius: '9999px',
+    backgroundColor: 'rgba(253, 224, 71, 0.8)',
+    backdropFilter: 'blur(4px)',
+    border: '2px solid #fef08a',
+    boxShadow: '0 10px 15px -3px rgba(250, 204, 21, 0.3), 0 4px 6px -2px rgba(250, 204, 21, 0.3)',
+    animation: 'orb-pulse 2.5s ease-in-out infinite',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '0.75rem',
+    padding: '0.25rem',
+    zIndex: 10,
+  };
+
+
+  return (
+    <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+      {/* Background Glow */}
+      <div style={{position: 'absolute', inset: 0, backgroundColor: 'rgba(250, 204, 21, 0.2)', filter: 'blur(48px)', borderRadius: '9999px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', pointerEvents: 'none'}}></div>
+
+       {/* Clickable Orbs */}
+       {clickableOrbs.map(orb => (
+        <button
+          key={orb.id}
+          onClick={() => onOrbClick(orb.id)}
+          className="animate-orb-pulse"
+          style={{
+            ...orbStyle,
+            left: `${orb.x}%`,
+            top: `${orb.y}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+          aria-label={`Click to collect ${formatNumber(orb.value)} stardust`}
+        >
+          +{formatNumber(orb.value)}
+        </button>
+      ))}
+
+      <button
+        onClick={onClick}
+        className="active-scale-95"
+        aria-label="Click to generate stardust"
+        style={starStyle}
+      >
+        {/* Star Core */}
+        <div style={{position: 'absolute', inset: 0, borderRadius: '9999px', backgroundColor: 'rgba(255, 255, 255, 0.5)', animation: 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite', pointerEvents: 'none'}}></div>
+        {/* Star Flares */}
+        <div className="animate-spin-slow" style={{position: 'absolute', inset: '0.5rem', borderRadius: '9999px', border: '2px solid rgba(253, 224, 71, 0.5)', pointerEvents: 'none'}}></div>
+        <div className="animate-spin-slow-reverse" style={{position: 'absolute', inset: '1rem', borderRadius: '9999px', border: '2px solid rgba(251, 146, 60, 0.3)', pointerEvents: 'none'}}></div>
+        
+        {/* Floating Numbers */}
+        {floatingNumbers.map(num => (
+          <div
+            key={num.id}
+            className="font-orbitron animate-float-up"
+            style={{
+                position: 'absolute',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#fef08a',
+                pointerEvents: 'none',
+                left: `${num.x}px`,
+                top: `${num.y}px`,
+                transform: 'translate(-50%, -50%)'
+            }}
+          >
+            {num.value}
+          </div>
+        ))}
+      </button>
+
+      <style>{`
+        .active-scale-95:active {
+          transform: scale(0.95);
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// === FROM components/Header.tsx ===
+const CurrencyDisplay = ({ icon, amount, name, color }) => (
+    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', color}}>
+        <div style={{width: '2rem', height: '2rem'}}>{icon}</div>
+        <div>
+            <div className="font-orbitron" style={{fontSize: '1.25rem', lineHeight: 'none'}}>{formatNumber(amount)}</div>
+            <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>{name}</div>
+        </div>
+    </div>
+);
+
+
+const Header = ({ currencies }) => {
+  return (
+    <header style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '1rem'}}>
+      <style>{`
+        @media (min-width: 640px) {
+          header {
+            flex-direction: row;
+            gap: 1rem;
+          }
+        }
+      `}</style>
+      <h1 className="font-orbitron" style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#67e8f9', textShadow: '0 0 8px rgba(107,235,242,0.5)'}}>
+         <style>{`
+            @media (min-width: 1024px) {
+              h1 {
+                font-size: 2.25rem;
+              }
+            }
+        `}</style>
+        Cosmic Clicker
+      </h1>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.5rem'}}>
+        <style>{`
+            @media (min-width: 768px) {
+              div[style*="grid-template-columns"] {
+                gap: 1rem;
+              }
+            }
+        `}</style>
+        <CurrencyDisplay
+            icon={<StardustIcon />}
+            amount={currencies[Currency.Stardust]}
+            name="Stardust"
+            color="#fde047"
+        />
+        <CurrencyDisplay
+            icon={<NebulaGasIcon />}
+            amount={currencies[Currency.NebulaGas]}
+            name="Nebula Gas"
+            color="#d8b4fe"
+        />
+        <CurrencyDisplay
+            icon={<AntimatterIcon />}
+            amount={currencies[Currency.Antimatter]}
+            name="Antimatter"
+            color="#f87171"
+        />
+      </div>
+    </header>
+  );
+};
+
+
+// === FROM App.tsx ===
+const INITIAL_UPGRADES = {
+  // Stardust Upgrades
+  clickPower1: {
+    id: 'clickPower1', name: 'Cosmic Tap', description: 'Increases Stardust per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Click, currency: Currency.Stardust,
+  },
+  probe: {
+    id: 'probe', name: 'Stardust Probe', description: 'Passively generates Stardust per second.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, baseEffect: 0.5, effect: (level) => level * 0.5, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 5 },
+  },
+  clickPower2: {
+    id: 'clickPower2', name: 'Star Gazer', description: 'Each level grants a bonus to Cosmic Tap.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, baseEffect: 5, effect: (level) => level * 5, type: UpgradeType.Click, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 10 },
+  },
+  reinforcedProbes: {
+    id: 'reinforcedProbes', name: 'Reinforced Probes', description: 'Stardust Probes are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, baseEffect: 0.25, effect: (level) => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 10 },
+  },
+  asteroidMining: {
+    id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of passive Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, baseEffect: 10, effect: (level) => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 },
+  },
+  cometChasers: {
+    id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, baseEffect: 0.5, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 },
+  },
+  solarWinds: {
+    id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 },
+  },
+  
+  // Nebula Gas Upgrades
+  gasHarvester: {
+    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 10, cost: 10, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.NebulaGas,
+  },
+  orbitalCollector: {
+    id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star. Higher levels increase spawn rate and value.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, baseEffect: 0.05, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 }
+  },
+  nebulaCondenser: {
+    id: 'nebulaCondenser', name: 'Nebula Condenser', description: 'Boosts all passive Nebula Gas generation by 20%.', level: 0, baseCost: 50, cost: 50, costIncrease: 2, baseEffect: 0.2, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 5 },
+  },
+  gasGiantSiphon: {
+    id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 },
+  },
+  cosmicForge: {
+    id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, baseEffect: 0.01, effect: (level, state) => {
+        if (!state) return 1;
+        const nebulaPerSecond = state.upgrades.gasHarvester.effect(state.upgrades.gasHarvester.level) + state.upgrades.gasGiantSiphon.effect(state.upgrades.gasGiantSiphon.level);
+        return 1 + (level * 0.01 * nebulaPerSecond);
+    }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'nebulaCondenser', level: 5 },
+  },
+
+   // Antimatter Upgrades
+  prestigeBoost: {
+    id: 'prestigeBoost', name: 'Cosmic Singularity', description: 'Permanently boosts all Stardust generation by 10% per level.', level: 0, baseCost: 1, cost: 1, costIncrease: 2, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter,
+  },
+  prestigePower: {
+    id: 'prestigePower', name: 'Prestige Power', description: 'Gain 10% more Antimatter when you Go Supernova.', level: 0, baseCost: 5, cost: 5, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigeBoost', level: 1},
+  },
+  acceleratedLearning: {
+    id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigeBoost', level: 3},
+  },
+};
+
+const SAVE_KEY = 'cosmicClickerSave';
+
+const getInitialState = () => {
+    const upgradesCopy = {};
+    for (const key of Object.keys(INITIAL_UPGRADES)) {
+        upgradesCopy[key] = { ...INITIAL_UPGRADES[key] };
+    }
+
+    return {
+        currencies: {
+          [Currency.Stardust]: 0,
+          [Currency.NebulaGas]: 0,
+          [Currency.Antimatter]: 0,
+        },
+        upgrades: upgradesCopy,
+        totalStardustEver: 0,
+        stats: {
+            totalClicks: 0,
+            supernovaCount: 0,
+            playTime: 0,
+        },
+        lastTick: Date.now(),
+    };
+};
+
+const loadGameState = () => {
+    try {
+        const savedJson = localStorage.getItem(SAVE_KEY);
+        if (!savedJson) return getInitialState();
+
+        const savedState = JSON.parse(savedJson);
+        const initialState = getInitialState();
+
+        const currentUpgrades = initialState.upgrades;
+        if (savedState.upgrades) {
+            for (const id in currentUpgrades) {
+                if (savedState.upgrades[id]) {
+                    const savedLevel = savedState.upgrades[id].level;
+                    currentUpgrades[id].level = savedLevel;
+                    currentUpgrades[id].cost = Math.ceil(
+                        currentUpgrades[id].baseCost * Math.pow(currentUpgrades[id].costIncrease, savedLevel)
+                    );
+                }
+            }
+        }
+        
+        return {
+            ...initialState,
+            currencies: savedState.currencies ?? initialState.currencies,
+            totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
+            stats: {
+                ...initialState.stats,
+                ...(savedState.stats ?? {}),
+            },
+            upgrades: currentUpgrades,
+            lastTick: Date.now(),
+        };
+    } catch (error) {
+        console.error("Failed to load or parse saved state, starting fresh.", error);
+        localStorage.removeItem(SAVE_KEY);
+        return getInitialState();
+    }
+};
+
+
+const App = () => {
+  const [gameState, setGameState] = useState(loadGameState);
+  const [floatingNumbers, setFloatingNumbers] = useState([]);
+  const [clickableOrbs, setClickableOrbs] = useState([]);
+  const [stardustPerSecond, setStardustPerSecond] = useState(0);
+  const [history, setHistory] = useState([]);
+  const lastHistoryUpdate = useRef(Date.now());
+
+  const prestigeCost = 1e6; // 1 Million Stardust
+
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+        try {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+        } catch (error) {
+            console.error("Failed to save game state:", error);
+        }
+    }, 5000);
+
+    window.addEventListener('beforeunload', () => {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+    });
+
+    return () => clearInterval(saveInterval);
+  }, [gameState]);
+
+
+  const getClickValue = useCallback(() => {
+    const { upgrades } = gameState;
+    const antimatterBoost = upgrades.prestigeBoost.effect(upgrades.prestigeBoost.level);
+    const forgeBoost = upgrades.cosmicForge.effect(upgrades.cosmicForge.level, gameState);
+    const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
+    return baseClick * antimatterBoost * forgeBoost;
+  }, [gameState]);
+
+  const handleStarClick = useCallback((e) => {
+    const clickValue = getClickValue();
+    setGameState(prev => ({
+        ...prev,
+        currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + clickValue },
+        totalStardustEver: prev.totalStardustEver + clickValue,
+        stats: { ...prev.stats, totalClicks: prev.stats.totalClicks + 1 },
+    }));
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, };
+    setFloatingNumbers(current => [...current, newFloatingNumber]);
+    setTimeout(() => {
+        setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id));
+    }, 2000);
+  }, [getClickValue]);
+  
+  const handleOrbClick = useCallback((orbId) => {
+    const orb = clickableOrbs.find(o => o.id === orbId);
+    if (!orb) return;
+
+    setGameState(prev => ({
+      ...prev,
+      currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + orb.value },
+      totalStardustEver: prev.totalStardustEver + orb.value,
+    }));
+    
+    setClickableOrbs(prev => prev.filter(o => o.id !== orbId));
+  }, [clickableOrbs]);
+
+
+  const handlePurchaseUpgrade = useCallback((upgradeId) => {
+    setGameState(prev => {
+      const upgrade = prev.upgrades[upgradeId];
+      if (upgrade.level >= (upgrade.maxLevel ?? Infinity)) return prev;
+
+      let cost = upgrade.cost;
+      if (upgrade.currency === Currency.Stardust) {
+        cost *= prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level);
+      }
+      
+      if (prev.currencies[upgrade.currency] < cost) return prev;
+
+      const newLevel = upgrade.level + 1;
+      const newCost = Math.ceil(upgrade.baseCost * Math.pow(upgrade.costIncrease, newLevel));
+
+      return {
+        ...prev,
+        currencies: { ...prev.currencies, [upgrade.currency]: prev.currencies[upgrade.currency] - cost },
+        upgrades: { ...prev.upgrades, [upgradeId]: { ...upgrade, level: newLevel, cost: newCost } },
+      };
+    });
+  }, []);
+
+  const handlePrestige = useCallback(() => {
+    if (gameState.totalStardustEver < prestigeCost) return;
+    
+    const prestigePowerBoost = gameState.upgrades.prestigePower.effect(gameState.upgrades.prestigePower.level);
+    const antimatterGained = Math.floor((Math.log10(gameState.totalStardustEver / prestigeCost)) + 1) * prestigePowerBoost;
+
+    setGameState(prev => {
+        const prestigeUpgrades = { ...prev.upgrades };
+        Object.keys(INITIAL_UPGRADES).forEach(key => {
+            if (INITIAL_UPGRADES[key].currency !== Currency.Antimatter) {
+                prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
+            }
+        });
+
+        return {
+            ...prev,
+            currencies: {
+                [Currency.Stardust]: 0,
+                [Currency.NebulaGas]: 0,
+                [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
+            },
+            upgrades: prestigeUpgrades,
+            totalStardustEver: 0,
+            stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
+            lastTick: Date.now(),
+        };
+    });
+    setClickableOrbs([]);
+    setHistory([]);
+  }, [gameState.totalStardustEver, gameState.upgrades]);
+
+  const handleResetSave = useCallback(() => {
+    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
+        localStorage.removeItem(SAVE_KEY);
+        setGameState(getInitialState());
+        setFloatingNumbers([]);
+        setClickableOrbs([]);
+        setStardustPerSecond(0);
+        setHistory([]);
+        lastHistoryUpdate.current = Date.now();
+    }
+  }, []);
+
+  const gameTick = useCallback(() => {
+    const now = Date.now();
+    const timeDelta = (now - gameState.lastTick) / 1000;
+
+    const { upgrades } = gameState;
+    const antimatterBoost = upgrades.prestigeBoost.effect(upgrades.prestigeBoost.level);
+    const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
+    
+    const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
+    const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
+
+    const sps = (probeProduction + asteroidProduction) * antimatterBoost * solarWindsBoost;
+    setStardustPerSecond(sps);
+    
+    const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
+    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost;
+    
+    setGameState(prev => {
+      const collector = prev.upgrades.orbitalCollector;
+      if (collector.level > 0 && clickableOrbs.length < 10) {
+        const spawnChance = collector.effect(collector.level) * timeDelta;
+        if (Math.random() < spawnChance) {
+          const angle = Math.random() * 2 * Math.PI;
+          const newOrb = {
+            id: Date.now() + Math.random(),
+            value: (sps + getClickValue()) * (5 + collector.level * 0.5),
+            x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
+            y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
+          };
+          setClickableOrbs(current => [...current, newOrb]);
+        }
+      }
+
+      const newStardust = prev.currencies[Currency.Stardust] + sps * timeDelta;
+
+      if (now - lastHistoryUpdate.current >= 1000) {
+        lastHistoryUpdate.current = now;
+        setHistory(prevHistory => {
+          const newEntry = { timestamp: now, totalStardust: newStardust };
+          const newHistory = [...prevHistory, newEntry];
+          return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
+        });
+      }
+
+      return {
+        ...prev,
+        currencies: {
+          [Currency.Stardust]: newStardust,
+          [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta,
+          [Currency.Antimatter]: prev.currencies[Currency.Antimatter],
+        },
+        totalStardustEver: prev.totalStardustEver + sps * timeDelta,
+        stats: { ...prev.stats, playTime: prev.stats.playTime + timeDelta },
+        lastTick: now,
+      };
+    });
+  }, [gameState, clickableOrbs.length, getClickValue]);
+
+  useGameLoop(gameTick, 100);
+
+  const starPowerLevel = useMemo(() => Object.values(gameState.upgrades)
+    .filter((u) => u.currency === Currency.Stardust)
+    .reduce((sum, u) => sum + u.level, 0), [gameState.upgrades]);
+
+  const detailedStats = useMemo(() => {
+      const playTime = gameState.stats.playTime;
+      const hours = Math.floor(playTime / 3600);
+      const minutes = Math.floor((playTime % 3600) / 60);
+      const seconds = Math.floor(playTime % 60);
+      const formattedPlayTime = `${hours}h ${minutes}m ${seconds}s`;
+
+      return {
+          stardustPerSecond: stardustPerSecond,
+          stardustPerClick: getClickValue(),
+          totalClicks: gameState.stats.totalClicks,
+          supernovaCount: gameState.stats.supernovaCount,
+          playTime: formattedPlayTime,
+          prestigeBonus: `${((gameState.upgrades.prestigeBoost.effect(gameState.upgrades.prestigeBoost.level) - 1) * 100).toFixed(0)}%`,
+      }
+  }, [stardustPerSecond, getClickValue, gameState.stats, gameState.upgrades]);
+
+  return (
+    <div style={{height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(to bottom, #0f172a, black)'}}>
+      <div style={{padding: '1rem 1rem 0 1rem', flexShr: 0}}>
+        <Header currencies={gameState.currencies} />
+      </div>
+      <main style={{
+          flexGrow: 1,
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '1rem',
+          padding: '1rem',
+      }}>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <MainGameArea 
+              onClick={handleStarClick} 
+              floatingNumbers={floatingNumbers}
+              starPowerLevel={starPowerLevel}
+              clickableOrbs={clickableOrbs}
+              onOrbClick={handleOrbClick}
+            />
+        </div>
+        <div style={{overflow: 'hidden'}}>
+            <UpgradesPanel 
+              upgrades={gameState.upgrades} 
+              onPurchase={handlePurchaseUpgrade} 
+              currencies={gameState.currencies}
+              onPrestige={handlePrestige}
+              canPrestige={gameState.totalStardustEver >= prestigeCost}
+              prestigeCost={prestigeCost}
+              history={history}
+              detailedStats={detailedStats}
+              onResetSave={handleResetSave}
+            />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// === FROM index.tsx ===
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+
+    </script>
   </body>
 </html>
