@@ -1,8 +1,9 @@
+// FIX: Add `as const` to ensure currency keys are treated as literal types.
 export const Currency = {
   Stardust: 'Stardust',
   NebulaGas: 'Nebula Gas',
   Antimatter: 'Antimatter',
-};
+} as const;
 
 export const UpgradeType = {
   Click: 'Click',

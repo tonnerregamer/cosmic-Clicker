@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 // FIX: Import types for props.
-import { Currency, Upgrade, GameState, HistoryData, DetailedStats } from '../types.js';
-import UpgradeButton from './UpgradeButton.js';
-import { formatNumber } from '../utils/format.js';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon, StatsIcon } from './icons.js';
+import { Currency, Upgrade, GameState, HistoryData, DetailedStats } from '../types.ts';
+import UpgradeButton from './UpgradeButton.tsx';
+import { formatNumber } from '../utils/format.ts';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon, StatsIcon } from './icons.tsx';
 
 const TabButton = ({ tab, activeTab, onClick, icon }: { tab: string, activeTab: string, onClick: (tab: string) => void, icon: React.ReactNode }) => (
     <button

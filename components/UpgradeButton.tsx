@@ -1,8 +1,8 @@
 import React from 'react';
 // FIX: Import the Upgrade type to use in component props.
-import { Currency, Upgrade } from '../types.js';
-import { formatNumber } from '../utils/format.js';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.js';
+import { Currency, Upgrade } from '../types.ts';
+import { formatNumber } from '../utils/format.ts';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.tsx';
 
 const getCurrencyIcon = (currency: string) => {
   switch (currency) {
@@ -33,7 +33,8 @@ interface UpgradeButtonProps {
   canAfford: boolean;
 }
 
-const UpgradeButton = ({ upgrade, onPurchase, canAfford }: UpgradeButtonProps) => {
+// FIX: Explicitly type the component as React.FC to ensure special props like 'key' are handled correctly.
+const UpgradeButton: React.FC<UpgradeButtonProps> = ({ upgrade, onPurchase, canAfford }) => {
   const isMaxLevel = upgrade.maxLevel && upgrade.level >= upgrade.maxLevel;
 
   return (
