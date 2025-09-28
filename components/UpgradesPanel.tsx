@@ -1,31 +1,11 @@
 import React, { useState } from 'react';
-import { Upgrade, Currency, HistoryData, DetailedStats } from '../types';
-import UpgradeButton from './UpgradeButton';
-import { formatNumber } from '../utils/format';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon, StatsIcon } from './icons';
+// FIX: Import types for props.
+import { Currency, Upgrade, GameState, HistoryData, DetailedStats } from '../types.js';
+import UpgradeButton from './UpgradeButton.js';
+import { formatNumber } from '../utils/format.js';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon, StatsIcon } from './icons.js';
 
-interface UpgradesPanelProps {
-  upgrades: Record<string, Upgrade>;
-  onPurchase: (upgradeId: string) => void;
-  currencies: { [key in Currency]: number };
-  onPrestige: () => void;
-  canPrestige: boolean;
-  prestigeCost: number;
-  history: HistoryData[];
-  detailedStats: DetailedStats;
-  onResetSave: () => void;
-}
-
-type Tab = Currency | 'Stats';
-
-interface TabButtonProps {
-    tab: Tab;
-    activeTab: Tab;
-    onClick: (tab: Tab) => void;
-    icon: React.ReactNode;
-}
-
-const TabButton: React.FC<TabButtonProps> = ({ tab, activeTab, onClick, icon }) => (
+const TabButton = ({ tab, activeTab, onClick, icon }: { tab: string, activeTab: string, onClick: (tab: string) => void, icon: React.ReactNode }) => (
     <button
       onClick={() => onClick(tab)}
       className="tab-button"
@@ -60,14 +40,14 @@ const TabButton: React.FC<TabButtonProps> = ({ tab, activeTab, onClick, icon }) 
     </button>
 );
 
-const StatDisplay: React.FC<{label: string, value: string | number}> = ({ label, value }) => (
+const StatDisplay = ({ label, value }: { label: string, value: string | number }) => (
     <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
         <dt style={{fontSize: '0.875rem', color: '#94a3b8'}}>{label}</dt>
         <dd className="font-orbitron" style={{fontWeight: 'bold', color: '#67e8f9'}}>{value}</dd>
     </div>
 );
 
-const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats, onReset: () => void }> = ({ data, stats, onReset }) => {
+const StatsPanel = ({ data, stats, onReset }: { data: HistoryData[], stats: DetailedStats, onReset: () => void }) => {
     const points = data.map(d => d.totalStardust);
     const maxY = Math.max(...points, 1);
     const minY = data.length > 0 ? Math.min(...points) : 0;
@@ -141,8 +121,21 @@ const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats, onReset:
     );
 };
 
-const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats, onResetSave }) => {
-  const [activeTab, setActiveTab] = useState<Tab>(Currency.Stardust);
+// FIX: Define an interface for the component's props for type safety.
+interface UpgradesPanelProps {
+  upgrades: Record<string, Upgrade>;
+  onPurchase: (upgradeId: string) => void;
+  currencies: GameState['currencies'];
+  onPrestige: () => void;
+  canPrestige: boolean;
+  prestigeCost: number;
+  history: HistoryData[];
+  detailedStats: DetailedStats;
+  onResetSave: () => void;
+}
+
+const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats, onResetSave }: UpgradesPanelProps) => {
+  const [activeTab, setActiveTab] = useState(Currency.Stardust);
 
   const isUpgradeUnlocked = (upgrade: Upgrade) => {
     if (!upgrade.requirement) return true;
@@ -150,8 +143,9 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, cur
     return requiredUpgrade && requiredUpgrade.level >= upgrade.requirement.level;
   };
   
+  // FIX: With `upgrades` being properly typed, Object.values returns Upgrade[] instead of unknown[], fixing the error.
   const filteredUpgrades = Object.values(upgrades)
-    .filter((u: Upgrade) => u.currency === activeTab && isUpgradeUnlocked(u));
+    .filter((u) => u.currency === activeTab && isUpgradeUnlocked(u));
 
   return (
     <div style={{backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -165,7 +159,8 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, cur
       <div style={{flexGrow: 1, overflowY: 'auto'}}>
         {activeTab !== Currency.Antimatter && activeTab !== 'Stats' && (
           <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
-            {filteredUpgrades.map((upgrade: Upgrade) => (
+            {/* FIX: `upgrade` is now of type Upgrade, fixing errors related to accessing its properties. */}
+            {filteredUpgrades.map((upgrade) => (
               <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
             ))}
           </div>
@@ -209,7 +204,8 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, cur
                         Go Supernova
                     </button>
                 </div>
-                {filteredUpgrades.map((upgrade: Upgrade) => (
+                {/* FIX: `upgrade` is now of type Upgrade, fixing errors related to accessing its properties. */}
+                {filteredUpgrades.map((upgrade) => (
                     <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
                 ))}
             </div>

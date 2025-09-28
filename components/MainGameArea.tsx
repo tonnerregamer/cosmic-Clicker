@@ -1,16 +1,7 @@
 import React from 'react';
-import { FloatingNumber, ClickableOrb } from '../types';
-import { formatNumber } from '../utils/format';
+import { formatNumber } from '../utils/format.js';
 
-interface MainGameAreaProps {
-  onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  floatingNumbers: FloatingNumber[];
-  starPowerLevel: number;
-  clickableOrbs: ClickableOrb[];
-  onOrbClick: (id: number) => void;
-}
-
-const MainGameArea: React.FC<MainGameAreaProps> = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick }) => {
+const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick }) => {
   const hueShift = Math.min(starPowerLevel * 0.25, 45); 
   const baseHue = 50;
   
@@ -46,7 +37,7 @@ const MainGameArea: React.FC<MainGameAreaProps> = ({ onClick, floatingNumbers, s
     fontSize: '0.75rem',
     padding: '0.25rem',
     zIndex: 10,
-  } as React.CSSProperties;
+  };
 
 
   return (

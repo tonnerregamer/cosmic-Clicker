@@ -1,15 +1,10 @@
 import React from 'react';
-import { Upgrade, Currency } from '../types';
-import { formatNumber } from '../utils/format';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons';
+// FIX: Import the Upgrade type to use in component props.
+import { Currency, Upgrade } from '../types.js';
+import { formatNumber } from '../utils/format.js';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.js';
 
-interface UpgradeButtonProps {
-  upgrade: Upgrade;
-  onPurchase: (upgradeId: string) => void;
-  canAfford: boolean;
-}
-
-const getCurrencyIcon = (currency: Currency) => {
+const getCurrencyIcon = (currency: string) => {
   switch (currency) {
     case Currency.Stardust:
       return <StardustIcon />;
@@ -20,7 +15,7 @@ const getCurrencyIcon = (currency: Currency) => {
   }
 };
 
-const getCurrencyColor = (currency: Currency) => {
+const getCurrencyColor = (currency: string) => {
   switch (currency) {
     case Currency.Stardust:
       return '#fde047'; // text-yellow-300
@@ -31,7 +26,14 @@ const getCurrencyColor = (currency: Currency) => {
   }
 }
 
-const UpgradeButton: React.FC<UpgradeButtonProps> = ({ upgrade, onPurchase, canAfford }) => {
+// FIX: Define an interface for the component's props for type safety.
+interface UpgradeButtonProps {
+  upgrade: Upgrade;
+  onPurchase: (id: string) => void;
+  canAfford: boolean;
+}
+
+const UpgradeButton = ({ upgrade, onPurchase, canAfford }: UpgradeButtonProps) => {
   const isMaxLevel = upgrade.maxLevel && upgrade.level >= upgrade.maxLevel;
 
   return (

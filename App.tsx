@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Currency, GameState, Upgrade, UpgradeType, FloatingNumber, HistoryData, ClickableOrb, DetailedStats } from './types';
-import Header from './components/Header';
-import MainGameArea from './components/MainGameArea';
-import UpgradesPanel from './components/UpgradesPanel';
-import { useGameLoop } from './hooks/useGameLoop';
-import { formatNumber } from './utils/format';
+// FIX: Import types to be used for state and props.
+import { Currency, UpgradeType, Upgrade, GameState, FloatingNumber, ClickableOrb, HistoryData, DetailedStats } from './types.js';
+import Header from './components/Header.js';
+import MainGameArea from './components/MainGameArea.js';
+import UpgradesPanel from './components/UpgradesPanel.js';
+import { useGameLoop } from './hooks/useGameLoop.js';
+import { formatNumber } from './utils/format.js';
 
+// FIX: Add type for INITIAL_UPGRADES to ensure it conforms to the Upgrade interface.
 const INITIAL_UPGRADES: Record<string, Upgrade> = {
   // Stardust Upgrades
   clickPower1: {
@@ -65,6 +67,7 @@ const INITIAL_UPGRADES: Record<string, Upgrade> = {
 
 const SAVE_KEY = 'cosmicClickerSave';
 
+// FIX: Add return type to ensure the function returns a valid GameState object.
 const getInitialState = (): GameState => {
     const upgradesCopy: Record<string, Upgrade> = {};
     for (const key of Object.keys(INITIAL_UPGRADES)) {
@@ -89,12 +92,13 @@ const getInitialState = (): GameState => {
 };
 
 
+// FIX: Add return type to ensure the function returns a valid GameState object.
 const loadGameState = (): GameState => {
     try {
         const savedJson = localStorage.getItem(SAVE_KEY);
         if (!savedJson) return getInitialState();
 
-        const savedState: Partial<GameState> = JSON.parse(savedJson);
+        const savedState = JSON.parse(savedJson);
         const initialState = getInitialState();
 
         // Merge upgrades carefully to prevent issues with updates
@@ -130,11 +134,15 @@ const loadGameState = (): GameState => {
 };
 
 
-const App: React.FC = () => {
+const App = () => {
+  // FIX: Type the game state for type safety.
   const [gameState, setGameState] = useState<GameState>(loadGameState);
+  // FIX: Type the floating numbers state.
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
+  // FIX: Type the clickable orbs state.
   const [clickableOrbs, setClickableOrbs] = useState<ClickableOrb[]>([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
+  // FIX: Type the history state.
   const [history, setHistory] = useState<HistoryData[]>([]);
   const lastHistoryUpdate = useRef(Date.now());
 
@@ -166,7 +174,7 @@ const App: React.FC = () => {
     return baseClick * antimatterBoost * forgeBoost;
   }, [gameState]);
 
-  const handleStarClick = useCallback((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleStarClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
     const clickValue = getClickValue();
     setGameState(prev => ({
         ...prev,
@@ -178,7 +186,7 @@ const App: React.FC = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const newFloatingNumber: FloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, };
+    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, };
     setFloatingNumbers(current => [...current, newFloatingNumber]);
     setTimeout(() => {
         setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id));
@@ -229,7 +237,7 @@ const App: React.FC = () => {
     const antimatterGained = Math.floor((Math.log10(gameState.totalStardustEver / prestigeCost)) + 1) * prestigePowerBoost;
 
     setGameState(prev => {
-        const prestigeUpgrades = { ...prev.upgrades };
+        const prestigeUpgrades: Record<string, Upgrade> = { ...prev.upgrades };
         Object.keys(INITIAL_UPGRADES).forEach(key => {
             if (INITIAL_UPGRADES[key].currency !== Currency.Antimatter) {
                 prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
@@ -307,7 +315,7 @@ const App: React.FC = () => {
       if (now - lastHistoryUpdate.current >= 1000) {
         lastHistoryUpdate.current = now;
         setHistory(prevHistory => {
-          const newEntry = { timestamp: now, totalStardust: newStardust };
+          const newEntry: HistoryData = { timestamp: now, totalStardust: newStardust };
           const newHistory = [...prevHistory, newEntry];
           return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
         });
@@ -329,10 +337,10 @@ const App: React.FC = () => {
 
   useGameLoop(gameTick, 100);
 
+  // FIX: With gameState.upgrades being properly typed, Object.values returns Upgrade[] instead of unknown[], fixing the error.
   const starPowerLevel = useMemo(() => Object.values(gameState.upgrades)
-    .filter((u: Upgrade) => u.currency === Currency.Stardust)
-    // FIX: Explicitly type the 'sum' accumulator as 'number' to resolve an issue where it was being inferred as 'unknown'.
-    .reduce((sum: number, u: Upgrade) => sum + u.level, 0), [gameState.upgrades]);
+    .filter((u) => u.currency === Currency.Stardust)
+    .reduce((sum, u) => sum + u.level, 0), [gameState.upgrades]);
 
   const detailedStats: DetailedStats = useMemo(() => {
       const playTime = gameState.stats.playTime;

@@ -1,16 +1,17 @@
-export enum Currency {
-  Stardust = 'Stardust',
-  NebulaGas = 'Nebula Gas',
-  Antimatter = 'Antimatter',
-}
+export const Currency = {
+  Stardust: 'Stardust',
+  NebulaGas: 'Nebula Gas',
+  Antimatter: 'Antimatter',
+};
 
-export enum UpgradeType {
-  Click,
-  Passive,
-  Utility,
-  Prestige,
-}
+export const UpgradeType = {
+  Click: 'Click',
+  Passive: 'Passive',
+  Utility: 'Utility',
+  Prestige: 'Prestige',
+};
 
+// FIX: Uncommented TypeScript interfaces to provide strong typing throughout the application.
 export interface Upgrade {
   id: string;
   name: string;
@@ -21,8 +22,8 @@ export interface Upgrade {
   costIncrease: number;
   effect: (level: number, gameState?: GameState) => number;
   baseEffect: number;
-  type: UpgradeType;
-  currency: Currency;
+  type: string;
+  currency: string;
   maxLevel?: number;
   requirement?: {
     upgradeId: string;

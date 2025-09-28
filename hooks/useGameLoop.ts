@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export const useGameLoop = (callback: () => void, interval: number) => {
-  // FIX: Initialize useRef with the callback to satisfy the requirement of providing an initial value.
+export const useGameLoop = (callback, interval) => {
   const savedCallback = useRef(callback);
 
   // Remember the latest callback.
@@ -12,7 +11,6 @@ export const useGameLoop = (callback: () => void, interval: number) => {
   // Set up the interval.
   useEffect(() => {
     const tick = () => {
-      // The ref is now guaranteed to have a function, so the check is not needed.
       savedCallback.current();
     };
     if (interval !== null) {

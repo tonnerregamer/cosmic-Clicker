@@ -1,17 +1,9 @@
 import React from 'react';
-import { Currency } from '../types';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons';
-import { formatNumber } from '../utils/format';
+import { Currency } from '../types.js';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.js';
+import { formatNumber } from '../utils/format.js';
 
-interface HeaderProps {
-  currencies: {
-    [Currency.Stardust]: number;
-    [Currency.NebulaGas]: number;
-    [Currency.Antimatter]: number;
-  };
-}
-
-const CurrencyDisplay: React.FC<{ icon: React.ReactNode; amount: number; name: string; color: string }> = ({ icon, amount, name, color }) => (
+const CurrencyDisplay = ({ icon, amount, name, color }) => (
     <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', color}}>
         <div style={{width: '2rem', height: '2rem'}}>{icon}</div>
         <div>
@@ -22,7 +14,7 @@ const CurrencyDisplay: React.FC<{ icon: React.ReactNode; amount: number; name: s
 );
 
 
-const Header: React.FC<HeaderProps> = ({ currencies }) => {
+const Header = ({ currencies }) => {
   return (
     <header style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '1rem'}}>
       <style>{`

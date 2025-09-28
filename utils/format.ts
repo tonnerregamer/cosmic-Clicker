@@ -1,4 +1,4 @@
-export const formatNumber = (num: number): string => {
+export const formatNumber = (num) => {
     if (num < 1000) {
         return num.toFixed(1).replace(/\.0$/, '');
     }
