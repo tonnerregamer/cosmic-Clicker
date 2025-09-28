@@ -1,7 +1,7 @@
 import React from 'react';
-import { Currency } from '../types.ts';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.tsx';
-import { formatNumber } from '../utils/format.ts';
+import { Currency } from '../types.js';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.js';
+import { formatNumber } from '../utils/format.js';
 
 const CurrencyDisplay = ({ icon, amount, name, color }) => (
     <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', color}}>

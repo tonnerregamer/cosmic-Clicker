@@ -1,8 +1,8 @@
 import React from 'react';
 // FIX: Import the Upgrade type to use in component props.
-import { Currency, Upgrade } from '../types.ts';
-import { formatNumber } from '../utils/format.ts';
-import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.tsx';
+import { Currency, Upgrade } from '../types.js';
+import { formatNumber } from '../utils/format.js';
+import { StardustIcon, NebulaGasIcon, AntimatterIcon } from './icons.js';
 
 const getCurrencyIcon = (currency: string) => {
   switch (currency) {

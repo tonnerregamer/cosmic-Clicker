@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumber } from '../utils/format.ts';
+import { formatNumber } from '../utils/format.js';
 
 const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick }) => {
   const hueShift = Math.min(starPowerLevel * 0.25, 45); 

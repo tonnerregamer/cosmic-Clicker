@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 // FIX: Import types to be used for state and props.
-import { Currency, UpgradeType, Upgrade, GameState, FloatingNumber, ClickableOrb, HistoryData, DetailedStats } from './types.ts';
-import Header from './components/Header.tsx';
-import MainGameArea from './components/MainGameArea.tsx';
-import UpgradesPanel from './components/UpgradesPanel.tsx';
-import { useGameLoop } from './hooks/useGameLoop.ts';
-import { formatNumber } from './utils/format.ts';
+import { Currency, UpgradeType, Upgrade, GameState, FloatingNumber, ClickableOrb, HistoryData, DetailedStats } from './types.js';
+import Header from './components/Header.js';
+import MainGameArea from './components/MainGameArea.js';
+import UpgradesPanel from './components/UpgradesPanel.js';
+import { useGameLoop } from './hooks/useGameLoop.js';
+import { formatNumber } from './utils/format.js';
 
 // FIX: Add type for INITIAL_UPGRADES to ensure it conforms to the Upgrade interface.
 const INITIAL_UPGRADES: Record<string, Upgrade> = {
@@ -341,7 +341,8 @@ const App = () => {
   const starPowerLevel = useMemo(() => Object.values(gameState.upgrades)
 // FIX: Explicitly type 'u' as 'Upgrade' to resolve type inference issues with Object.values.
     .filter((u: Upgrade) => u.currency === Currency.Stardust)
-    .reduce((sum, u: Upgrade) => sum + u.level, 0), [gameState.upgrades]);
+    // FIX: Explicitly type the accumulator 'sum' as 'number' to resolve the type error.
+    .reduce((sum: number, u: Upgrade) => sum + u.level, 0), [gameState.upgrades]);
 
   const detailedStats: DetailedStats = useMemo(() => {
       const playTime = gameState.stats.playTime;
