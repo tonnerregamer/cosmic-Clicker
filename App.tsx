@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 // FIX: Import types to be used for state and props.
-import { Currency, UpgradeType, Upgrade, GameState, FloatingNumber, ClickableOrb, HistoryData, DetailedStats } from './types.js';
-import Header from './components/Header.js';
-import MainGameArea from './components/MainGameArea.js';
-import UpgradesPanel from './components/UpgradesPanel.js';
-import { useGameLoop } from './hooks/useGameLoop.js';
-import { formatNumber } from './utils/format.js';
+import { Currency, UpgradeType, Upgrade, GameState, FloatingNumber, ClickableOrb, HistoryData, DetailedStats } from './types.ts';
+import Header from './components/Header.tsx';
+import MainGameArea from './components/MainGameArea.tsx';
+import UpgradesPanel from './components/UpgradesPanel.tsx';
+import { useGameLoop } from './hooks/useGameLoop.ts';
+import { formatNumber } from './utils/format.ts';
 
 // FIX: Add type for INITIAL_UPGRADES to ensure it conforms to the Upgrade interface.
 const INITIAL_UPGRADES: Record<string, Upgrade> = {
