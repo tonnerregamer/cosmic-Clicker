@@ -23,11 +23,11 @@ const getCurrencyIcon = (currency: Currency) => {
 const getCurrencyColor = (currency: Currency) => {
   switch (currency) {
     case Currency.Stardust:
-      return 'text-yellow-300';
+      return '#fde047'; // text-yellow-300
     case Currency.NebulaGas:
-      return 'text-purple-300';
+      return '#d8b4fe'; // text-purple-300
     case Currency.Antimatter:
-      return 'text-red-400';
+      return '#f87171'; // text-red-400
   }
 }
 
@@ -38,20 +38,46 @@ const UpgradeButton: React.FC<UpgradeButtonProps> = ({ upgrade, onPurchase, canA
     <button
       onClick={() => onPurchase(upgrade.id)}
       disabled={!canAfford || isMaxLevel}
-      className="w-full text-left p-3 bg-slate-900/50 rounded-lg border border-slate-700 transition-all duration-200 hover:bg-slate-700/50 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-700"
+      className="upgrade-button"
     >
-      <div className="pointer-events-none">
-        <div className="flex justify-between items-center">
-          <h4 className="font-bold font-orbitron">{upgrade.name}</h4>
-          <span className={`text-sm font-semibold px-2 py-1 rounded ${isMaxLevel ? 'bg-green-600 text-white' : 'bg-slate-700'}`}>
+      <style>{`
+        .upgrade-button {
+          width: 100%;
+          text-align: left;
+          padding: 0.75rem;
+          background-color: rgba(15, 23, 42, 0.5);
+          border-radius: 0.5rem;
+          border: 1px solid #334155;
+          transition: all 200ms;
+        }
+        .upgrade-button:hover:not(:disabled) {
+          background-color: rgba(51, 65, 85, 0.5);
+          border-color: #22d3ee;
+        }
+        .upgrade-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>
+      <div style={{pointerEvents: 'none'}}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <h4 className="font-orbitron" style={{fontWeight: 'bold'}}>{upgrade.name}</h4>
+          <span style={{
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            padding: '0.25rem 0.5rem',
+            borderRadius: '0.25rem',
+            backgroundColor: isMaxLevel ? '#16a34a' : '#334155',
+            color: isMaxLevel ? 'white' : 'inherit'
+          }}>
               {isMaxLevel ? 'MAX' : `Lvl ${upgrade.level}`}
           </span>
         </div>
-        <p className="text-xs text-slate-400 mt-1">{upgrade.description}</p>
-        <div className={`flex items-center space-x-2 mt-2 font-semibold ${getCurrencyColor(upgrade.currency)}`}>
+        <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem'}}>{upgrade.description}</p>
+        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', fontWeight: 600, color: getCurrencyColor(upgrade.currency)}}>
           {!isMaxLevel && (
               <>
-                  <div className="w-4 h-4">{getCurrencyIcon(upgrade.currency)}</div>
+                  <div style={{width: '1rem', height: '1rem'}}>{getCurrencyIcon(upgrade.currency)}</div>
                   <span>{formatNumber(upgrade.cost)}</span>
               </>
           )}

@@ -5,24 +5,124 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cosmic Clicker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --slate-900: #0f172a;
+        --slate-800: #1e293b;
+        --slate-700: #334155;
+        --slate-400: #94a3b8;
+        --gray-100: #f3f4f6;
+        --cyan-300: #67e8f9;
+        --cyan-400: #22d3ee;
+        --yellow-200: #fef08a;
+        --yellow-300: #fde047;
+        --yellow-400: #facc15;
+        --yellow-500: #eab308;
+        --purple-300: #d8b4fe;
+        --red-400: #f87171;
+        --red-500: #ef4444;
+        --red-600: #dc2626;
+        --red-800: #991b1b;
+        --green-600: #16a34a;
+
+        --font-sans: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        --font-display: 'Orbitron', var(--font-sans);
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        font-family: var(--font-sans);
+        background-color: var(--slate-900);
+        color: var(--gray-100);
+        line-height: 1.5;
       }
+
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
       .font-orbitron {
-        font-family: 'Orbitron', sans-serif;
+        font-family: var(--font-display);
       }
+
+      /* Animations from MainGameArea */
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes spin-slow-reverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+      }
+      @keyframes float-up {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -100%) translateY(-50px);
+        }
+      }
+      @keyframes orb-pulse {
+          0%, 100% {
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 0.8;
+          }
+          50% {
+              transform: translate(-50%, -50%) scale(1.1);
+              opacity: 1;
+          }
+      }
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: .5;
+        }
+      }
+
+      .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+      .animate-spin-slow-reverse { animation: spin-slow-reverse 30s linear infinite; }
+      .animate-float-up { animation: float-up 2s ease-out forwards; }
+      .animate-orb-pulse { animation: orb-pulse 2.5s ease-in-out infinite; }
+      .animate-pulse { animation: pulse 3s cubic-bezier(0.4,0,0.6,1) infinite; }
+      
+      button {
+        font-family: inherit;
+        font-size: 100%;
+        line-height: 1.15;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+      }
+
+      button:focus {
+        outline: 1px dotted;
+        outline: 5px auto -webkit-focus-ring-color;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
     </style>
   <script type="importmap">
 {
   "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
   }
 }
 </script>

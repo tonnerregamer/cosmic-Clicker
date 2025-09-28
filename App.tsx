@@ -63,23 +63,75 @@ const INITIAL_UPGRADES: Record<string, Upgrade> = {
   },
 };
 
-const App: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>({
-    currencies: {
-      [Currency.Stardust]: 0,
-      [Currency.NebulaGas]: 0,
-      [Currency.Antimatter]: 0,
-    },
-    upgrades: INITIAL_UPGRADES,
-    totalStardustEver: 0,
-    stats: {
-        totalClicks: 0,
-        supernovaCount: 0,
-        playTime: 0,
-    },
-    lastTick: Date.now(),
-  });
+const SAVE_KEY = 'cosmicClickerSave';
 
+const getInitialState = (): GameState => {
+    const upgradesCopy: Record<string, Upgrade> = {};
+    for (const key of Object.keys(INITIAL_UPGRADES)) {
+        upgradesCopy[key] = { ...INITIAL_UPGRADES[key] };
+    }
+
+    return {
+        currencies: {
+          [Currency.Stardust]: 0,
+          [Currency.NebulaGas]: 0,
+          [Currency.Antimatter]: 0,
+        },
+        upgrades: upgradesCopy,
+        totalStardustEver: 0,
+        stats: {
+            totalClicks: 0,
+            supernovaCount: 0,
+            playTime: 0,
+        },
+        lastTick: Date.now(),
+    };
+};
+
+
+const loadGameState = (): GameState => {
+    try {
+        const savedJson = localStorage.getItem(SAVE_KEY);
+        if (!savedJson) return getInitialState();
+
+        const savedState: Partial<GameState> = JSON.parse(savedJson);
+        const initialState = getInitialState();
+
+        // Merge upgrades carefully to prevent issues with updates
+        const currentUpgrades = initialState.upgrades;
+        if (savedState.upgrades) {
+            for (const id in currentUpgrades) {
+                if (savedState.upgrades[id]) {
+                    const savedLevel = savedState.upgrades[id].level;
+                    currentUpgrades[id].level = savedLevel;
+                    currentUpgrades[id].cost = Math.ceil(
+                        currentUpgrades[id].baseCost * Math.pow(currentUpgrades[id].costIncrease, savedLevel)
+                    );
+                }
+            }
+        }
+        
+        return {
+            ...initialState,
+            currencies: savedState.currencies ?? initialState.currencies,
+            totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
+            stats: {
+                ...initialState.stats,
+                ...(savedState.stats ?? {}),
+            },
+            upgrades: currentUpgrades,
+            lastTick: Date.now(), // Always reset lastTick to prevent huge offline gains on load
+        };
+    } catch (error) {
+        console.error("Failed to load or parse saved state, starting fresh.", error);
+        localStorage.removeItem(SAVE_KEY);
+        return getInitialState();
+    }
+};
+
+
+const App: React.FC = () => {
+  const [gameState, setGameState] = useState<GameState>(loadGameState);
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
   const [clickableOrbs, setClickableOrbs] = useState<ClickableOrb[]>([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
@@ -87,6 +139,24 @@ const App: React.FC = () => {
   const lastHistoryUpdate = useRef(Date.now());
 
   const prestigeCost = 1e6; // 1 Million Stardust
+
+  // --- Save Game State ---
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+        try {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+        } catch (error) {
+            console.error("Failed to save game state:", error);
+        }
+    }, 5000); // Save every 5 seconds
+
+    window.addEventListener('beforeunload', () => {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+    });
+
+    return () => clearInterval(saveInterval);
+  }, [gameState]);
+
 
   const getClickValue = useCallback(() => {
     const { upgrades } = gameState;
@@ -183,6 +253,18 @@ const App: React.FC = () => {
     setHistory([]);
   }, [gameState.totalStardustEver, gameState.upgrades]);
 
+  const handleResetSave = useCallback(() => {
+    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
+        localStorage.removeItem(SAVE_KEY);
+        setGameState(getInitialState());
+        setFloatingNumbers([]);
+        setClickableOrbs([]);
+        setStardustPerSecond(0);
+        setHistory([]);
+        lastHistoryUpdate.current = Date.now();
+    }
+  }, []);
+
   const gameTick = useCallback(() => {
     const now = Date.now();
     const timeDelta = (now - gameState.lastTick) / 1000;
@@ -270,10 +352,18 @@ const App: React.FC = () => {
   }, [stardustPerSecond, getClickValue, gameState.stats, gameState.upgrades]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black text-gray-100 flex flex-col p-4 overflow-hidden">
-      <Header currencies={gameState.currencies} />
-      <main className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
-        <div className="lg:col-span-2 flex items-center justify-center">
+    <div style={{height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(to bottom, #0f172a, black)'}}>
+      <div style={{padding: '1rem 1rem 0 1rem', flexShr: 0}}>
+        <Header currencies={gameState.currencies} />
+      </div>
+      <main style={{
+          flexGrow: 1,
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '1rem',
+          padding: '1rem',
+      }}>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
             <MainGameArea 
               onClick={handleStarClick} 
               floatingNumbers={floatingNumbers}
@@ -282,7 +372,7 @@ const App: React.FC = () => {
               onOrbClick={handleOrbClick}
             />
         </div>
-        <div className="lg:col-span-1">
+        <div style={{overflow: 'hidden'}}>
             <UpgradesPanel 
               upgrades={gameState.upgrades} 
               onPurchase={handlePurchaseUpgrade} 
@@ -292,6 +382,7 @@ const App: React.FC = () => {
               prestigeCost={prestigeCost}
               history={history}
               detailedStats={detailedStats}
+              onResetSave={handleResetSave}
             />
         </div>
       </main>

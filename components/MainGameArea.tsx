@@ -20,20 +20,48 @@ const MainGameArea: React.FC<MainGameAreaProps> = ({ onClick, floatingNumbers, s
 
   const starStyle = {
     background: `radial-gradient(circle at 30% 30%, ${fromColor}, ${viaColor}, ${toColor})`,
+    position: 'relative',
+    width: '75%',
+    height: '75%',
+    borderRadius: '9999px',
+    boxShadow: '0 25px 50px -12px rgba(234, 179, 8, 0.3)',
+    transition: 'transform 100ms ease-in-out',
   };
+  
+  const orbStyle = {
+    position: 'absolute',
+    width: '3rem',
+    height: '3rem',
+    borderRadius: '9999px',
+    backgroundColor: 'rgba(253, 224, 71, 0.8)',
+    backdropFilter: 'blur(4px)',
+    border: '2px solid #fef08a',
+    boxShadow: '0 10px 15px -3px rgba(250, 204, 21, 0.3), 0 4px 6px -2px rgba(250, 204, 21, 0.3)',
+    animation: 'orb-pulse 2.5s ease-in-out infinite',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '0.75rem',
+    padding: '0.25rem',
+    zIndex: 10,
+  } as React.CSSProperties;
+
 
   return (
-    <div className="relative w-full max-w-lg aspect-square flex items-center justify-center">
+    <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
       {/* Background Glow */}
-      <div className="absolute inset-0 bg-yellow-400/20 blur-3xl rounded-full animate-pulse pointer-events-none"></div>
+      <div style={{position: 'absolute', inset: 0, backgroundColor: 'rgba(250, 204, 21, 0.2)', filter: 'blur(48px)', borderRadius: '9999px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', pointerEvents: 'none'}}></div>
 
        {/* Clickable Orbs */}
        {clickableOrbs.map(orb => (
         <button
           key={orb.id}
           onClick={() => onOrbClick(orb.id)}
-          className="absolute w-12 h-12 rounded-full bg-yellow-300/80 backdrop-blur-sm border-2 border-yellow-200 shadow-lg shadow-yellow-400/30 animate-orb-pulse flex items-center justify-center text-black font-bold text-xs p-1 z-10"
+          className="animate-orb-pulse"
           style={{
+            ...orbStyle,
             left: `${orb.x}%`,
             top: `${orb.y}%`,
             transform: 'translate(-50%, -50%)',
@@ -46,22 +74,31 @@ const MainGameArea: React.FC<MainGameAreaProps> = ({ onClick, floatingNumbers, s
 
       <button
         onClick={onClick}
-        className="relative w-3/4 h-3/4 rounded-full focus:outline-none transition-transform duration-100 ease-in-out active:scale-95 shadow-2xl shadow-yellow-500/30"
+        className="active-scale-95"
         aria-label="Click to generate stardust"
         style={starStyle}
       >
         {/* Star Core */}
-        <div className="absolute inset-0 rounded-full bg-white/50 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] pointer-events-none"></div>
+        <div style={{position: 'absolute', inset: 0, borderRadius: '9999px', backgroundColor: 'rgba(255, 255, 255, 0.5)', animation: 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite', pointerEvents: 'none'}}></div>
         {/* Star Flares */}
-        <div className="absolute inset-2 rounded-full border-2 border-yellow-300/50 animate-spin-slow pointer-events-none"></div>
-        <div className="absolute inset-4 rounded-full border-2 border-orange-400/30 animate-spin-slow-reverse pointer-events-none"></div>
+        <div className="animate-spin-slow" style={{position: 'absolute', inset: '0.5rem', borderRadius: '9999px', border: '2px solid rgba(253, 224, 71, 0.5)', pointerEvents: 'none'}}></div>
+        <div className="animate-spin-slow-reverse" style={{position: 'absolute', inset: '1rem', borderRadius: '9999px', border: '2px solid rgba(251, 146, 60, 0.3)', pointerEvents: 'none'}}></div>
         
         {/* Floating Numbers */}
         {floatingNumbers.map(num => (
           <div
             key={num.id}
-            className="absolute font-orbitron text-2xl font-bold text-yellow-200 pointer-events-none animate-float-up"
-            style={{ left: `${num.x}px`, top: `${num.y}px`, transform: 'translate(-50%, -50%)' }}
+            className="font-orbitron animate-float-up"
+            style={{
+                position: 'absolute',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#fef08a',
+                pointerEvents: 'none',
+                left: `${num.x}px`,
+                top: `${num.y}px`,
+                transform: 'translate(-50%, -50%)'
+            }}
           >
             {num.value}
           </div>
@@ -69,43 +106,8 @@ const MainGameArea: React.FC<MainGameAreaProps> = ({ onClick, floatingNumbers, s
       </button>
 
       <style>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes spin-slow-reverse {
-            from { transform: rotate(360deg); }
-            to { transform: rotate(0deg); }
-        }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        .animate-spin-slow-reverse { animation: spin-slow-reverse 30s linear infinite; }
-
-        @keyframes float-up {
-          0% {
-            opacity: 1;
-            transform: translate(-50%, -50%) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translate(-50%, -100%) translateY(-50px);
-          }
-        }
-        .animate-float-up {
-          animation: float-up 2s ease-out forwards;
-        }
-
-        @keyframes orb-pulse {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.8;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.1);
-                opacity: 1;
-            }
-        }
-        .animate-orb-pulse {
-            animation: orb-pulse 2.5s ease-in-out infinite;
+        .active-scale-95:active {
+          transform: scale(0.95);
         }
       `}</style>
     </div>

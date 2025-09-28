@@ -13,6 +13,7 @@ interface UpgradesPanelProps {
   prestigeCost: number;
   history: HistoryData[];
   detailedStats: DetailedStats;
+  onResetSave: () => void;
 }
 
 type Tab = Currency | 'Stats';
@@ -27,26 +28,46 @@ interface TabButtonProps {
 const TabButton: React.FC<TabButtonProps> = ({ tab, activeTab, onClick, icon }) => (
     <button
       onClick={() => onClick(tab)}
-      className={`flex flex-1 items-center justify-center space-x-2 p-3 text-sm font-bold border-b-2 transition-colors duration-200 ${
-        activeTab === tab
-          ? 'border-cyan-400 text-cyan-400'
-          : 'border-transparent text-slate-400 hover:text-cyan-300'
-      }`}
+      className="tab-button"
+      data-active={activeTab === tab}
       aria-pressed={activeTab === tab}
     >
-        <div className="w-5 h-5 pointer-events-none">{icon}</div>
-        <span className="pointer-events-none">{tab}</span>
+      <style>{`
+        .tab-button {
+          display: flex;
+          flex: 1 1 0%;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 0.75rem;
+          font-size: 0.875rem;
+          font-weight: bold;
+          border-bottom: 2px solid;
+          transition: color 200ms, border-color 200ms;
+          border-color: transparent;
+          color: #94a3b8;
+        }
+        .tab-button:hover {
+          color: #67e8f9;
+        }
+        .tab-button[data-active="true"] {
+          border-color: #22d3ee;
+          color: #22d3ee;
+        }
+      `}</style>
+        <div style={{width: '1.25rem', height: '1.25rem', pointerEvents: 'none'}}>{icon}</div>
+        <span style={{pointerEvents: 'none'}}>{tab}</span>
     </button>
 );
 
 const StatDisplay: React.FC<{label: string, value: string | number}> = ({ label, value }) => (
-    <div className="bg-slate-900/50 p-3 rounded-lg flex justify-between items-baseline">
-        <dt className="text-sm text-slate-400">{label}</dt>
-        <dd className="font-orbitron font-bold text-cyan-300">{value}</dd>
+    <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
+        <dt style={{fontSize: '0.875rem', color: '#94a3b8'}}>{label}</dt>
+        <dd className="font-orbitron" style={{fontWeight: 'bold', color: '#67e8f9'}}>{value}</dd>
     </div>
 );
 
-const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats }> = ({ data, stats }) => {
+const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats, onReset: () => void }> = ({ data, stats, onReset }) => {
     const points = data.map(d => d.totalStardust);
     const maxY = Math.max(...points, 1);
     const minY = data.length > 0 ? Math.min(...points) : 0;
@@ -64,14 +85,14 @@ const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats }> = ({ d
     const pathData = data.length < 2 ? 'M 0,50 L 300,50' : getPathData();
 
     return (
-        <div className="p-4 space-y-4">
+        <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
             <div>
-                <h3 className="font-orbitron text-lg mb-2 text-center text-cyan-300">Stardust Total</h3>
+                <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: '#67e8f9'}}>Stardust Total</h3>
                 {data.length < 2 ? (
-                    <div className="text-center p-8 text-slate-400">Collecte des données...</div>
+                    <div style={{textAlign: 'center', padding: '2rem', color: '#94a3b8'}}>Collecte des données...</div>
                 ) : (
-                    <div className="relative h-24">
-                        <svg viewBox={`0 0 300 100`} className="w-full h-full" preserveAspectRatio="none">
+                    <div style={{position: 'relative', height: '6rem'}}>
+                        <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
                                     <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4"/>
@@ -81,12 +102,12 @@ const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats }> = ({ d
                             <path d={'M ' + pathData} fill="none" stroke="#06b6d4" strokeWidth="2" />
                             <path d={`M ${pathData.split(' ')[0]} L ${pathData} L 300,100 L 0,100 Z`} fill="url(#areaGradient)" />
                         </svg>
-                        <div className="absolute top-0 left-0 text-xs text-slate-400">{formatNumber(maxY)}</div>
-                        <div className="absolute bottom-0 left-0 text-xs text-slate-400">{formatNumber(minY)}</div>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(maxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(minY)}</div>
                     </div>
                 )}
             </div>
-            <dl className="space-y-2">
+            <dl style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                 <StatDisplay label="Stardust/sec" value={formatNumber(stats.stardustPerSecond)} />
                 <StatDisplay label="Stardust/clic" value={formatNumber(stats.stardustPerClick)} />
                 <StatDisplay label="Bonus de Prestige" value={stats.prestigeBonus} />
@@ -94,11 +115,33 @@ const StatsPanel: React.FC<{ data: HistoryData[], stats: DetailedStats }> = ({ d
                 <StatDisplay label="Supernovas" value={stats.supernovaCount} />
                 <StatDisplay label="Temps de jeu" value={stats.playTime} />
             </dl>
+            <div style={{paddingTop: '1rem', marginTop: '1rem', borderTop: '1px solid #334155'}}>
+              <button
+                onClick={onReset}
+                className="button-reset"
+              >
+                <style>{`
+                  .button-reset {
+                    width: 100%;
+                    background-color: #4b5563;
+                    color: white;
+                    font-weight: bold;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.5rem;
+                    transition: background-color 200ms;
+                  }
+                  .button-reset:hover {
+                    background-color: #6b7280;
+                  }
+                `}</style>
+                Réinitialiser la Sauvegarde
+              </button>
+            </div>
         </div>
     );
 };
 
-const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats }) => {
+const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats, onResetSave }) => {
   const [activeTab, setActiveTab] = useState<Tab>(Currency.Stardust);
 
   const isUpgradeUnlocked = (upgrade: Upgrade) => {
@@ -111,36 +154,58 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ upgrades, onPurchase, cur
     .filter((u: Upgrade) => u.currency === activeTab && isUpgradeUnlocked(u));
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700 h-full flex flex-col max-h-[80vh]">
-      <div className="flex border-b border-slate-700">
+    <div style={{backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column'}}>
+      <div style={{display: 'flex', borderBottom: '1px solid #334155'}}>
         <TabButton tab={Currency.Stardust} activeTab={activeTab} onClick={setActiveTab} icon={<StardustIcon />} />
         <TabButton tab={Currency.NebulaGas} activeTab={activeTab} onClick={setActiveTab} icon={<NebulaGasIcon />} />
         <TabButton tab={Currency.Antimatter} activeTab={activeTab} onClick={setActiveTab} icon={<AntimatterIcon />} />
         <TabButton tab={'Stats'} activeTab={activeTab} onClick={setActiveTab} icon={<StatsIcon />} />
       </div>
 
-      <div className="flex-grow overflow-y-auto">
+      <div style={{flexGrow: 1, overflowY: 'auto'}}>
         {activeTab !== Currency.Antimatter && activeTab !== 'Stats' && (
-          <div className="p-4 space-y-3">
+          <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
             {filteredUpgrades.map((upgrade: Upgrade) => (
               <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
             ))}
           </div>
         )}
 
-        {activeTab === 'Stats' && <StatsPanel data={history} stats={detailedStats} />}
+        {activeTab === 'Stats' && <StatsPanel data={history} stats={detailedStats} onReset={onResetSave} />}
 
         {activeTab === Currency.Antimatter && (
-            <div className="p-4 space-y-3">
-                <div className="bg-slate-900/50 p-4 rounded-lg text-center border border-red-500/50">
-                    <h3 className="font-orbitron text-lg text-red-400">SUPERNOVA</h3>
-                    <p className="text-sm text-slate-300 mt-2">Réinitialisez votre progression pour gagner de l'Antimatière et débloquer de puissantes améliorations permanentes.</p>
-                    <p className="text-xs text-slate-400 mt-2">Requiert {formatNumber(prestigeCost)} Stardust total.</p>
+            <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)'}}>
+                    <h3 className="font-orbitron" style={{fontSize: '1.125rem', color: '#f87171'}}>SUPERNOVA</h3>
+                    <p style={{fontSize: '0.875rem', color: '#d1d5db', marginTop: '0.5rem'}}>Réinitialisez votre progression pour gagner de l'Antimatière et débloquer de puissantes améliorations permanentes.</p>
+                    <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem'}}>Requiert {formatNumber(prestigeCost)} Stardust total.</p>
                     <button 
                         onClick={onPrestige}
                         disabled={!canPrestige}
-                        className="mt-4 w-full bg-red-600 hover:bg-red-500 disabled:bg-red-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-red-500/20 disabled:shadow-none"
+                        className="supernova-button"
                     >
+                      <style>{`
+                        .supernova-button {
+                          margin-top: 1rem;
+                          width: 100%;
+                          background-color: #dc2626;
+                          color: white;
+                          font-weight: bold;
+                          padding: 0.5rem 1rem;
+                          border-radius: 0.5rem;
+                          transition: all 200ms;
+                          box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2), 0 4px 6px -2px rgba(239, 68, 68, 0.2);
+                        }
+                        .supernova-button:hover:not(:disabled) {
+                          background-color: #ef4444;
+                        }
+                        .supernova-button:disabled {
+                          background-color: #991b1b;
+                          color: #94a3b8;
+                          cursor: not-allowed;
+                          box-shadow: none;
+                        }
+                      `}</style>
                         Go Supernova
                     </button>
                 </div>

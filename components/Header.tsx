@@ -11,12 +11,12 @@ interface HeaderProps {
   };
 }
 
-const CurrencyDisplay: React.FC<{ icon: React.ReactNode; amount: number; name: string; className?: string }> = ({ icon, amount, name, className }) => (
-    <div className={`flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm p-3 rounded-lg border border-slate-700 ${className}`}>
-        <div className="w-8 h-8">{icon}</div>
+const CurrencyDisplay: React.FC<{ icon: React.ReactNode; amount: number; name: string; color: string }> = ({ icon, amount, name, color }) => (
+    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', color}}>
+        <div style={{width: '2rem', height: '2rem'}}>{icon}</div>
         <div>
-            <div className="font-orbitron text-xl leading-none">{formatNumber(amount)}</div>
-            <div className="text-xs text-slate-400">{name}</div>
+            <div className="font-orbitron" style={{fontSize: '1.25rem', lineHeight: 'none'}}>{formatNumber(amount)}</div>
+            <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>{name}</div>
         </div>
     </div>
 );
@@ -24,28 +24,50 @@ const CurrencyDisplay: React.FC<{ icon: React.ReactNode; amount: number; name: s
 
 const Header: React.FC<HeaderProps> = ({ currencies }) => {
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-      <h1 className="text-3xl lg:text-4xl font-orbitron font-bold text-cyan-300 drop-shadow-[0_0_8px_rgba(107,235,242,0.5)]">
+    <header style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '1rem'}}>
+      <style>{`
+        @media (min-width: 640px) {
+          header {
+            flex-direction: row;
+            gap: 1rem;
+          }
+        }
+      `}</style>
+      <h1 className="font-orbitron" style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#67e8f9', textShadow: '0 0 8px rgba(107,235,242,0.5)'}}>
+         <style>{`
+            @media (min-width: 1024px) {
+              h1 {
+                font-size: 2.25rem;
+              }
+            }
+        `}</style>
         Cosmic Clicker
       </h1>
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.5rem'}}>
+        <style>{`
+            @media (min-width: 768px) {
+              div[style*="grid-template-columns"] {
+                gap: 1rem;
+              }
+            }
+        `}</style>
         <CurrencyDisplay
             icon={<StardustIcon />}
             amount={currencies[Currency.Stardust]}
             name="Stardust"
-            className="text-yellow-300"
+            color="#fde047"
         />
         <CurrencyDisplay
             icon={<NebulaGasIcon />}
             amount={currencies[Currency.NebulaGas]}
             name="Nebula Gas"
-            className="text-purple-300"
+            color="#d8b4fe"
         />
         <CurrencyDisplay
             icon={<AntimatterIcon />}
             amount={currencies[Currency.Antimatter]}
             name="Antimatter"
-            className="text-red-400"
+            color="#f87171"
         />
       </div>
     </header>
