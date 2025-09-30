@@ -726,7 +726,7 @@ const INITIAL_UPGRADES = {
     id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of passive Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, baseEffect: 10, effect: (level) => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 },
   },
    asteroidProspecting: {
-    id: 'asteroidProspecting', name: 'Prospection Astéroïdes', description: 'Déploie des sondes qui ont une chance de trouver des astéroïdes cliquables.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.4, effect: (level) => level * 0.01, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 },
+    id: 'asteroidProspecting', name: 'Prospection Astéroïdes', description: 'Déploie des sondes qui ont une chance de trouver des astéroïdes cliquables.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 1.4, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 },
   },
   cometChasers: {
     id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, baseEffect: 0.5, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 },
@@ -740,7 +740,7 @@ const INITIAL_UPGRADES = {
   
   // Nebula Gas Upgrades
   gasHarvester: {
-    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 50000, cost: 50000, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust,
+    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust,
   },
   orbitalCollector: {
     id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, baseEffect: 0.05, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 }
@@ -763,14 +763,11 @@ const INITIAL_UPGRADES = {
   },
 
    // Antimatter Upgrades
-  prestigePower: {
-    id: 'prestigePower', name: 'Prestige Power', description: 'Gain 10% more Antimatter when you Go Supernova.', level: 0, baseCost: 5, cost: 5, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter,
-  },
   acceleratedLearning: {
     id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter,
   },
   darkMatter: {
-    id: 'darkMatter', name: 'Matière Noire Initiale', description: 'Commencez chaque Supernova avec une quantité de Stardust de base.', level: 0, baseCost: 20, cost: 20, costIncrease: 5, effect: (level) => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigePower', level: 5 },
+    id: 'darkMatter', name: 'Matière Noire Initiale', description: 'Commencez chaque Supernova avec une quantité de Stardust de base.', level: 0, baseCost: 20, cost: 20, costIncrease: 5, effect: (level) => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter,
   },
 };
 
@@ -829,7 +826,7 @@ const loadGameState = () => {
                 ...(savedState.stats ?? {}),
             },
             upgrades: currentUpgrades,
-            lastTick: Date.now(),
+            lastTick: savedState.lastTick ?? Date.now(),
         };
     } catch (error) {
         console.error("Failed to load or parse saved state, starting fresh.", error);
@@ -854,18 +851,33 @@ const App = () => {
   useEffect(() => {
     const saveInterval = setInterval(() => {
         try {
-            localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+            // Create a temporary state to save, to avoid saving a stale 'lastTick'
+            setGameState(currentGameState => {
+                const stateToSave = { ...currentGameState, lastTick: Date.now() };
+                localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+                return currentGameState; // Don't actually change the live state
+            });
         } catch (error) {
             console.error("Failed to save game state:", error);
         }
     }, 5000);
 
-    window.addEventListener('beforeunload', () => {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
-    });
+    const handleBeforeUnload = () => {
+        // Use a direct state reference on unload to ensure latest data is saved
+        setGameState(currentGameState => {
+            const stateToSave = { ...currentGameState, lastTick: Date.now() };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+            return currentGameState;
+        });
+    };
 
-    return () => clearInterval(saveInterval);
-  }, [gameState]);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+        clearInterval(saveInterval);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
 
   const getClickValue = useCallback(() => {
@@ -927,7 +939,7 @@ const App = () => {
       if (upgrade.level >= (upgrade.maxLevel ?? Infinity)) return prev;
 
       let cost = upgrade.cost;
-      if (upgrade.currency === Currency.Stardust) {
+      if (upgrade.currency === Currency.Stardust && prev.upgrades.acceleratedLearning) {
         cost *= prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level);
       }
       
@@ -950,8 +962,7 @@ const App = () => {
     setIsPrestiged(true);
     setTimeout(() => setIsPrestiged(false), 1500);
     
-    const prestigePowerBoost = gameState.upgrades.prestigePower.effect(gameState.upgrades.prestigePower.level);
-    const antimatterGained = Math.floor((Math.log10(gameState.totalStardustEver / 1e5)) + 1) * prestigePowerBoost;
+    const antimatterGained = Math.max(1, Math.floor((Math.log10(gameState.totalStardustEver / 1e5)) + 1));
 
     setGameState(prev => {
         const prestigeUpgrades = { ...prev.upgrades };
@@ -971,7 +982,7 @@ const App = () => {
                 [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
             },
             upgrades: prestigeUpgrades,
-            totalStardustEver: 0,
+            totalStardustEver: startingStardust, // Reset to starting stardust
             stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
             lastTick: Date.now(),
         };
@@ -996,7 +1007,7 @@ const App = () => {
 
   const gameTick = useCallback(() => {
     const now = Date.now();
-    const timeDelta = (now - gameState.lastTick) / 1000;
+    const timeDelta = Math.min(86400, (now - gameState.lastTick) / 1000);
 
     const { upgrades, stats } = gameState;
     const supernovaBoost = 1 + (stats.supernovaCount * 0.1);
@@ -1154,7 +1165,7 @@ const App = () => {
         }
       `}</style>
       {isPrestiged && <div className="supernova-overlay"></div>}
-      <div style={{padding: '1rem 1rem 0 1rem', flexShr: 0}}>
+      <div style={{padding: '1rem 1rem 0 1rem', flexShrink: 0}}>
         <Header currencies={gameState.currencies} />
       </div>
       <main className="app-main-layout">
