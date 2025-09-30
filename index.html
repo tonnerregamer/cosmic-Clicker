@@ -87,12 +87,22 @@
           opacity: .5;
         }
       }
+      @keyframes supernova-flash {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      @keyframes asteroid-float {
+        0% { transform: translate(-50%, -50%) rotate(0deg) translateX(5px) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg) translateX(5px) rotate(-360deg); }
+      }
 
       .animate-spin-slow { animation: spin-slow 20s linear infinite; }
       .animate-spin-slow-reverse { animation: spin-slow-reverse 30s linear infinite; }
       .animate-float-up { animation: float-up 2s ease-out forwards; }
       .animate-orb-pulse { animation: orb-pulse 2.5s ease-in-out infinite; }
       .animate-pulse { animation: pulse 3s cubic-bezier(0.4,0,0.6,1) infinite; }
+      .animate-asteroid-float { animation: asteroid-float 10s linear infinite; }
       
       button {
         font-family: inherit;
@@ -188,12 +198,18 @@ const NebulaGasIcon = () => (
     </svg>
 );
 
-
 const AntimatterIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
         <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 000-4z" />
         <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010 16z" transform="rotate(45 12 12)"/>
     </svg>
+);
+
+const AsteroidIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+    <path fillRule="evenodd" d="M12.96 3.63a.75.75 0 01.103.023l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033zM5.48 8.924a.75.75 0 01.103-.023l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033z" clipRule="evenodd" />
+    <path d="M11.03 13.5a.75.75 0 01.11-.01l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033z" />
+  </svg>
 );
 
 const StatsIcon = () => (
@@ -455,7 +471,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
                 <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)'}}>
                     <h3 className="font-orbitron" style={{fontSize: '1.125rem', color: '#f87171'}}>SUPERNOVA</h3>
                     <p style={{fontSize: '0.875rem', color: '#d1d5db', marginTop: '0.5rem'}}>Réinitialisez votre progression pour gagner de l'Antimatière et débloquer de puissantes améliorations permanentes.</p>
-                    <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem'}}>Requiert {formatNumber(prestigeCost)} Stardust total.</p>
+                    <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem'}}>Coût : {formatNumber(prestigeCost)} Stardust.</p>
                     <button 
                         onClick={onPrestige}
                         disabled={!canPrestige}
@@ -497,7 +513,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 };
 
 // === FROM components/MainGameArea.tsx ===
-const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick }) => {
+const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick }) => {
   const hueShift = Math.min(starPowerLevel * 0.25, 45); 
   const baseHue = 50;
   
@@ -535,6 +551,15 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
     zIndex: 10,
   };
 
+  const asteroidStyle = {
+    position: 'absolute',
+    width: '2.5rem',
+    height: '2.5rem',
+    color: '#94a3b8',
+    filter: 'drop-shadow(0 4px 3px rgba(0,0,0,0.5))',
+    zIndex: 10,
+    animation: 'asteroid-float 10s linear infinite'
+  };
 
   return (
     <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -556,6 +581,22 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
           aria-label={`Click to collect ${formatNumber(orb.value)} stardust`}
         >
           +{formatNumber(orb.value)}
+        </button>
+      ))}
+
+      {/* Clickable Asteroids */}
+      {asteroids.map(asteroid => (
+        <button
+          key={asteroid.id}
+          onClick={() => onAsteroidClick(asteroid.id)}
+          style={{
+            ...asteroidStyle,
+            left: `${asteroid.x}%`,
+            top: `${asteroid.y}%`,
+          }}
+          aria-label={`Click to mine ${formatNumber(asteroid.value)} stardust`}
+        >
+          <AsteroidIcon />
         </button>
       ))}
 
@@ -684,8 +725,14 @@ const INITIAL_UPGRADES = {
   asteroidMining: {
     id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of passive Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, baseEffect: 10, effect: (level) => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 },
   },
+   asteroidProspecting: {
+    id: 'asteroidProspecting', name: 'Prospection Astéroïdes', description: 'Déploie des sondes qui ont une chance de trouver des astéroïdes cliquables.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.4, effect: (level) => level * 0.01, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 },
+  },
   cometChasers: {
     id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, baseEffect: 0.5, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 },
+  },
+  asteroidCracker: {
+    id: 'asteroidCracker', name: 'Fissureur d\'Astéroïdes', description: 'Augmente la quantité de Stardust obtenue des astéroïdes.', level: 0, baseCost: 100000, cost: 100000, costIncrease: 1.8, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidProspecting', level: 5 },
   },
   solarWinds: {
     id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 },
@@ -693,16 +740,19 @@ const INITIAL_UPGRADES = {
   
   // Nebula Gas Upgrades
   gasHarvester: {
-    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 10, cost: 10, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.NebulaGas,
+    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 50000, cost: 50000, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust,
   },
   orbitalCollector: {
-    id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star. Higher levels increase spawn rate and value.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, baseEffect: 0.05, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 }
+    id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, baseEffect: 0.05, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 }
   },
   nebulaCondenser: {
     id: 'nebulaCondenser', name: 'Nebula Condenser', description: 'Boosts all passive Nebula Gas generation by 20%.', level: 0, baseCost: 50, cost: 50, costIncrease: 2, baseEffect: 0.2, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 5 },
   },
   gasGiantSiphon: {
     id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 },
+  },
+  collectorDrones: {
+    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes à proximité.', level: 0, baseCost: 500, cost: 500, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 1, requirement: { upgradeId: 'gasGiantSiphon', level: 5 },
   },
   cosmicForge: {
     id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, baseEffect: 0.01, effect: (level, state) => {
@@ -713,14 +763,14 @@ const INITIAL_UPGRADES = {
   },
 
    // Antimatter Upgrades
-  prestigeBoost: {
-    id: 'prestigeBoost', name: 'Cosmic Singularity', description: 'Permanently boosts all Stardust generation by 10% per level.', level: 0, baseCost: 1, cost: 1, costIncrease: 2, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter,
-  },
   prestigePower: {
-    id: 'prestigePower', name: 'Prestige Power', description: 'Gain 10% more Antimatter when you Go Supernova.', level: 0, baseCost: 5, cost: 5, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigeBoost', level: 1},
+    id: 'prestigePower', name: 'Prestige Power', description: 'Gain 10% more Antimatter when you Go Supernova.', level: 0, baseCost: 5, cost: 5, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Prestige, currency: Currency.Antimatter,
   },
   acceleratedLearning: {
-    id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigeBoost', level: 3},
+    id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter,
+  },
+  darkMatter: {
+    id: 'darkMatter', name: 'Matière Noire Initiale', description: 'Commencez chaque Supernova avec une quantité de Stardust de base.', level: 0, baseCost: 20, cost: 20, costIncrease: 5, effect: (level) => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'prestigePower', level: 5 },
   },
 };
 
@@ -760,7 +810,7 @@ const loadGameState = () => {
         const currentUpgrades = initialState.upgrades;
         if (savedState.upgrades) {
             for (const id in currentUpgrades) {
-                if (savedState.upgrades[id]) {
+                if (savedState.upgrades[id] && INITIAL_UPGRADES[id]) { // Check if upgrade still exists
                     const savedLevel = savedState.upgrades[id].level;
                     currentUpgrades[id].level = savedLevel;
                     currentUpgrades[id].cost = Math.ceil(
@@ -793,7 +843,9 @@ const App = () => {
   const [gameState, setGameState] = useState(loadGameState);
   const [floatingNumbers, setFloatingNumbers] = useState([]);
   const [clickableOrbs, setClickableOrbs] = useState([]);
+  const [asteroids, setAsteroids] = useState([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
+  const [isPrestiged, setIsPrestiged] = useState(false);
   const [history, setHistory] = useState([]);
   const lastHistoryUpdate = useRef(Date.now());
 
@@ -817,11 +869,11 @@ const App = () => {
 
 
   const getClickValue = useCallback(() => {
-    const { upgrades } = gameState;
-    const antimatterBoost = upgrades.prestigeBoost.effect(upgrades.prestigeBoost.level);
+    const { upgrades, stats } = gameState;
+    const supernovaBoost = 1 + (stats.supernovaCount * 0.1);
     const forgeBoost = upgrades.cosmicForge.effect(upgrades.cosmicForge.level, gameState);
     const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
-    return baseClick * antimatterBoost * forgeBoost;
+    return baseClick * supernovaBoost * forgeBoost;
   }, [gameState]);
 
   const handleStarClick = useCallback((e) => {
@@ -856,6 +908,18 @@ const App = () => {
     setClickableOrbs(prev => prev.filter(o => o.id !== orbId));
   }, [clickableOrbs]);
 
+  const handleAsteroidClick = useCallback((asteroidId) => {
+    const asteroid = asteroids.find(a => a.id === asteroidId);
+    if (!asteroid) return;
+
+    setGameState(prev => ({
+      ...prev,
+      currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + asteroid.value },
+      totalStardustEver: prev.totalStardustEver + asteroid.value,
+    }));
+    
+    setAsteroids(prev => prev.filter(a => a.id !== asteroidId));
+  }, [asteroids]);
 
   const handlePurchaseUpgrade = useCallback((upgradeId) => {
     setGameState(prev => {
@@ -881,10 +945,13 @@ const App = () => {
   }, []);
 
   const handlePrestige = useCallback(() => {
-    if (gameState.totalStardustEver < prestigeCost) return;
+    if (gameState.currencies[Currency.Stardust] < prestigeCost) return;
+    
+    setIsPrestiged(true);
+    setTimeout(() => setIsPrestiged(false), 1500);
     
     const prestigePowerBoost = gameState.upgrades.prestigePower.effect(gameState.upgrades.prestigePower.level);
-    const antimatterGained = Math.floor((Math.log10(gameState.totalStardustEver / prestigeCost)) + 1) * prestigePowerBoost;
+    const antimatterGained = Math.floor((Math.log10(gameState.totalStardustEver / 1e5)) + 1) * prestigePowerBoost;
 
     setGameState(prev => {
         const prestigeUpgrades = { ...prev.upgrades };
@@ -893,11 +960,13 @@ const App = () => {
                 prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
             }
         });
+        
+        const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
 
         return {
             ...prev,
             currencies: {
-                [Currency.Stardust]: 0,
+                [Currency.Stardust]: startingStardust,
                 [Currency.NebulaGas]: 0,
                 [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
             },
@@ -908,8 +977,9 @@ const App = () => {
         };
     });
     setClickableOrbs([]);
+    setAsteroids([]);
     setHistory([]);
-  }, [gameState.totalStardustEver, gameState.upgrades]);
+  }, [gameState]);
 
   const handleResetSave = useCallback(() => {
     if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
@@ -917,6 +987,7 @@ const App = () => {
         setGameState(getInitialState());
         setFloatingNumbers([]);
         setClickableOrbs([]);
+        setAsteroids([]);
         setStardustPerSecond(0);
         setHistory([]);
         lastHistoryUpdate.current = Date.now();
@@ -927,59 +998,86 @@ const App = () => {
     const now = Date.now();
     const timeDelta = (now - gameState.lastTick) / 1000;
 
-    const { upgrades } = gameState;
-    const antimatterBoost = upgrades.prestigeBoost.effect(upgrades.prestigeBoost.level);
+    const { upgrades, stats } = gameState;
+    const supernovaBoost = 1 + (stats.supernovaCount * 0.1);
     const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
     
     const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
     const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
 
-    const sps = (probeProduction + asteroidProduction) * antimatterBoost * solarWindsBoost;
+    const sps = (probeProduction + asteroidProduction) * supernovaBoost * solarWindsBoost;
     setStardustPerSecond(sps);
     
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
     const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost;
     
     setGameState(prev => {
-      const collector = prev.upgrades.orbitalCollector;
-      if (collector.level > 0 && clickableOrbs.length < 10) {
-        const spawnChance = collector.effect(collector.level) * timeDelta;
-        if (Math.random() < spawnChance) {
-          const angle = Math.random() * 2 * Math.PI;
-          const newOrb = {
-            id: Date.now() + Math.random(),
-            value: (sps + getClickValue()) * (5 + collector.level * 0.5),
-            x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
-            y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
-          };
-          setClickableOrbs(current => [...current, newOrb]);
+        const newGameState = {...prev};
+
+        // Orb Spawning
+        const collector = newGameState.upgrades.orbitalCollector;
+        if (collector.level > 0 && clickableOrbs.length < 10) {
+            const spawnChance = collector.effect(collector.level) * timeDelta;
+            if (Math.random() < spawnChance) {
+                const angle = Math.random() * 2 * Math.PI;
+                const newOrb = {
+                    id: Date.now() + Math.random(),
+                    value: (sps + getClickValue()) * (5 + collector.level * 0.5),
+                    x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
+                    y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
+                };
+                setClickableOrbs(current => [...current, newOrb]);
+            }
         }
-      }
+        
+        // Asteroid Spawning
+        const prospector = newGameState.upgrades.asteroidProspecting;
+        if (prospector.level > 0 && asteroids.length < 5) {
+            const spawnChance = prospector.effect(prospector.level) * timeDelta;
+            if (Math.random() < spawnChance) {
+                const angle = Math.random() * 2 * Math.PI;
+                const newAsteroid = {
+                    id: Date.now() + Math.random(),
+                    value: (sps + getClickValue()) * (10 + prospector.level) * newGameState.upgrades.asteroidCracker.effect(newGameState.upgrades.asteroidCracker.level),
+                    x: 50 + Math.cos(angle) * (45 + Math.random() * 5),
+                    y: 50 + Math.sin(angle) * (45 + Math.random() * 5),
+                };
+                setAsteroids(current => [...current, newAsteroid]);
+            }
+        }
 
-      const newStardust = prev.currencies[Currency.Stardust] + sps * timeDelta;
+        // Auto-collect asteroids
+        if (newGameState.upgrades.collectorDrones.level > 0 && asteroids.length > 0) {
+            const asteroidToCollect = asteroids[0];
+            newGameState.currencies[Currency.Stardust] += asteroidToCollect.value;
+            newGameState.totalStardustEver += asteroidToCollect.value;
+            setAsteroids(current => current.slice(1));
+        }
 
-      if (now - lastHistoryUpdate.current >= 1000) {
-        lastHistoryUpdate.current = now;
-        setHistory(prevHistory => {
-          const newEntry = { timestamp: now, totalStardust: newStardust };
-          const newHistory = [...prevHistory, newEntry];
-          return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
-        });
-      }
+        const newStardust = newGameState.currencies[Currency.Stardust] + sps * timeDelta;
 
-      return {
-        ...prev,
-        currencies: {
-          [Currency.Stardust]: newStardust,
-          [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta,
-          [Currency.Antimatter]: prev.currencies[Currency.Antimatter],
-        },
-        totalStardustEver: prev.totalStardustEver + sps * timeDelta,
-        stats: { ...prev.stats, playTime: prev.stats.playTime + timeDelta },
-        lastTick: now,
-      };
+        if (now - lastHistoryUpdate.current >= 1000) {
+            lastHistoryUpdate.current = now;
+            setHistory(prevHistory => {
+                const newEntry = { timestamp: now, totalStardust: newStardust };
+                const newHistory = [...prevHistory, newEntry];
+                return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
+            });
+        }
+
+        return {
+            ...newGameState,
+            currencies: {
+                ...newGameState.currencies,
+                [Currency.Stardust]: newStardust,
+                [Currency.NebulaGas]: newGameState.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta,
+            },
+            totalStardustEver: newGameState.totalStardustEver + sps * timeDelta,
+            stats: { ...newGameState.stats, playTime: newGameState.stats.playTime + timeDelta },
+            lastTick: now,
+        };
     });
-  }, [gameState, clickableOrbs.length, getClickValue]);
+  }, [gameState, clickableOrbs.length, asteroids, getClickValue]);
 
   useGameLoop(gameTick, 100);
 
@@ -1000,9 +1098,9 @@ const App = () => {
           totalClicks: gameState.stats.totalClicks,
           supernovaCount: gameState.stats.supernovaCount,
           playTime: formattedPlayTime,
-          prestigeBonus: `${((gameState.upgrades.prestigeBoost.effect(gameState.upgrades.prestigeBoost.level) - 1) * 100).toFixed(0)}%`,
+          prestigeBonus: `${(gameState.stats.supernovaCount * 10).toFixed(0)}%`,
       }
-  }, [stardustPerSecond, getClickValue, gameState.stats, gameState.upgrades]);
+  }, [stardustPerSecond, getClickValue, gameState.stats]);
 
   return (
     <div className="app-container">
@@ -1030,7 +1128,17 @@ const App = () => {
           overflow: hidden;
           display: flex;
           flex-direction: column;
-          min-height: 450px;
+        }
+        .supernova-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 9999;
+            pointer-events: none;
+            animation: supernova-flash 1.5s ease-in-out forwards;
         }
 
         @media (min-width: 1024px) {
@@ -1043,11 +1151,9 @@ const App = () => {
             grid-template-columns: 2fr 1fr;
             height: 100%;
           }
-          .upgrades-container {
-            min-height: 0;
-          }
         }
       `}</style>
+      {isPrestiged && <div className="supernova-overlay"></div>}
       <div style={{padding: '1rem 1rem 0 1rem', flexShr: 0}}>
         <Header currencies={gameState.currencies} />
       </div>
@@ -1059,6 +1165,8 @@ const App = () => {
               starPowerLevel={starPowerLevel}
               clickableOrbs={clickableOrbs}
               onOrbClick={handleOrbClick}
+              asteroids={asteroids}
+              onAsteroidClick={handleAsteroidClick}
             />
         </div>
         <div className="upgrades-container">
@@ -1067,7 +1175,7 @@ const App = () => {
               onPurchase={handlePurchaseUpgrade} 
               currencies={gameState.currencies}
               onPrestige={handlePrestige}
-              canPrestige={gameState.totalStardustEver >= prestigeCost}
+              canPrestige={gameState.currencies[Currency.Stardust] >= prestigeCost}
               prestigeCost={prestigeCost}
               history={history}
               detailedStats={detailedStats}
