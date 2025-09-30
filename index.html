@@ -50,7 +50,7 @@
         font-family: var(--font-display);
       }
 
-      /* Animations from MainGameArea */
+      /* Animations */
       @keyframes spin-slow {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
@@ -87,14 +87,36 @@
           opacity: .5;
         }
       }
-      @keyframes supernova-flash {
+      @keyframes supernova-flash-bg {
         0% { opacity: 0; }
-        50% { opacity: 1; }
+        10% { opacity: 1; }
         100% { opacity: 0; }
+      }
+      @keyframes supernova-shockwave {
+        0% {
+          transform: scale(0);
+          opacity: 0.8;
+          border-width: 4px;
+        }
+        100% {
+          transform: scale(2.5);
+          opacity: 0;
+          border-width: 1px;
+        }
       }
       @keyframes asteroid-float {
         0% { transform: translate(-50%, -50%) rotate(0deg) translateX(5px) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg) translateX(5px) rotate(-360deg); }
+      }
+      @keyframes collect-effect {
+        from {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 1;
+        }
+        to {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 0;
+        }
       }
 
       .animate-spin-slow { animation: spin-slow 20s linear infinite; }
@@ -103,6 +125,7 @@
       .animate-orb-pulse { animation: orb-pulse 2.5s ease-in-out infinite; }
       .animate-pulse { animation: pulse 3s cubic-bezier(0.4,0,0.6,1) infinite; }
       .animate-asteroid-float { animation: asteroid-float 10s linear infinite; }
+      .animate-collect-effect { animation: collect-effect 0.5s ease-out forwards; }
       
       button {
         font-family: inherit;
@@ -513,7 +536,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 };
 
 // === FROM components/MainGameArea.tsx ===
-const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick }) => {
+const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick, collectionEffects }) => {
   const hueShift = Math.min(starPowerLevel * 0.25, 45); 
   const baseHue = 50;
   
@@ -561,10 +584,33 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
     animation: 'asteroid-float 10s linear infinite'
   };
 
+  const collectionEffectStyle = {
+    position: 'absolute',
+    width: '3rem',
+    height: '3rem',
+    borderRadius: '9999px',
+    border: '2px solid #67e8f9',
+    zIndex: 11,
+    pointerEvents: 'none'
+  };
+
   return (
     <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
       {/* Background Glow */}
       <div style={{position: 'absolute', inset: 0, backgroundColor: 'rgba(250, 204, 21, 0.2)', filter: 'blur(48px)', borderRadius: '9999px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', pointerEvents: 'none'}}></div>
+
+      {/* Collection Effects */}
+      {collectionEffects.map(effect => (
+        <div 
+          key={effect.id}
+          className="animate-collect-effect"
+          style={{
+            ...collectionEffectStyle,
+            left: `${effect.x}%`,
+            top: `${effect.y}%`,
+          }}
+        />
+      ))}
 
        {/* Clickable Orbs */}
        {clickableOrbs.map(orb => (
@@ -752,7 +798,10 @@ const INITIAL_UPGRADES = {
     id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 },
   },
   collectorDrones: {
-    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes à proximité.', level: 0, baseCost: 500, cost: 500, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 1, requirement: { upgradeId: 'gasGiantSiphon', level: 5 },
+    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes. Au Niv. 3, la collecte est instantanée.', level: 0, baseCost: 500, cost: 500, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 10 },
+  },
+  orbitalDrones: {
+    id: 'orbitalDrones', name: 'Drones Orbitaux', description: 'Collecte automatiquement les Fragments de Stardust. Au Niv. 3, la collecte est instantanée.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'collectorDrones', level: 1 },
   },
   cosmicForge: {
     id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, baseEffect: 0.01, effect: (level, state) => {
@@ -841,6 +890,7 @@ const App = () => {
   const [floatingNumbers, setFloatingNumbers] = useState([]);
   const [clickableOrbs, setClickableOrbs] = useState([]);
   const [asteroids, setAsteroids] = useState([]);
+  const [collectionEffects, setCollectionEffects] = useState([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
   const [isPrestiged, setIsPrestiged] = useState(false);
   const [history, setHistory] = useState([]);
@@ -851,11 +901,10 @@ const App = () => {
   useEffect(() => {
     const saveInterval = setInterval(() => {
         try {
-            // Create a temporary state to save, to avoid saving a stale 'lastTick'
             setGameState(currentGameState => {
                 const stateToSave = { ...currentGameState, lastTick: Date.now() };
                 localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
-                return currentGameState; // Don't actually change the live state
+                return currentGameState;
             });
         } catch (error) {
             console.error("Failed to save game state:", error);
@@ -863,7 +912,6 @@ const App = () => {
     }, 5000);
 
     const handleBeforeUnload = () => {
-        // Use a direct state reference on unload to ensure latest data is saved
         setGameState(currentGameState => {
             const stateToSave = { ...currentGameState, lastTick: Date.now() };
             localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
@@ -962,7 +1010,7 @@ const App = () => {
     setIsPrestiged(true);
     setTimeout(() => setIsPrestiged(false), 1500);
     
-    const antimatterGained = Math.max(1, Math.floor((Math.log10(gameState.totalStardustEver / 1e5)) + 1));
+    const antimatterGained = 1 + Math.floor(Math.log10(Math.max(1, gameState.totalStardustEver / prestigeCost)));
 
     setGameState(prev => {
         const prestigeUpgrades = { ...prev.upgrades };
@@ -1004,6 +1052,16 @@ const App = () => {
         lastHistoryUpdate.current = Date.now();
     }
   }, []);
+  
+  const triggerCollectionEffects = (items) => {
+    const newEffects = items.map(item => ({ id: Date.now() + Math.random(), x: item.x, y: item.y }));
+    setCollectionEffects(current => [...current, ...newEffects]);
+    newEffects.forEach(effect => {
+        setTimeout(() => {
+            setCollectionEffects(current => current.filter(e => e.id !== effect.id));
+        }, 500); // Animation duration
+    });
+  };
 
   const gameTick = useCallback(() => {
     const now = Date.now();
@@ -1058,12 +1116,49 @@ const App = () => {
         }
 
         // Auto-collect asteroids
-        if (newGameState.upgrades.collectorDrones.level > 0 && asteroids.length > 0) {
-            const asteroidToCollect = asteroids[0];
-            newGameState.currencies[Currency.Stardust] += asteroidToCollect.value;
-            newGameState.totalStardustEver += asteroidToCollect.value;
-            setAsteroids(current => current.slice(1));
+        const asteroidDroneLevel = newGameState.upgrades.collectorDrones.level;
+        if (asteroidDroneLevel > 0 && asteroids.length > 0) {
+            if (asteroidDroneLevel >= 3) {
+                const valueFromAsteroids = asteroids.reduce((sum, a) => sum + a.value, 0);
+                newGameState.currencies[Currency.Stardust] += valueFromAsteroids;
+                newGameState.totalStardustEver += valueFromAsteroids;
+                triggerCollectionEffects(asteroids);
+                setAsteroids([]);
+            } else { // Levels 1-2 collect one by one, faster than before
+                const collectCount = Math.min(asteroids.length, Math.ceil(asteroidDroneLevel * timeDelta * 5));
+                const asteroidsToCollect = asteroids.slice(0, collectCount);
+                if(asteroidsToCollect.length > 0) {
+                    const valueFromAsteroids = asteroidsToCollect.reduce((sum, a) => sum + a.value, 0);
+                    newGameState.currencies[Currency.Stardust] += valueFromAsteroids;
+                    newGameState.totalStardustEver += valueFromAsteroids;
+                    triggerCollectionEffects(asteroidsToCollect);
+                    setAsteroids(current => current.slice(collectCount));
+                }
+            }
         }
+
+        // Auto-collect orbs
+        const orbitalDroneLevel = newGameState.upgrades.orbitalDrones.level;
+        if (orbitalDroneLevel > 0 && clickableOrbs.length > 0) {
+            if (orbitalDroneLevel >= 3) {
+                const valueFromOrbs = clickableOrbs.reduce((sum, o) => sum + o.value, 0);
+                newGameState.currencies[Currency.Stardust] += valueFromOrbs;
+                newGameState.totalStardustEver += valueFromOrbs;
+                triggerCollectionEffects(clickableOrbs);
+                setClickableOrbs([]);
+            } else {
+                const collectCount = Math.min(clickableOrbs.length, Math.ceil(orbitalDroneLevel * timeDelta * 5));
+                const orbsToCollect = clickableOrbs.slice(0, collectCount);
+                if(orbsToCollect.length > 0) {
+                    const valueFromOrbs = orbsToCollect.reduce((sum, o) => sum + o.value, 0);
+                    newGameState.currencies[Currency.Stardust] += valueFromOrbs;
+                    newGameState.totalStardustEver += valueFromOrbs;
+                    triggerCollectionEffects(orbsToCollect);
+                    setClickableOrbs(current => current.slice(collectCount));
+                }
+            }
+        }
+
 
         const newStardust = newGameState.currencies[Currency.Stardust] + sps * timeDelta;
 
@@ -1088,7 +1183,7 @@ const App = () => {
             lastTick: now,
         };
     });
-  }, [gameState, clickableOrbs.length, asteroids, getClickValue]);
+  }, [gameState, clickableOrbs, asteroids, getClickValue]);
 
   useGameLoop(gameTick, 100);
 
@@ -1146,10 +1241,23 @@ const App = () => {
             left: 0;
             width: 100%;
             height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: white;
             z-index: 9999;
             pointer-events: none;
-            animation: supernova-flash 1.5s ease-in-out forwards;
+            animation: supernova-flash-bg 1.5s ease-in-out forwards;
+        }
+        .supernova-overlay::before {
+            content: '';
+            position: absolute;
+            width: 100vmin;
+            height: 100vmin;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 100px 50px white;
+            animation: supernova-shockwave 1s ease-out forwards;
         }
 
         @media (min-width: 1024px) {
@@ -1178,6 +1286,7 @@ const App = () => {
               onOrbClick={handleOrbClick}
               asteroids={asteroids}
               onAsteroidClick={handleAsteroidClick}
+              collectionEffects={collectionEffects}
             />
         </div>
         <div className="upgrades-container">
