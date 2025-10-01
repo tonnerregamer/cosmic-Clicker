@@ -1363,14 +1363,16 @@ const App = () => {
   const gameTick = useCallback(() => {
     const now = Date.now();
     let timeDelta = (now - gameState.lastTick) / 1000;
-
+    
+    // --- Offline Progress Calculation ---
     const temporalWarpBoost = gameState.upgrades.temporalWarp.effect(gameState.upgrades.temporalWarp.level);
-    const offlineTime = (Date.now() - (gameState.lastTick || Date.now())) / 1000;
-    if (offlineTime > 5) { // more than 5 seconds offline
+    if (timeDelta > 5) { // more than 5 seconds offline
         timeDelta *= temporalWarpBoost;
     }
-    timeDelta = Math.min(86400, timeDelta); // Cap offline time to 24h
+    timeDelta = Math.min(timeDelta, 86400); // Cap offline time to 24h to prevent exploits/overflow
+    timeDelta = Math.max(0, timeDelta); // Ensure no negative time delta
 
+    // --- Passive Generation Calculation ---
     const { upgrades, stats } = gameState;
     const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
     const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
@@ -1388,131 +1390,119 @@ const App = () => {
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
     const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
     const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+
+    // --- Prepare for State Changes (Work on copies) ---
+    let stardustFromCollection = 0;
+    let newAsteroids = [...asteroids];
+    let newOrbs = [...clickableOrbs];
+
+    // --- Asteroid Collection by Drones ---
+    const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
+    const moveDist = droneSpeed * timeDelta;
+    const collectedAsteroidIds = new Set();
     
-    let nextGameState = {...gameState};
+    const nextDrones = drones.map(drone => {
+        const target = newAsteroids.find(a => a.id === drone.targetId);
+        if (!target) return null;
 
-    // --- Object Spawning & AI ---
-    setClickableOrbs(currentOrbs => {
-        let newOrbs = [...currentOrbs];
-        const collector = upgrades.orbitalCollector;
-        if (collector.level > 0 && newOrbs.length < 10) {
-            const spawnChance = collector.effect(collector.level) * timeDelta;
-            if (Math.random() < spawnChance) {
-                const angle = Math.random() * 2 * Math.PI;
-                const orb = {
-                    id: Date.now() + Math.random(),
-                    value: (sps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.gravityWells.effect(upgrades.gravityWells.level),
-                    x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
-                    y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
-                };
-                newOrbs.push(orb);
-            }
+        const dx = target.x - drone.x;
+        const dy = target.y - drone.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= moveDist) {
+            stardustFromCollection += target.value;
+            collectedAsteroidIds.add(target.id);
+            triggerCollectionEffect(target);
+            return null; // Drone is consumed after collection
+        } else {
+            drone.x += (dx / dist) * moveDist;
+            drone.y += (dy / dist) * moveDist;
+            return drone;
         }
-        return newOrbs;
-    });
+    }).filter(Boolean);
 
-    setAsteroids(currentAsteroids => {
-        let newAsteroids = [...currentAsteroids];
-        const prospector = upgrades.asteroidProspecting;
-        if (prospector.level > 0 && newAsteroids.length < 5) {
-            const spawnChance = prospector.effect(prospector.level) * timeDelta;
-            if (Math.random() < spawnChance) {
-                const angle = Math.random() * 2 * Math.PI;
-                const newAsteroid = {
-                    id: Date.now() + Math.random(),
-                    value: (sps + getClickValue()) * (10 + prospector.level) * upgrades.asteroidCracker.effect(upgrades.asteroidCracker.level),
-                    x: 50 + Math.cos(angle) * (45 + Math.random() * 5),
-                    y: 50 + Math.sin(angle) * (45 + Math.random() * 5),
-                };
-                newAsteroids.push(newAsteroid);
-                
-                if (upgrades.collectorDrones.level >= 3) {
-                    setDrones(currentDrones => {
-                       if (!currentDrones.find(d => d.targetId === newAsteroid.id)) {
-                           return [...currentDrones, { id: Date.now() + Math.random(), targetId: newAsteroid.id, x: 50, y: 50 }];
-                       }
-                       return currentDrones;
-                    });
-                }
-            }
-        }
-        return newAsteroids;
-    });
-
-    // --- Object Collection ---
-    setDrones(currentDrones => {
-        return currentDrones.map(drone => {
-            const target = asteroids.find(a => a.id === drone.targetId);
-            if (!target) return null;
-
-            const dx = target.x - drone.x;
-            const dy = target.y - drone.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
-            const moveDist = droneSpeed * timeDelta;
-
-            // If the drone will reach or pass the target this tick, collect it.
-            if (dist <= moveDist) {
-                nextGameState.currencies[Currency.Stardust] += target.value;
-                nextGameState.totalStardustEver += target.value;
-                triggerCollectionEffect(target);
-                setAsteroids(current => current.filter(a => a.id !== target.id));
-                return null;
-            } else {
-                drone.x += (dx / dist) * moveDist;
-                drone.y += (dy / dist) * moveDist;
-                return drone;
-            }
-        }).filter(Boolean);
-    });
-
+    if (collectedAsteroidIds.size > 0) {
+        newAsteroids = newAsteroids.filter(a => !collectedAsteroidIds.has(a.id));
+    }
+    
+    // --- Orb Collection by Drones ---
     const orbitalDroneLevel = upgrades.orbitalDrones.level;
-    if (orbitalDroneLevel > 0 && clickableOrbs.length > 0) {
-        if (orbitalDroneLevel >= 3) {
-            const valueFromOrbs = clickableOrbs.reduce((sum, o) => sum + o.value, 0);
-            nextGameState.currencies[Currency.Stardust] += valueFromOrbs;
-            nextGameState.totalStardustEver += valueFromOrbs;
-            clickableOrbs.forEach(triggerCollectionEffect);
-            setClickableOrbs([]);
+    if (orbitalDroneLevel >= 3 && newOrbs.length > 0) {
+        const valueFromOrbs = newOrbs.reduce((sum, o) => sum + o.value, 0);
+        stardustFromCollection += valueFromOrbs;
+        newOrbs.forEach(triggerCollectionEffect);
+        newOrbs = [];
+    }
+
+    // --- Object Spawning ---
+    const collector = upgrades.orbitalCollector;
+    if (collector.level > 0 && newOrbs.length < 10) {
+        if (Math.random() < collector.effect(collector.level) * timeDelta) {
+            const angle = Math.random() * 2 * Math.PI;
+            newOrbs.push({
+                id: Date.now() + Math.random(),
+                value: (sps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.gravityWells.effect(upgrades.gravityWells.level),
+                x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
+                y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
+            });
         }
     }
 
-    // --- State Update ---
+    const prospector = upgrades.asteroidProspecting;
+    if (prospector.level > 0 && newAsteroids.length < 5) {
+        if (Math.random() < prospector.effect(prospector.level) * timeDelta) {
+            const angle = Math.random() * 2 * Math.PI;
+            const newAsteroid = {
+                id: Date.now() + Math.random(),
+                value: (sps + getClickValue()) * (10 + prospector.level) * upgrades.asteroidCracker.effect(upgrades.asteroidCracker.level),
+                x: 50 + Math.cos(angle) * (45 + Math.random() * 5),
+                y: 50 + Math.sin(angle) * (45 + Math.random() * 5),
+            };
+            newAsteroids.push(newAsteroid);
+            if (upgrades.collectorDrones.level >= 3 && !nextDrones.find(d => d.targetId === newAsteroid.id)) {
+                nextDrones.push({ id: Date.now() + Math.random(), targetId: newAsteroid.id, x: 50, y: 50 });
+            }
+        }
+    }
+    
+    // --- Commit All State Updates Atomically ---
+    setAsteroids(newAsteroids);
+    setClickableOrbs(newOrbs);
+    setDrones(nextDrones);
+
     setGameState(prev => {
-        const newStardust = prev.currencies[Currency.Stardust] + sps * timeDelta;
-        const newNebulaGas = prev.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta;
+        const stardustFromPassive = sps * timeDelta;
+        const nebulaFromPassive = nebulaPerSecond * timeDelta;
+
+        const newStardust = prev.currencies[Currency.Stardust] + stardustFromPassive + stardustFromCollection;
+        const newNebulaGas = prev.currencies[Currency.NebulaGas] + nebulaFromPassive;
         
         if (now - lastHistoryUpdate.current >= 1000) {
             lastHistoryUpdate.current = now;
             setStardustHistory(prevHistory => {
                 const newEntry = { timestamp: now, totalStardust: newStardust };
-                const newHistory = [...prevHistory, newEntry];
-                return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
+                return [...prevHistory, newEntry].slice(-60);
             });
             setNebulaHistory(prevHistory => {
                 const newEntry = { timestamp: now, totalNebulaGas: newNebulaGas };
-                const newHistory = [...prevHistory, newEntry];
-                return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
+                return [...prevHistory, newEntry].slice(-60);
             });
         }
         
         return {
             ...prev,
-            ...nextGameState,
             currencies: {
                 ...prev.currencies,
-                ...nextGameState.currencies,
-                [Currency.Stardust]: newStardust + (nextGameState.currencies[Currency.Stardust] - prev.currencies[Currency.Stardust]),
+                [Currency.Stardust]: newStardust,
                 [Currency.NebulaGas]: newNebulaGas,
             },
-            totalStardustEver: prev.totalStardustEver + sps * timeDelta + (nextGameState.totalStardustEver - prev.totalStardustEver),
-            totalNebulaGasEver: prev.totalNebulaGasEver + nebulaPerSecond * timeDelta,
+            totalStardustEver: prev.totalStardustEver + stardustFromPassive + stardustFromCollection,
+            totalNebulaGasEver: prev.totalNebulaGasEver + nebulaFromPassive,
             stats: { ...prev.stats, playTime: prev.stats.playTime + timeDelta },
             lastTick: now,
         };
     });
-  }, [gameState, getClickValue, asteroids, clickableOrbs]);
+}, [gameState, getClickValue, asteroids, clickableOrbs, drones]);
 
   useGameLoop(gameTick, 100);
 
