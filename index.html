@@ -112,13 +112,43 @@
       }
       @keyframes supernova-core-collapse-explode {
         0% { transform: scale(300); opacity: 0.5; }
-        33% { transform: scale(1); opacity: 1; } /* Collapse phase */
-        37% { transform: scale(1); opacity: 1; } /* Hold */
+        33% { transform: scale(0.1); opacity: 1; } /* Collapse phase */
+        37% { transform: scale(0.1); opacity: 1; } /* Hold */
         100% { transform: scale(500); opacity: 0; } /* Explode phase */
       }
       @keyframes supernova-shockwave-ring {
         0% { transform: scale(0); opacity: 1; }
         100% { transform: scale(3); opacity: 0; }
+      }
+
+      /* Prestige Sequence Animations */
+      @keyframes shake-subtle {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+      }
+      @keyframes ui-slide-out-top {
+        to { transform: translateY(-150%); opacity: 0; }
+      }
+      @keyframes ui-slide-out-right {
+        to { transform: translateX(150%); opacity: 0; }
+      }
+       @keyframes ui-slide-in-top {
+        from { transform: translateY(-150%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes ui-slide-in-right {
+        from { transform: translateX(150%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes star-collapse-to-center {
+        0% { transform: scale(1); }
+        100% { transform: scale(0); }
+      }
+      @keyframes modal-fade-in {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
       }
 
 
@@ -209,6 +239,13 @@ const formatNumber = (num) => {
         }
     }
     return (num / si[i].value).toFixed(2).replace(rx, "$1") + si[i].symbol;
+};
+
+const formatDuration = (seconds) => {
+    if (seconds < 60) return `${Math.floor(seconds)} secondes`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} heures`;
+    return `${Math.floor(seconds / 86400)} jours`;
 };
 
 // === FROM components/icons.tsx ===
@@ -584,7 +621,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 };
 
 // === FROM components/MainGameArea.tsx ===
-const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick, collectionEffects, drones }) => {
+const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick, collectionEffects, drones, supernovaPhase }) => {
   const hueShift = Math.min(starPowerLevel * 0.25, 45); 
   const baseHue = 50;
   
@@ -721,10 +758,23 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
 
       <button
         onClick={onClick}
-        className="active-scale-95"
+        className="active-scale-95 star-button"
         aria-label="Click to generate stardust"
         style={starStyle}
       >
+        <style>{`
+            .star-button {
+                opacity: 1;
+                transform: scale(1);
+            }
+            [data-supernova-phase="collapse"] .star-button {
+                animation: star-collapse-to-center 1s ease-in forwards;
+            }
+            [data-supernova-phase="explode"] .star-button,
+            [data-supernova-phase="rebuild"] .star-button {
+                opacity: 0;
+            }
+        `}</style>
         {/* Star Core */}
         <div style={{position: 'absolute', inset: 0, borderRadius: '9999px', backgroundColor: 'rgba(255, 255, 255, 0.5)', animation: 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite', pointerEvents: 'none'}}></div>
         {/* Star Flares */}
@@ -825,8 +875,101 @@ const Header = ({ currencies }) => {
   );
 };
 
-
 // === FROM App.tsx ===
+const OfflineReportModal = ({ report, onClose }) => (
+    <div className="modal-overlay">
+        <style>{`
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(4px);
+            }
+            .modal-content {
+                background-color: var(--slate-800);
+                border: 1px solid var(--slate-700);
+                border-radius: 0.75rem;
+                padding: 2rem;
+                max-width: 28rem;
+                width: 90%;
+                text-align: center;
+                animation: modal-fade-in 0.3s ease-out;
+            }
+            .modal-content h2 {
+                font-family: var(--font-display);
+                color: var(--cyan-300);
+                font-size: 1.5rem;
+                margin-top: 0;
+            }
+            .modal-content p {
+                color: var(--slate-400);
+                margin: 0.5rem 0 1.5rem;
+            }
+            .gains-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                margin: 1.5rem 0;
+                text-align: left;
+            }
+            @media (min-width: 640px) {
+              .gains-grid {
+                grid-template-columns: 1fr 1fr;
+              }
+            }
+            .gain-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                background-color: var(--slate-900);
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+            }
+            .gain-item .icon { width: 1.5rem; height: 1.5rem; }
+            .gain-item .amount { font-weight: bold; font-family: var(--font-display); }
+            .gain-item .name { font-size: 0.875rem; }
+            .modal-button {
+                width: 100%;
+                background-color: var(--cyan-400);
+                color: var(--slate-900);
+                font-weight: bold;
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
+                transition: background-color 200ms;
+            }
+            .modal-button:hover {
+                background-color: var(--cyan-300);
+            }
+        `}</style>
+        <div className="modal-content">
+            <h2>Bon Retour !</h2>
+            <p>Pendant votre absence de {formatDuration(report.duration)}, votre empire a généré :</p>
+            <div className="gains-grid">
+                <div className="gain-item" style={{color: 'var(--yellow-300)'}}>
+                    <div className="icon"><StardustIcon /></div>
+                    <div>
+                        <div className="amount">{formatNumber(report.stardust)}</div>
+                        <div className="name">Stardust</div>
+                    </div>
+                </div>
+                <div className="gain-item" style={{color: 'var(--purple-300)'}}>
+                    <div className="icon"><NebulaGasIcon /></div>
+                    <div>
+                        <div className="amount">{formatNumber(report.nebulaGas)}</div>
+                        <div className="name">Nebula Gas</div>
+                    </div>
+                </div>
+            </div>
+            <button onClick={onClose} className="modal-button">Continuer</button>
+        </div>
+    </div>
+);
+
+
 const INITIAL_UPGRADES = {
   // Stardust Upgrades
   clickPower1: { id: 'clickPower1', name: 'Cosmic Tap', description: 'Increases Stardust per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, effect: level => level * 1, type: UpgradeType.Click, currency: Currency.Stardust },
@@ -963,12 +1106,44 @@ const App = () => {
   const [drones, setDrones] = useState([]);
   const [collectionEffects, setCollectionEffects] = useState([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
-  const [isPrestiged, setIsPrestiged] = useState(false);
+  const [supernovaPhase, setSupernovaPhase] = useState('idle'); // idle, start, collapse, explode, rebuild
   const [stardustHistory, setStardustHistory] = useState([]);
   const [nebulaHistory, setNebulaHistory] = useState([]);
+  const [offlineReport, setOfflineReport] = useState(null);
   const lastHistoryUpdate = useRef(Date.now());
 
   const prestigeCost = useMemo(() => 5e6 * Math.pow(4.5, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
+
+  useEffect(() => {
+    const handleOfflineGains = () => {
+        const offlineTime = (Date.now() - gameState.lastTick) / 1000;
+        if (offlineTime > 10) { // Only show for more than 10 seconds offline
+            const { upgrades, stats } = gameState;
+            const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
+            const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
+            const cosmicEssenceBoost = upgrades.cosmicEssence.effect(upgrades.cosmicEssence.level);
+            const plasmaBoost = upgrades.plasmaConduits.effect(upgrades.plasmaConduits.level);
+            const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
+            const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
+            const dysonProduction = upgrades.dysonSwarm.effect(upgrades.dysonSwarm.level) * upgrades.swarmSynergy.effect(upgrades.swarmSynergy.level, gameState);
+            const autoClickProduction = upgrades.photonicImpulse.effect(upgrades.photonicImpulse.level) * getClickValue();
+            const sps = (probeProduction + asteroidProduction + dysonProduction + autoClickProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost * plasmaBoost;
+            
+            const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
+            const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
+            const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+            
+            const temporalWarpBoost = upgrades.temporalWarp.effect(upgrades.temporalWarp.level);
+            
+            setOfflineReport({
+                stardust: sps * offlineTime * temporalWarpBoost,
+                nebulaGas: nebulaPerSecond * offlineTime * temporalWarpBoost,
+                duration: offlineTime,
+            });
+        }
+    };
+    handleOfflineGains();
+  }, []);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
@@ -1105,54 +1280,62 @@ const App = () => {
   }, []);
 
   const handlePrestige = useCallback(() => {
-    if (gameState.currencies[Currency.Stardust] < prestigeCost) return;
+    if (gameState.currencies[Currency.Stardust] < prestigeCost || supernovaPhase !== 'idle') return;
     
-    setIsPrestiged(true);
-    setTimeout(() => setIsPrestiged(false), 3000);
-    
-    setGameState(prev => {
-        const antimatterGained = 1 + prev.stats.supernovaCount;
-        const prestigeUpgrades = { ...prev.upgrades };
-        
-        Object.keys(INITIAL_UPGRADES).forEach(key => {
-            const initialU = INITIAL_UPGRADES[key];
-            if (initialU.currency === Currency.Antimatter) return;
-            if (initialU.currency === Currency.Stardust && prev.upgrades.unlockStardustUpgrades.level > 0) return;
-            if (initialU.currency === Currency.NebulaGas && prev.upgrades.unlockNebulaUpgrades.level > 0) return;
+    setSupernovaPhase('start');
 
-            prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
-        });
+    setTimeout(() => setSupernovaPhase('collapse'), 1000);
 
-        const persistentProbesLevel = prev.upgrades.persistentProbes.effect(prev.upgrades.persistentProbes.level);
-        if (persistentProbesLevel > 0) {
-            const probe = prestigeUpgrades.probe;
-            probe.level = persistentProbesLevel;
-            probe.cost = Math.ceil(probe.baseCost * Math.pow(probe.costIncrease, probe.level));
-        }
-        
-        const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
-        const startingNebulaGas = prev.upgrades.quantumFoam.effect(prev.upgrades.quantumFoam.level);
+    setTimeout(() => {
+      setSupernovaPhase('explode');
+      setGameState(prev => {
+          const antimatterGained = 1 + prev.stats.supernovaCount;
+          const prestigeUpgrades = { ...prev.upgrades };
+          
+          Object.keys(INITIAL_UPGRADES).forEach(key => {
+              const initialU = INITIAL_UPGRADES[key];
+              if (initialU.currency === Currency.Antimatter) return;
+              if (initialU.currency === Currency.Stardust && prev.upgrades.unlockStardustUpgrades.level > 0) return;
+              if (initialU.currency === Currency.NebulaGas && prev.upgrades.unlockNebulaUpgrades.level > 0) return;
 
-        return {
-            ...prev,
-            currencies: {
-                [Currency.Stardust]: startingStardust,
-                [Currency.NebulaGas]: startingNebulaGas,
-                [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
-            },
-            upgrades: prestigeUpgrades,
-            totalStardustEver: startingStardust,
-            totalNebulaGasEver: startingNebulaGas,
-            stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
-            lastTick: Date.now(),
-        };
-    });
-    setClickableOrbs([]);
-    setAsteroids([]);
-    setDrones([]);
-    setStardustHistory([]);
-    setNebulaHistory([]);
-  }, [gameState.currencies, prestigeCost]);
+              prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
+          });
+
+          const persistentProbesLevel = prev.upgrades.persistentProbes.effect(prev.upgrades.persistentProbes.level);
+          if (persistentProbesLevel > 0) {
+              const probe = prestigeUpgrades.probe;
+              probe.level = persistentProbesLevel;
+              probe.cost = Math.ceil(probe.baseCost * Math.pow(probe.costIncrease, probe.level));
+          }
+          
+          const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
+          const startingNebulaGas = prev.upgrades.quantumFoam.effect(prev.upgrades.quantumFoam.level);
+
+          return {
+              ...prev,
+              currencies: {
+                  [Currency.Stardust]: startingStardust,
+                  [Currency.NebulaGas]: startingNebulaGas,
+                  [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
+              },
+              upgrades: prestigeUpgrades,
+              totalStardustEver: startingStardust,
+              totalNebulaGasEver: startingNebulaGas,
+              stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
+              lastTick: Date.now(),
+          };
+      });
+      setClickableOrbs([]);
+      setAsteroids([]);
+      setDrones([]);
+      setStardustHistory([]);
+      setNebulaHistory([]);
+    }, 2000);
+
+    setTimeout(() => setSupernovaPhase('rebuild'), 3500);
+    setTimeout(() => setSupernovaPhase('idle'), 4500);
+
+  }, [gameState.currencies, prestigeCost, supernovaPhase]);
 
   const handleResetSave = useCallback(() => {
     if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
@@ -1377,11 +1560,26 @@ const App = () => {
           align-items: center;
           justify-content: center;
         }
-        .upgrades-container {
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
+        .upgrades-container, .header-wrapper {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
         }
+
+        [data-supernova-phase="start"] .app-container {
+            animation: shake-subtle 0.5s;
+        }
+        [data-supernova-phase="start"] .header-wrapper {
+            animation: ui-slide-out-top 0.8s ease-in forwards;
+        }
+        [data-supernova-phase="start"] .upgrades-container {
+            animation: ui-slide-out-right 0.8s ease-in forwards;
+        }
+        [data-supernova-phase="rebuild"] .header-wrapper {
+            animation: ui-slide-in-top 0.8s 0.2s ease-out forwards;
+        }
+        [data-supernova-phase="rebuild"] .upgrades-container {
+            animation: ui-slide-in-right 0.8s 0.2s ease-out forwards;
+        }
+
         .supernova-overlay {
             position: fixed;
             top: 0;
@@ -1404,7 +1602,7 @@ const App = () => {
             border-radius: 50%;
             background-color: white;
             box-shadow: 0 0 60px 30px white, 0 0 100px 60px var(--cyan-300);
-            animation: supernova-core-collapse-explode 3s ease-in-out forwards;
+            animation: supernova-core-collapse-explode 1.5s ease-in-out forwards;
         }
         .supernova-overlay::after {
             content: '';
@@ -1413,7 +1611,7 @@ const App = () => {
             height: 100vmin;
             border-radius: 50%;
             border: 3px solid white;
-            animation: supernova-shockwave-ring 2s 1.1s ease-out forwards;
+            animation: supernova-shockwave-ring 1s 0.1s ease-out forwards;
         }
 
         @media (min-width: 1024px) {
@@ -1428,39 +1626,43 @@ const App = () => {
           }
         }
       `}</style>
-      {isPrestiged && <div className="supernova-overlay"></div>}
-      <div style={{padding: '1rem 1rem 0 1rem', flexShrink: 0}}>
-        <Header currencies={gameState.currencies} />
+      {offlineReport && <OfflineReportModal report={offlineReport} onClose={() => setOfflineReport(null)} />}
+      {supernovaPhase === 'explode' && <div className="supernova-overlay"></div>}
+      <div data-supernova-phase={supernovaPhase} style={{pointerEvents: supernovaPhase !== 'idle' ? 'none' : 'auto'}}>
+          <div className="header-wrapper" style={{padding: '1rem 1rem 0 1rem', flexShrink: 0}}>
+            <Header currencies={gameState.currencies} />
+          </div>
+          <main className="app-main-layout">
+            <div className="main-game-container">
+                <MainGameArea 
+                  onClick={handleStarClick} 
+                  floatingNumbers={floatingNumbers}
+                  starPowerLevel={starPowerLevel}
+                  clickableOrbs={clickableOrbs}
+                  onOrbClick={handleOrbClick}
+                  asteroids={asteroids}
+                  onAsteroidClick={handleAsteroidClick}
+                  collectionEffects={collectionEffects}
+                  drones={drones}
+                  supernovaPhase={supernovaPhase}
+                />
+            </div>
+            <div className="upgrades-container">
+                <UpgradesPanel 
+                  upgrades={gameState.upgrades} 
+                  onPurchase={handlePurchaseUpgrade} 
+                  currencies={gameState.currencies}
+                  onPrestige={handlePrestige}
+                  canPrestige={gameState.currencies[Currency.Stardust] >= prestigeCost}
+                  prestigeCost={prestigeCost}
+                  stardustHistory={stardustHistory}
+                  nebulaHistory={nebulaHistory}
+                  detailedStats={detailedStats}
+                  onResetSave={handleResetSave}
+                />
+            </div>
+          </main>
       </div>
-      <main className="app-main-layout">
-        <div className="main-game-container">
-            <MainGameArea 
-              onClick={handleStarClick} 
-              floatingNumbers={floatingNumbers}
-              starPowerLevel={starPowerLevel}
-              clickableOrbs={clickableOrbs}
-              onOrbClick={handleOrbClick}
-              asteroids={asteroids}
-              onAsteroidClick={handleAsteroidClick}
-              collectionEffects={collectionEffects}
-              drones={drones}
-            />
-        </div>
-        <div className="upgrades-container">
-            <UpgradesPanel 
-              upgrades={gameState.upgrades} 
-              onPurchase={handlePurchaseUpgrade} 
-              currencies={gameState.currencies}
-              onPrestige={handlePrestige}
-              canPrestige={gameState.currencies[Currency.Stardust] >= prestigeCost}
-              prestigeCost={prestigeCost}
-              stardustHistory={stardustHistory}
-              nebulaHistory={nebulaHistory}
-              detailedStats={detailedStats}
-              onResetSave={handleResetSave}
-            />
-        </div>
-      </main>
     </div>
   );
 };
