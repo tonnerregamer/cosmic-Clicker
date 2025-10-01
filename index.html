@@ -1265,16 +1265,18 @@ const App = () => {
             const dx = target.x - drone.x;
             const dy = target.y - drone.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
+            const moveDist = droneSpeed * timeDelta;
 
-            if (dist < 2) {
+            // If the drone will reach or pass the target this tick, collect it.
+            if (dist <= moveDist) {
                 nextGameState.currencies[Currency.Stardust] += target.value;
                 nextGameState.totalStardustEver += target.value;
                 triggerCollectionEffect(target);
                 setAsteroids(current => current.filter(a => a.id !== target.id));
                 return null;
             } else {
-                const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
-                const moveDist = droneSpeed * timeDelta;
                 drone.x += (dx / dist) * moveDist;
                 drone.y += (dy / dist) * moveDist;
                 return drone;
