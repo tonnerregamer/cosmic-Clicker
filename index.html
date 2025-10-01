@@ -18,6 +18,7 @@
         --yellow-400: #facc15;
         --yellow-500: #eab308;
         --purple-300: #d8b4fe;
+        --purple-400: #c084fc;
         --red-400: #f87171;
         --red-500: #ef4444;
         --red-600: #dc2626;
@@ -392,29 +393,44 @@ const StatDisplay = ({ label, value }) => (
     </div>
 );
 
-const StatsPanel = ({ data, stats, onReset }) => {
-    const points = data.map(d => d.totalStardust);
-    const maxY = Math.max(...points, 1);
-    const minY = data.length > 0 ? Math.min(...points) : 0;
-    const range = maxY - minY;
-
-    const getPathData = () => {
-        if (range <= 0) return 'M 0,50 L 300,50'; // Flat line in the middle if no change
-        return points.map((p, i) => {
-            const x = (i / (points.length - 1)) * 300;
-            const y = 100 - ((p - minY) / range) * 100;
+const StatsPanel = ({ stardustHistory, nebulaHistory, stats, onReset }) => {
+    const stardustPoints = stardustHistory.map(d => d.totalStardust);
+    const stardustMaxY = Math.max(...stardustPoints, 1);
+    const stardustMinY = stardustHistory.length > 0 ? Math.min(...stardustPoints) : 0;
+    const stardustRange = stardustMaxY - stardustMinY;
+    
+    const getStardustPathData = () => {
+        if (stardustRange <= 0) return 'M 0,50 L 300,50';
+        return stardustPoints.map((p, i) => {
+            const x = (i / (stardustPoints.length - 1)) * 300;
+            const y = 100 - ((p - stardustMinY) / stardustRange) * 100;
             return `${x},${y}`;
         }).join(' L ');
     };
-    
-    const pathData = data.length < 2 ? 'M 0,50 L 300,50' : getPathData();
+    const stardustPathData = stardustHistory.length < 2 ? 'M 0,50 L 300,50' : getStardustPathData();
+
+    const nebulaPoints = nebulaHistory.map(d => d.totalNebulaGas);
+    const nebulaMaxY = Math.max(...nebulaPoints, 1);
+    const nebulaMinY = nebulaHistory.length > 0 ? Math.min(...nebulaPoints) : 0;
+    const nebulaRange = nebulaMaxY - nebulaMinY;
+
+    const getNebulaPathData = () => {
+        if (nebulaRange <= 0) return 'M 0,50 L 300,50';
+        return nebulaPoints.map((p, i) => {
+            const x = (i / (nebulaPoints.length - 1)) * 300;
+            const y = 100 - ((p - nebulaMinY) / nebulaRange) * 100;
+            return `${x},${y}`;
+        }).join(' L ');
+    };
+    const nebulaPathData = nebulaHistory.length < 2 ? 'M 0,50 L 300,50' : getNebulaPathData();
+
 
     return (
         <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
             <div>
                 <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: '#67e8f9'}}>Stardust Total</h3>
-                {data.length < 2 ? (
-                    <div style={{textAlign: 'center', padding: '2rem', color: '#94a3b8'}}>Collecte des données...</div>
+                {stardustHistory.length < 2 ? (
+                    <div style={{textAlign: 'center', padding: '1rem', color: '#94a3b8'}}>Collecte des données...</div>
                 ) : (
                     <div style={{position: 'relative', height: '6rem'}}>
                         <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
@@ -424,14 +440,37 @@ const StatsPanel = ({ data, stats, onReset }) => {
                                     <stop offset="100%" stopColor="#06b6d4" stopOpacity="0"/>
                                 </linearGradient>
                             </defs>
-                            <path d={'M ' + pathData} fill="none" stroke="#06b6d4" strokeWidth="2" />
-                            <path d={`M ${pathData.split(' ')[0]} L ${pathData} L 300,100 L 0,100 Z`} fill="url(#areaGradient)" />
+                            <path d={'M ' + stardustPathData} fill="none" stroke="#06b6d4" strokeWidth="2" />
+                            <path d={`M ${stardustPathData.split(' ')[0]} L ${stardustPathData} L 300,100 L 0,100 Z`} fill="url(#areaGradient)" />
                         </svg>
-                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(maxY)}</div>
-                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(minY)}</div>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(stardustMaxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(stardustMinY)}</div>
                     </div>
                 )}
             </div>
+
+            <div>
+                <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--purple-400)'}}>Nebula Gas Total</h3>
+                {nebulaHistory.length < 2 ? (
+                    <div style={{textAlign: 'center', padding: '1rem', color: '#94a3b8'}}>Collecte des données...</div>
+                ) : (
+                    <div style={{position: 'relative', height: '6rem'}}>
+                        <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="nebulaAreaGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="var(--purple-400)" stopOpacity="0.4"/>
+                                    <stop offset="100%" stopColor="var(--purple-400)" stopOpacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <path d={'M ' + nebulaPathData} fill="none" stroke="var(--purple-400)" strokeWidth="2" />
+                            <path d={`M ${nebulaPathData.split(' ')[0]} L ${nebulaPathData} L 300,100 L 0,100 Z`} fill="url(#nebulaAreaGradient)" />
+                        </svg>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(nebulaMaxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(nebulaMinY)}</div>
+                    </div>
+                )}
+            </div>
+
             <dl style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                 <StatDisplay label="Stardust/sec" value={formatNumber(stats.stardustPerSecond)} />
                 <StatDisplay label="Stardust/clic" value={formatNumber(stats.stardustPerClick)} />
@@ -466,7 +505,7 @@ const StatsPanel = ({ data, stats, onReset }) => {
     );
 };
 
-const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, history, detailedStats, onResetSave }) => {
+const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, stardustHistory, nebulaHistory, detailedStats, onResetSave }) => {
   const [activeTab, setActiveTab] = useState(Currency.Stardust);
 
   const isUpgradeUnlocked = (upgrade) => {
@@ -496,7 +535,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
           </div>
         )}
 
-        {activeTab === 'Stats' && <StatsPanel data={history} stats={detailedStats} onReset={onResetSave} />}
+        {activeTab === 'Stats' && <StatsPanel stardustHistory={stardustHistory} nebulaHistory={nebulaHistory} stats={detailedStats} onReset={onResetSave} />}
 
         {activeTab === Currency.Antimatter && (
             <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
@@ -817,6 +856,12 @@ const INITIAL_UPGRADES = {
   solarWinds: {
     id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 },
   },
+  collectorDrones: {
+    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes. Au Niv. 3, un drone est envoyé pour chaque astéroïde.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 1 },
+  },
+  stellarNursery: {
+    id: 'stellarNursery', name: 'Pépinière Stellaire', description: 'Augmente considérablement la génération passive de Gaz Nébuleux.', level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'gasGiantSiphon', level: 5 },
+  },
   
   // Nebula Gas Upgrades
   gasHarvester: {
@@ -831,11 +876,8 @@ const INITIAL_UPGRADES = {
   gasGiantSiphon: {
     id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 },
   },
-  collectorDrones: {
-    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes. Au Niv. 3, un drone est envoyé pour chaque astéroïde.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 1 },
-  },
   orbitalDrones: {
-    id: 'orbitalDrones', name: 'Drones Orbitaux', description: 'Collecte automatiquement les Fragments de Stardust. Au Niv. 3, la collecte est instantanée.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'collectorDrones', level: 1 },
+    id: 'orbitalDrones', name: 'Drones Orbitaux', description: 'Collecte automatiquement les Fragments de Stardust. Au Niv. 3, la collecte est instantanée.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'orbitalCollector', level: 1 },
   },
   cosmicForge: {
     id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, baseEffect: 0.01, effect: (level, state) => {
@@ -844,13 +886,19 @@ const INITIAL_UPGRADES = {
         return 1 + (level * 0.01 * nebulaPerSecond);
     }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'nebulaCondenser', level: 5 },
   },
-
+  gravityWells: {
+    id: 'gravityWells', name: 'Puits de Gravité', description: 'Augmente la valeur des Fragments de Stardust cliquables.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: (level) => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'orbitalCollector', level: 10 },
+  },
+  
    // Antimatter Upgrades
   acceleratedLearning: {
     id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter,
   },
   darkMatter: {
     id: 'darkMatter', name: 'Matière Noire Initiale', description: 'Commencez chaque Supernova avec une quantité de Stardust de base.', level: 0, baseCost: 20, cost: 20, costIncrease: 5, effect: (level) => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter,
+  },
+  quantumFoam: {
+    id: 'quantumFoam', name: 'Écume Quantique', description: 'Commencez chaque Supernova avec une quantité de Gaz Nébuleux de base.', level: 0, baseCost: 30, cost: 30, costIncrease: 6, effect: (level) => level * 100, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'darkMatter', level: 1 },
   },
 };
 
@@ -870,6 +918,7 @@ const getInitialState = () => {
         },
         upgrades: upgradesCopy,
         totalStardustEver: 0,
+        totalNebulaGasEver: 0,
         stats: {
             totalClicks: 0,
             supernovaCount: 0,
@@ -904,6 +953,7 @@ const loadGameState = () => {
             ...initialState,
             currencies: savedState.currencies ?? initialState.currencies,
             totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
+            totalNebulaGasEver: savedState.totalNebulaGasEver ?? initialState.totalNebulaGasEver,
             stats: {
                 ...initialState.stats,
                 ...(savedState.stats ?? {}),
@@ -928,10 +978,11 @@ const App = () => {
   const [collectionEffects, setCollectionEffects] = useState([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
   const [isPrestiged, setIsPrestiged] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [stardustHistory, setStardustHistory] = useState([]);
+  const [nebulaHistory, setNebulaHistory] = useState([]);
   const lastHistoryUpdate = useRef(Date.now());
 
-  const prestigeCost = 1e6; // 1 Million Stardust
+  const prestigeCost = useMemo(() => 1e6 * Math.pow(15, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
@@ -1045,9 +1096,8 @@ const App = () => {
     setIsPrestiged(true);
     setTimeout(() => setIsPrestiged(false), 3000);
     
-    const antimatterGained = 1 + Math.floor(Math.log10(Math.max(1, gameState.totalStardustEver / prestigeCost)));
-
     setGameState(prev => {
+        const antimatterGained = Math.ceil((1 + Math.floor(Math.log10(Math.max(1, prev.totalStardustEver / prestigeCost)))) * (1 + prev.stats.supernovaCount * 0.25));
         const prestigeUpgrades = { ...prev.upgrades };
         Object.keys(INITIAL_UPGRADES).forEach(key => {
             if (INITIAL_UPGRADES[key].currency !== Currency.Antimatter) {
@@ -1056,16 +1106,18 @@ const App = () => {
         });
         
         const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
+        const startingNebulaGas = prev.upgrades.quantumFoam.effect(prev.upgrades.quantumFoam.level);
 
         return {
             ...prev,
             currencies: {
                 [Currency.Stardust]: startingStardust,
-                [Currency.NebulaGas]: 0,
+                [Currency.NebulaGas]: startingNebulaGas,
                 [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
             },
             upgrades: prestigeUpgrades,
-            totalStardustEver: startingStardust, // Reset to starting stardust
+            totalStardustEver: startingStardust,
+            totalNebulaGasEver: startingNebulaGas,
             stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
             lastTick: Date.now(),
         };
@@ -1073,8 +1125,9 @@ const App = () => {
     setClickableOrbs([]);
     setAsteroids([]);
     setDrones([]);
-    setHistory([]);
-  }, [gameState]);
+    setStardustHistory([]);
+    setNebulaHistory([]);
+  }, [gameState.currencies, gameState.totalStardustEver, prestigeCost]);
 
   const handleResetSave = useCallback(() => {
     if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
@@ -1085,7 +1138,8 @@ const App = () => {
         setAsteroids([]);
         setDrones([]);
         setStardustPerSecond(0);
-        setHistory([]);
+        setStardustHistory([]);
+        setNebulaHistory([]);
         lastHistoryUpdate.current = Date.now();
     }
   }, []);
@@ -1113,7 +1167,8 @@ const App = () => {
     setStardustPerSecond(sps);
     
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
-    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost;
+    const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
+    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost;
     
     let nextGameState = {...gameState};
 
@@ -1127,7 +1182,7 @@ const App = () => {
                 const angle = Math.random() * 2 * Math.PI;
                 const orb = {
                     id: Date.now() + Math.random(),
-                    value: (sps + getClickValue()) * (5 + collector.level * 0.5),
+                    value: (sps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.gravityWells.effect(upgrades.gravityWells.level),
                     x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
                     y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
                 };
@@ -1152,7 +1207,6 @@ const App = () => {
                 };
                 newAsteroids.push(newAsteroid);
                 
-                // If drone level 3, dispatch a drone for this new asteroid
                 if (upgrades.collectorDrones.level >= 3) {
                     setDrones(currentDrones => {
                        if (!currentDrones.find(d => d.targetId === newAsteroid.id)) {
@@ -1167,34 +1221,31 @@ const App = () => {
     });
 
     // --- Object Collection ---
-    // Update drone positions and collect asteroids
     setDrones(currentDrones => {
         return currentDrones.map(drone => {
             const target = asteroids.find(a => a.id === drone.targetId);
-            if (!target) return null; // Target was collected or disappeared
+            if (!target) return null;
 
             const dx = target.x - drone.x;
             const dy = target.y - drone.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < 2) {
-                // Collect asteroid
                 nextGameState.currencies[Currency.Stardust] += target.value;
                 nextGameState.totalStardustEver += target.value;
                 triggerCollectionEffect(target);
                 setAsteroids(current => current.filter(a => a.id !== target.id));
-                return null; // Remove drone
+                return null;
             } else {
-                const droneSpeed = 20; // units per second
+                const droneSpeed = 20;
                 const moveDist = droneSpeed * timeDelta;
                 drone.x += (dx / dist) * moveDist;
                 drone.y += (dy / dist) * moveDist;
                 return drone;
             }
-        }).filter(Boolean); // Filter out null (removed) drones
+        }).filter(Boolean);
     });
 
-    // Auto-collect orbs
     const orbitalDroneLevel = upgrades.orbitalDrones.level;
     if (orbitalDroneLevel > 0 && clickableOrbs.length > 0) {
         if (orbitalDroneLevel >= 3) {
@@ -1203,21 +1254,23 @@ const App = () => {
             nextGameState.totalStardustEver += valueFromOrbs;
             clickableOrbs.forEach(triggerCollectionEffect);
             setClickableOrbs([]);
-        } else {
-            // Slower collection for levels 1-2
         }
     }
-
 
     // --- State Update ---
     setGameState(prev => {
         const newStardust = prev.currencies[Currency.Stardust] + sps * timeDelta;
+        const newNebulaGas = prev.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta;
         
-        // Update history every second
         if (now - lastHistoryUpdate.current >= 1000) {
             lastHistoryUpdate.current = now;
-            setHistory(prevHistory => {
+            setStardustHistory(prevHistory => {
                 const newEntry = { timestamp: now, totalStardust: newStardust };
+                const newHistory = [...prevHistory, newEntry];
+                return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
+            });
+            setNebulaHistory(prevHistory => {
+                const newEntry = { timestamp: now, totalNebulaGas: newNebulaGas };
                 const newHistory = [...prevHistory, newEntry];
                 return newHistory.length > 60 ? newHistory.slice(1) : newHistory;
             });
@@ -1225,14 +1278,15 @@ const App = () => {
         
         return {
             ...prev,
-            ...nextGameState, // Apply changes from drone/orb collection
+            ...nextGameState,
             currencies: {
                 ...prev.currencies,
                 ...nextGameState.currencies,
                 [Currency.Stardust]: newStardust + (nextGameState.currencies[Currency.Stardust] - prev.currencies[Currency.Stardust]),
-                [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaPerSecond * timeDelta,
+                [Currency.NebulaGas]: newNebulaGas,
             },
             totalStardustEver: prev.totalStardustEver + sps * timeDelta + (nextGameState.totalStardustEver - prev.totalStardustEver),
+            totalNebulaGasEver: prev.totalNebulaGasEver + nebulaPerSecond * timeDelta,
             stats: { ...prev.stats, playTime: prev.stats.playTime + timeDelta },
             lastTick: now,
         };
@@ -1361,7 +1415,8 @@ const App = () => {
               onPrestige={handlePrestige}
               canPrestige={gameState.currencies[Currency.Stardust] >= prestigeCost}
               prestigeCost={prestigeCost}
-              history={history}
+              stardustHistory={stardustHistory}
+              nebulaHistory={nebulaHistory}
               detailedStats={detailedStats}
               onResetSave={handleResetSave}
             />
