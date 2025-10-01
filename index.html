@@ -740,7 +740,7 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
                 position: 'absolute',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                color: '#fef08a',
+                color: num.isNebula ? '#d8b4fe' : '#fef08a',
                 pointerEvents: 'none',
                 left: `${num.x}px`,
                 top: `${num.y}px`,
@@ -862,6 +862,9 @@ const INITIAL_UPGRADES = {
   stellarNursery: {
     id: 'stellarNursery', name: 'Pépinière Stellaire', description: 'Augmente considérablement la génération passive de Gaz Nébuleux.', level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'gasGiantSiphon', level: 5 },
   },
+  starFusion: {
+    id: 'starFusion', name: 'Fusion Stellaire', description: 'Cliquer a une petite chance de générer une explosion de Gaz Nébuleux.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: (level) => level * 0.005, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'solarWinds', level: 10 },
+  },
   
   // Nebula Gas Upgrades
   gasHarvester: {
@@ -889,6 +892,12 @@ const INITIAL_UPGRADES = {
   gravityWells: {
     id: 'gravityWells', name: 'Puits de Gravité', description: 'Augmente la valeur des Fragments de Stardust cliquables.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: (level) => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'orbitalCollector', level: 10 },
   },
+  antimatterCatalyst: {
+    id: 'antimatterCatalyst', name: 'Catalyseur d\'Antimatière', description: 'Chaque point d\'Antimatière augmente la puissance de clic de 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => {
+        if (!state) return 1;
+        return 1 + (level * 0.02 * state.currencies[Currency.Antimatter]);
+    }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gravityWells', level: 5 },
+  },
   
    // Antimatter Upgrades
   acceleratedLearning: {
@@ -899,6 +908,9 @@ const INITIAL_UPGRADES = {
   },
   quantumFoam: {
     id: 'quantumFoam', name: 'Écume Quantique', description: 'Commencez chaque Supernova avec une quantité de Gaz Nébuleux de base.', level: 0, baseCost: 30, cost: 30, costIncrease: 6, effect: (level) => level * 100, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'darkMatter', level: 1 },
+  },
+  cosmicEssence: {
+    id: 'cosmicEssence', name: 'Essence Cosmique', description: 'Augmente la génération passive de Stardust et de Gaz Nébuleux de 15% par niveau.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: (level) => 1 + level * 0.15, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'quantumFoam', level: 1 },
   },
 };
 
@@ -982,7 +994,7 @@ const App = () => {
   const [nebulaHistory, setNebulaHistory] = useState([]);
   const lastHistoryUpdate = useRef(Date.now());
 
-  const prestigeCost = useMemo(() => 1e6 * Math.pow(15, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
+  const prestigeCost = useMemo(() => 1e7 * Math.pow(8, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
@@ -1016,18 +1028,41 @@ const App = () => {
 
   const getClickValue = useCallback(() => {
     const { upgrades, stats } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * 0.1);
+    const supernovaBoost = 1 + (stats.supernovaCount * 0.25);
     const forgeBoost = upgrades.cosmicForge.effect(upgrades.cosmicForge.level, gameState);
+    const catalystBoost = upgrades.antimatterCatalyst.effect(upgrades.antimatterCatalyst.level, gameState);
     const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
-    return baseClick * supernovaBoost * forgeBoost;
+    return baseClick * supernovaBoost * forgeBoost * catalystBoost;
   }, [gameState]);
 
   const handleStarClick = useCallback((e) => {
     const clickValue = getClickValue();
+    let nebulaGainedFromClick = 0;
+    const { upgrades } = gameState;
+    const starFusionChance = upgrades.starFusion.effect(upgrades.starFusion.level);
+
+    if (Math.random() < starFusionChance) {
+        const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level));
+        nebulaGainedFromClick = (nebulaPerSecond + 1) * 60; // 1 minute of production
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const newFloatingNebula = { id: Date.now() + Math.random(), value: `+${formatNumber(nebulaGainedFromClick)} Gas!`, x, y, isNebula: true };
+        setFloatingNumbers(current => [...current, newFloatingNebula]);
+        setTimeout(() => {
+            setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNebula.id));
+        }, 2000);
+    }
+
     setGameState(prev => ({
         ...prev,
-        currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + clickValue },
+        currencies: { 
+          ...prev.currencies, 
+          [Currency.Stardust]: prev.currencies[Currency.Stardust] + clickValue,
+          [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaGainedFromClick,
+        },
         totalStardustEver: prev.totalStardustEver + clickValue,
+        totalNebulaGasEver: prev.totalNebulaGasEver + nebulaGainedFromClick,
         stats: { ...prev.stats, totalClicks: prev.stats.totalClicks + 1 },
     }));
 
@@ -1039,7 +1074,7 @@ const App = () => {
     setTimeout(() => {
         setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id));
     }, 2000);
-  }, [getClickValue]);
+  }, [getClickValue, gameState]);
   
   const handleOrbClick = useCallback((orbId) => {
     const orb = clickableOrbs.find(o => o.id === orbId);
@@ -1097,7 +1132,7 @@ const App = () => {
     setTimeout(() => setIsPrestiged(false), 3000);
     
     setGameState(prev => {
-        const antimatterGained = Math.ceil((1 + Math.floor(Math.log10(Math.max(1, prev.totalStardustEver / prestigeCost)))) * (1 + prev.stats.supernovaCount * 0.25));
+        const antimatterGained = 1 + prev.stats.supernovaCount;
         const prestigeUpgrades = { ...prev.upgrades };
         Object.keys(INITIAL_UPGRADES).forEach(key => {
             if (INITIAL_UPGRADES[key].currency !== Currency.Antimatter) {
@@ -1127,7 +1162,7 @@ const App = () => {
     setDrones([]);
     setStardustHistory([]);
     setNebulaHistory([]);
-  }, [gameState.currencies, gameState.totalStardustEver, prestigeCost]);
+  }, [gameState.currencies, prestigeCost]);
 
   const handleResetSave = useCallback(() => {
     if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
@@ -1157,18 +1192,19 @@ const App = () => {
     const timeDelta = Math.min(86400, (now - gameState.lastTick) / 1000);
 
     const { upgrades, stats } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * 0.1);
+    const supernovaBoost = 1 + (stats.supernovaCount * 0.25);
     const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
+    const cosmicEssenceBoost = upgrades.cosmicEssence.effect(upgrades.cosmicEssence.level);
     
     const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
     const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
 
-    const sps = (probeProduction + asteroidProduction) * supernovaBoost * solarWindsBoost;
+    const sps = (probeProduction + asteroidProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost;
     setStardustPerSecond(sps);
     
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
     const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost;
+    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost;
     
     let nextGameState = {...gameState};
 
@@ -1312,7 +1348,7 @@ const App = () => {
           totalClicks: gameState.stats.totalClicks,
           supernovaCount: gameState.stats.supernovaCount,
           playTime: formattedPlayTime,
-          prestigeBonus: `${(gameState.stats.supernovaCount * 10).toFixed(0)}%`,
+          prestigeBonus: `${(gameState.stats.supernovaCount * 25).toFixed(0)}%`,
       }
   }, [stardustPerSecond, getClickValue, gameState.stats]);
 
