@@ -829,89 +829,47 @@ const Header = ({ currencies }) => {
 // === FROM App.tsx ===
 const INITIAL_UPGRADES = {
   // Stardust Upgrades
-  clickPower1: {
-    id: 'clickPower1', name: 'Cosmic Tap', description: 'Increases Stardust per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Click, currency: Currency.Stardust,
-  },
-  probe: {
-    id: 'probe', name: 'Stardust Probe', description: 'Passively generates Stardust per second.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, baseEffect: 0.5, effect: (level) => level * 0.5, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 5 },
-  },
-  clickPower2: {
-    id: 'clickPower2', name: 'Star Gazer', description: 'Each level grants a bonus to Cosmic Tap.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, baseEffect: 5, effect: (level) => level * 5, type: UpgradeType.Click, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 10 },
-  },
-  reinforcedProbes: {
-    id: 'reinforcedProbes', name: 'Reinforced Probes', description: 'Stardust Probes are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, baseEffect: 0.25, effect: (level) => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 10 },
-  },
-  asteroidMining: {
-    id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of passive Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, baseEffect: 10, effect: (level) => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 },
-  },
-   asteroidProspecting: {
-    id: 'asteroidProspecting', name: 'Prospection Astéroïdes', description: 'Déploie des sondes qui ont une chance de trouver des astéroïdes cliquables.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.3, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 },
-  },
-  cometChasers: {
-    id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, baseEffect: 0.5, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 },
-  },
-  asteroidCracker: {
-    id: 'asteroidCracker', name: 'Fissureur d\'Astéroïdes', description: 'Augmente la quantité de Stardust obtenue des astéroïdes.', level: 0, baseCost: 250000, cost: 250000, costIncrease: 1.8, effect: (level) => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidProspecting', level: 5 },
-  },
-  solarWinds: {
-    id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, baseEffect: 0.1, effect: (level) => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 },
-  },
-  collectorDrones: {
-    id: 'collectorDrones', name: 'Drones Collecteurs', description: 'Collecte automatiquement les astéroïdes. Au Niv. 3, un drone est envoyé pour chaque astéroïde.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 1 },
-  },
-  stellarNursery: {
-    id: 'stellarNursery', name: 'Pépinière Stellaire', description: 'Augmente considérablement la génération passive de Gaz Nébuleux.', level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'gasGiantSiphon', level: 5 },
-  },
-  starFusion: {
-    id: 'starFusion', name: 'Fusion Stellaire', description: 'Cliquer a une petite chance de générer une explosion de Gaz Nébuleux.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: (level) => level * 0.005, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'solarWinds', level: 10 },
-  },
+  clickPower1: { id: 'clickPower1', name: 'Cosmic Tap', description: 'Increases Stardust per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, effect: level => level * 1, type: UpgradeType.Click, currency: Currency.Stardust },
+  probe: { id: 'probe', name: 'Stardust Probe', description: 'Passively generates Stardust.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, effect: level => level * 0.5, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 5 } },
+  clickPower2: { id: 'clickPower2', name: 'Star Gazer', description: 'Each level grants a bonus to Cosmic Tap.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, effect: level => level * 5, type: UpgradeType.Click, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 10 } },
+  reinforcedProbes: { id: 'reinforcedProbes', name: 'Reinforced Probes', description: 'Stardust Probes are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 10 } },
+  asteroidMining: { id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, effect: level => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 } },
+  asteroidProspecting: { id: 'asteroidProspecting', name: 'Asteroid Prospecting', description: 'Deploy probes that have a chance to find clickable asteroids.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.3, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 } },
+  cometChasers: { id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 } },
+  asteroidCracker: { id: 'asteroidCracker', name: 'Asteroid Cracker', description: 'Increases the amount of Stardust gained from asteroids.', level: 0, baseCost: 250000, cost: 250000, costIncrease: 1.8, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidProspecting', level: 5 } },
+  solarWinds: { id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, effect: level => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 } },
+  collectorDrones: { id: 'collectorDrones', name: 'Collector Drones', description: 'Automatically collect asteroids. At Lvl 3, a drone is dispatched for each asteroid.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 1 } },
+  dysonSwarm: { id: 'dysonSwarm', name: 'Dyson Swarm', description: 'Construct a massive swarm for huge passive Stardust generation.', level: 0, baseCost: 1e7, cost: 1e7, costIncrease: 1.4, effect: level => level * 1500, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'solarWinds', level: 5 } },
+  starFusion: { id: 'starFusion', name: 'Stellar Fusion', description: 'Clicking has a small chance to generate a burst of Nebula Gas.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: level => level * 0.005, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'dysonSwarm', level: 1 } },
+  magneticCollectors: { id: 'magneticCollectors', name: 'Magnetic Collectors', description: 'Collector Drones travel 50% faster.', level: 0, baseCost: 5e6, cost: 5e6, costIncrease: 4, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 5, requirement: { upgradeId: 'collectorDrones', level: 3 } },
+  photonicImpulse: { id: 'photonicImpulse', name: 'Photonic Impulse', description: 'Passively clicks the star once per second.', level: 0, baseCost: 1e9, cost: 1e9, costIncrease: 3, effect: level => level, type: UpgradeType.Passive, currency: Currency.Stardust, maxLevel: 10, requirement: { upgradeId: 'starFusion', level: 5 } },
+  swarmSynergy: { id: 'swarmSynergy', name: 'Swarm Synergy', description: 'Dyson Swarm production is boosted by total clicks.', level: 0, baseCost: 5e9, cost: 5e9, costIncrease: 5, effect: (level, state) => 1 + level * Math.log10(state?.stats.totalClicks + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'dysonSwarm', level: 10 } },
   
   // Nebula Gas Upgrades
-  gasHarvester: {
-    id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas per second.', level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, baseEffect: 0.2, effect: (level) => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust,
-  },
-  orbitalCollector: {
-    id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, baseEffect: 0.05, effect: (level) => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 }
-  },
-  nebulaCondenser: {
-    id: 'nebulaCondenser', name: 'Nebula Condenser', description: 'Boosts all passive Nebula Gas generation by 20%.', level: 0, baseCost: 50, cost: 50, costIncrease: 2, baseEffect: 0.2, effect: (level) => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 5 },
-  },
-  gasGiantSiphon: {
-    id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, baseEffect: 1, effect: (level) => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 },
-  },
-  orbitalDrones: {
-    id: 'orbitalDrones', name: 'Drones Orbitaux', description: 'Collecte automatiquement les Fragments de Stardust. Au Niv. 3, la collecte est instantanée.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: (level) => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'orbitalCollector', level: 1 },
-  },
-  cosmicForge: {
-    id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, baseEffect: 0.01, effect: (level, state) => {
-        if (!state) return 1;
-        const nebulaPerSecond = state.upgrades.gasHarvester.effect(state.upgrades.gasHarvester.level) + state.upgrades.gasGiantSiphon.effect(state.upgrades.gasGiantSiphon.level);
-        return 1 + (level * 0.01 * nebulaPerSecond);
-    }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'nebulaCondenser', level: 5 },
-  },
-  gravityWells: {
-    id: 'gravityWells', name: 'Puits de Gravité', description: 'Augmente la valeur des Fragments de Stardust cliquables.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: (level) => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'orbitalCollector', level: 10 },
-  },
-  antimatterCatalyst: {
-    id: 'antimatterCatalyst', name: 'Catalyseur d\'Antimatière', description: 'Chaque point d\'Antimatière augmente la puissance de clic de 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => {
-        if (!state) return 1;
-        return 1 + (level * 0.02 * state.currencies[Currency.Antimatter]);
-    }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gravityWells', level: 5 },
-  },
-  
-   // Antimatter Upgrades
-  acceleratedLearning: {
-    id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all Stardust upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, baseEffect: 0.02, effect: (level) => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter,
-  },
-  darkMatter: {
-    id: 'darkMatter', name: 'Matière Noire Initiale', description: 'Commencez chaque Supernova avec une quantité de Stardust de base.', level: 0, baseCost: 20, cost: 20, costIncrease: 5, effect: (level) => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter,
-  },
-  quantumFoam: {
-    id: 'quantumFoam', name: 'Écume Quantique', description: 'Commencez chaque Supernova avec une quantité de Gaz Nébuleux de base.', level: 0, baseCost: 30, cost: 30, costIncrease: 6, effect: (level) => level * 100, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'darkMatter', level: 1 },
-  },
-  cosmicEssence: {
-    id: 'cosmicEssence', name: 'Essence Cosmique', description: 'Augmente la génération passive de Stardust et de Gaz Nébuleux de 15% par niveau.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: (level) => 1 + level * 0.15, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'quantumFoam', level: 1 },
-  },
+  gasHarvester: { id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas.', level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, effect: level => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust },
+  orbitalCollector: { id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 } },
+  nebulaCondenser: { id: 'nebulaCondenser', name: 'Nebula Condenser', description: 'Boosts all passive Nebula Gas generation by 20%.', level: 0, baseCost: 50, cost: 50, costIncrease: 2, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 5 } },
+  gasGiantSiphon: { id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, effect: level => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 } },
+  orbitalDrones: { id: 'orbitalDrones', name: 'Orbital Drones', description: 'Automatically collect Stardust Fragments. At Lvl 3, collection is instant.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'orbitalCollector', level: 1 } },
+  cosmicForge: { id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, effect: (level, state) => { if (!state) return 1; const nebulaPerSecond = (state.upgrades.gasHarvester.effect(state.upgrades.gasHarvester.level) + state.upgrades.gasGiantSiphon.effect(state.upgrades.gasGiantSiphon.level)); return 1 + (level * 0.01 * nebulaPerSecond); }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'nebulaCondenser', level: 5 } },
+  gravityWells: { id: 'gravityWells', name: 'Gravity Wells', description: 'Increases the value of clickable Stardust Fragments.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'orbitalCollector', level: 10 } },
+  antimatterCatalyst: { id: 'antimatterCatalyst', name: 'Antimatter Catalyst', description: 'Each point of Antimatter increases click power by 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => { if (!state) return 1; return 1 + (level * 0.02 * state.currencies[Currency.Antimatter]); }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gravityWells', level: 5 } },
+  stellarNursery: { id: 'stellarNursery', name: 'Stellar Nursery', description: 'Greatly increases passive Nebula Gas generation.', level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'gasGiantSiphon', level: 5 } },
+  gasSpectroscopy: { id: 'gasSpectroscopy', name: 'Gas Spectroscopy', description: 'All Stardust upgrades are 5% cheaper per level.', level: 0, baseCost: 750, cost: 750, costIncrease: 2, effect: level => 1 - level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 10, requirement: { upgradeId: 'cosmicForge', level: 3 } },
+  plasmaConduits: { id: 'plasmaConduits', name: 'Plasma Conduits', description: 'Boosts all passive generation (Stardust & Gas) by 5% per level.', level: 0, baseCost: 1500, cost: 1500, costIncrease: 2.5, effect: level => 1 + level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasSpectroscopy', level: 2 } },
+  exoticMatter: { id: 'exoticMatter', name: 'Exotic Matter', description: 'Boosts click power based on your total Nebula Gas.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 3, effect: (level, state) => 1 + level * Math.log10(state?.totalNebulaGasEver + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'plasmaConduits', level: 5 } },
+  nebulaRefining: { id: 'nebulaRefining', name: 'Nebula Refining', description: 'Clicking has a very small chance to generate 1 Antimatter.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 10, effect: level => level * 0.00001, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 5, requirement: { upgradeId: 'exoticMatter', level: 1 } },
+
+  // Antimatter Upgrades
+  acceleratedLearning: { id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all non-Antimatter upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, effect: level => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 25 },
+  darkMatter: { id: 'darkMatter', name: 'Initial Dark Matter', description: 'Start each Supernova with a base amount of Stardust.', level: 0, baseCost: 5, cost: 5, costIncrease: 2, effect: level => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter },
+  quantumFoam: { id: 'quantumFoam', name: 'Quantum Foam', description: 'Start each Supernova with a base amount of Nebula Gas.', level: 0, baseCost: 15, cost: 15, costIncrease: 2.5, effect: level => level * 100, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'darkMatter', level: 1 } },
+  cosmicEssence: { id: 'cosmicEssence', name: 'Cosmic Essence', description: 'Increases passive generation of Stardust and Nebula Gas by 15% per level.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: level => 1 + level * 0.15, type: UpgradeType.Prestige, currency: Currency.Antimatter },
+  persistentProbes: { id: 'persistentProbes', name: 'Persistent Probes', description: 'Start each Supernova with 5 free levels of Stardust Probes.', level: 0, baseCost: 30, cost: 30, costIncrease: 4, effect: level => level * 5, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 10, requirement: { upgradeId: 'darkMatter', level: 5 } },
+  temporalWarp: { id: 'temporalWarp', name: 'Temporal Warp', description: 'Offline progress is calculated at 2% higher efficiency per level.', level: 0, baseCost: 50, cost: 50, costIncrease: 5, effect: level => 1 + level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 25, requirement: { upgradeId: 'cosmicEssence', level: 3 } },
+  singularity: { id: 'singularity', name: 'Singularity', description: 'The passive bonus from Supernovas is 1% more effective per level.', level: 0, baseCost: 100, cost: 100, costIncrease: 2, effect: level => level * 0.01, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'temporalWarp', level: 1 } },
+  unlockStardustUpgrades: { id: 'unlockStardustUpgrades', name: 'Stardust Blueprints', description: 'Keep Stardust upgrades after a Supernova.', level: 0, baseCost: 250, cost: 250, costIncrease: 10, effect: level => level, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 1, requirement: { upgradeId: 'singularity', level: 5 } },
+  unlockNebulaUpgrades: { id: 'unlockNebulaUpgrades', name: 'Nebula Schematics', description: 'Keep Nebula Gas upgrades after a Supernova.', level: 0, baseCost: 500, cost: 500, costIncrease: 10, effect: level => level, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 1, requirement: { upgradeId: 'unlockStardustUpgrades', level: 1 } },
 };
 
 const SAVE_KEY = 'cosmicClickerSave';
@@ -919,7 +877,8 @@ const SAVE_KEY = 'cosmicClickerSave';
 const getInitialState = () => {
     const upgradesCopy = {};
     for (const key of Object.keys(INITIAL_UPGRADES)) {
-        upgradesCopy[key] = { ...INITIAL_UPGRADES[key] };
+        const upgrade = INITIAL_UPGRADES[key];
+        upgradesCopy[key] = { ...upgrade, baseEffect: upgrade.effect(1, null) }; // Simplified for non-state-dependent effects
     }
 
     return {
@@ -937,6 +896,7 @@ const getInitialState = () => {
             playTime: 0,
         },
         lastTick: Date.now(),
+        antimatterRetrofitDone: false,
     };
 };
 
@@ -961,7 +921,7 @@ const loadGameState = () => {
             }
         }
         
-        return {
+        const finalState = {
             ...initialState,
             currencies: savedState.currencies ?? initialState.currencies,
             totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
@@ -972,7 +932,21 @@ const loadGameState = () => {
             },
             upgrades: currentUpgrades,
             lastTick: savedState.lastTick ?? Date.now(),
+            antimatterRetrofitDone: savedState.antimatterRetrofitDone ?? false,
         };
+
+        // Retroactive Antimatter calculation
+        if (!finalState.antimatterRetrofitDone && finalState.stats.supernovaCount > 0) {
+            const S = finalState.stats.supernovaCount;
+            // Sum of (1+i) for i from 0 to S-1
+            const expectedAntimatter = S + (S * (S - 1) / 2);
+            if (finalState.currencies[Currency.Antimatter] < expectedAntimatter) {
+                finalState.currencies[Currency.Antimatter] = expectedAntimatter;
+            }
+            finalState.antimatterRetrofitDone = true;
+        }
+
+        return finalState;
     } catch (error) {
         console.error("Failed to load or parse saved state, starting fresh.", error);
         localStorage.removeItem(SAVE_KEY);
@@ -994,7 +968,7 @@ const App = () => {
   const [nebulaHistory, setNebulaHistory] = useState([]);
   const lastHistoryUpdate = useRef(Date.now());
 
-  const prestigeCost = useMemo(() => 1e7 * Math.pow(8, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
+  const prestigeCost = useMemo(() => 5e6 * Math.pow(4.5, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
@@ -1027,31 +1001,36 @@ const App = () => {
 
 
   const getClickValue = useCallback(() => {
-    const { upgrades, stats } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * 0.25);
+    const { upgrades, stats, currencies, totalNebulaGasEver } = gameState;
+    const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
     const forgeBoost = upgrades.cosmicForge.effect(upgrades.cosmicForge.level, gameState);
     const catalystBoost = upgrades.antimatterCatalyst.effect(upgrades.antimatterCatalyst.level, gameState);
+    const exoticBoost = upgrades.exoticMatter.effect(upgrades.exoticMatter.level, gameState);
     const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
-    return baseClick * supernovaBoost * forgeBoost * catalystBoost;
+    return baseClick * supernovaBoost * forgeBoost * catalystBoost * exoticBoost;
   }, [gameState]);
 
   const handleStarClick = useCallback((e) => {
     const clickValue = getClickValue();
     let nebulaGainedFromClick = 0;
+    let antimatterGainedFromClick = 0;
     const { upgrades } = gameState;
-    const starFusionChance = upgrades.starFusion.effect(upgrades.starFusion.level);
-
-    if (Math.random() < starFusionChance) {
+    
+    if (Math.random() < upgrades.starFusion.effect(upgrades.starFusion.level)) {
         const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level));
         nebulaGainedFromClick = (nebulaPerSecond + 1) * 60; // 1 minute of production
+    }
+    if (Math.random() < upgrades.nebulaRefining.effect(upgrades.nebulaRefining.level)) {
+        antimatterGainedFromClick = 1;
+    }
+
+    if (nebulaGainedFromClick > 0) {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const newFloatingNebula = { id: Date.now() + Math.random(), value: `+${formatNumber(nebulaGainedFromClick)} Gas!`, x, y, isNebula: true };
         setFloatingNumbers(current => [...current, newFloatingNebula]);
-        setTimeout(() => {
-            setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNebula.id));
-        }, 2000);
+        setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNebula.id)), 2000);
     }
 
     setGameState(prev => ({
@@ -1060,6 +1039,7 @@ const App = () => {
           ...prev.currencies, 
           [Currency.Stardust]: prev.currencies[Currency.Stardust] + clickValue,
           [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaGainedFromClick,
+          [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGainedFromClick,
         },
         totalStardustEver: prev.totalStardustEver + clickValue,
         totalNebulaGasEver: prev.totalNebulaGasEver + nebulaGainedFromClick,
@@ -1071,9 +1051,7 @@ const App = () => {
     const y = e.clientY - rect.top;
     const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, };
     setFloatingNumbers(current => [...current, newFloatingNumber]);
-    setTimeout(() => {
-        setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id));
-    }, 2000);
+    setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id)), 2000);
   }, [getClickValue, gameState]);
   
   const handleOrbClick = useCallback((orbId) => {
@@ -1108,8 +1086,9 @@ const App = () => {
       if (upgrade.level >= (upgrade.maxLevel ?? Infinity)) return prev;
 
       let cost = upgrade.cost;
-      if (upgrade.currency === Currency.Stardust && prev.upgrades.acceleratedLearning) {
-        cost *= prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level);
+      const costReduction = prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level) * prev.upgrades.gasSpectroscopy.effect(prev.upgrades.gasSpectroscopy.level);
+      if (upgrade.currency !== Currency.Antimatter) {
+        cost *= costReduction;
       }
       
       if (prev.currencies[upgrade.currency] < cost) return prev;
@@ -1134,11 +1113,22 @@ const App = () => {
     setGameState(prev => {
         const antimatterGained = 1 + prev.stats.supernovaCount;
         const prestigeUpgrades = { ...prev.upgrades };
+        
         Object.keys(INITIAL_UPGRADES).forEach(key => {
-            if (INITIAL_UPGRADES[key].currency !== Currency.Antimatter) {
-                prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
-            }
+            const initialU = INITIAL_UPGRADES[key];
+            if (initialU.currency === Currency.Antimatter) return;
+            if (initialU.currency === Currency.Stardust && prev.upgrades.unlockStardustUpgrades.level > 0) return;
+            if (initialU.currency === Currency.NebulaGas && prev.upgrades.unlockNebulaUpgrades.level > 0) return;
+
+            prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
         });
+
+        const persistentProbesLevel = prev.upgrades.persistentProbes.effect(prev.upgrades.persistentProbes.level);
+        if (persistentProbesLevel > 0) {
+            const probe = prestigeUpgrades.probe;
+            probe.level = persistentProbesLevel;
+            probe.cost = Math.ceil(probe.baseCost * Math.pow(probe.costIncrease, probe.level));
+        }
         
         const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
         const startingNebulaGas = prev.upgrades.quantumFoam.effect(prev.upgrades.quantumFoam.level);
@@ -1189,22 +1179,32 @@ const App = () => {
 
   const gameTick = useCallback(() => {
     const now = Date.now();
-    const timeDelta = Math.min(86400, (now - gameState.lastTick) / 1000);
+    let timeDelta = (now - gameState.lastTick) / 1000;
+
+    const temporalWarpBoost = gameState.upgrades.temporalWarp.effect(gameState.upgrades.temporalWarp.level);
+    const offlineTime = (Date.now() - (gameState.lastTick || Date.now())) / 1000;
+    if (offlineTime > 5) { // more than 5 seconds offline
+        timeDelta *= temporalWarpBoost;
+    }
+    timeDelta = Math.min(86400, timeDelta); // Cap offline time to 24h
 
     const { upgrades, stats } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * 0.25);
+    const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
     const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
     const cosmicEssenceBoost = upgrades.cosmicEssence.effect(upgrades.cosmicEssence.level);
+    const plasmaBoost = upgrades.plasmaConduits.effect(upgrades.plasmaConduits.level);
     
     const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
     const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
-
-    const sps = (probeProduction + asteroidProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost;
+    const dysonProduction = upgrades.dysonSwarm.effect(upgrades.dysonSwarm.level) * upgrades.swarmSynergy.effect(upgrades.swarmSynergy.level, gameState);
+    const autoClickProduction = upgrades.photonicImpulse.effect(upgrades.photonicImpulse.level) * getClickValue();
+    
+    const sps = (probeProduction + asteroidProduction + dysonProduction + autoClickProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost * plasmaBoost;
     setStardustPerSecond(sps);
     
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
     const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost;
+    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
     
     let nextGameState = {...gameState};
 
@@ -1273,7 +1273,7 @@ const App = () => {
                 setAsteroids(current => current.filter(a => a.id !== target.id));
                 return null;
             } else {
-                const droneSpeed = 20;
+                const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
                 const moveDist = droneSpeed * timeDelta;
                 drone.x += (dx / dist) * moveDist;
                 drone.y += (dy / dist) * moveDist;
@@ -1341,6 +1341,7 @@ const App = () => {
       const minutes = Math.floor((playTime % 3600) / 60);
       const seconds = Math.floor(playTime % 60);
       const formattedPlayTime = `${hours}h ${minutes}m ${seconds}s`;
+      const prestigeBonusRaw = 0.25 + gameState.upgrades.singularity.effect(gameState.upgrades.singularity.level);
 
       return {
           stardustPerSecond: stardustPerSecond,
@@ -1348,9 +1349,9 @@ const App = () => {
           totalClicks: gameState.stats.totalClicks,
           supernovaCount: gameState.stats.supernovaCount,
           playTime: formattedPlayTime,
-          prestigeBonus: `${(gameState.stats.supernovaCount * 25).toFixed(0)}%`,
+          prestigeBonus: `${(gameState.stats.supernovaCount * prestigeBonusRaw * 100).toFixed(0)}%`,
       }
-  }, [stardustPerSecond, getClickValue, gameState.stats]);
+  }, [stardustPerSecond, getClickValue, gameState.stats, gameState.upgrades]);
 
   return (
     <div className="app-container">
