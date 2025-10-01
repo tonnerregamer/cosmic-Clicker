@@ -622,7 +622,8 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 
 // === FROM components/MainGameArea.tsx ===
 const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick, collectionEffects, drones, supernovaPhase }) => {
-  const hueShift = Math.min(starPowerLevel * 0.25, 45); 
+  const safeStarPower = (typeof starPowerLevel === 'number' && isFinite(starPowerLevel)) ? starPowerLevel : 0;
+  const hueShift = Math.min(safeStarPower * 0.25, 45); 
   const baseHue = 50;
   
   const fromColor = `hsl(${baseHue - hueShift}, 100%, 60%)`;
@@ -1050,17 +1051,22 @@ const loadGameState = () => {
 
         const savedState = JSON.parse(savedJson);
         const initialState = getInitialState();
-
         const currentUpgrades = initialState.upgrades;
+
         if (savedState.upgrades) {
             for (const id in currentUpgrades) {
-                if (savedState.upgrades[id] && INITIAL_UPGRADES[id]) { // Check if upgrade still exists
-                    const savedLevel = savedState.upgrades[id].level;
-                    if (typeof savedLevel === 'number' && isFinite(savedLevel)) {
+                const saved = savedState.upgrades[id];
+                const initial = INITIAL_UPGRADES[id];
+                if (saved && initial) {
+                    const savedLevel = saved.level;
+                    if (typeof savedLevel === 'number' && isFinite(savedLevel) && savedLevel >= 0) {
                         currentUpgrades[id].level = savedLevel;
-                        currentUpgrades[id].cost = Math.ceil(
-                            currentUpgrades[id].baseCost * Math.pow(currentUpgrades[id].costIncrease, savedLevel)
-                        );
+                        const newCost = Math.ceil(initial.baseCost * Math.pow(initial.costIncrease, savedLevel));
+                        currentUpgrades[id].cost = isFinite(newCost) ? newCost : initial.cost;
+                    } else {
+                        console.warn(`Corrupted level for upgrade '${id}'. Resetting.`);
+                        currentUpgrades[id].level = initial.level;
+                        currentUpgrades[id].cost = initial.cost;
                     }
                 }
             }
@@ -1620,6 +1626,9 @@ const App = () => {
             display: grid;
             grid-template-columns: 2fr 1fr;
             height: 100%;
+          }
+          .upgrades-container {
+            min-height: 0; /* Fix for scrollbar on grid item child */
           }
         }
       `}</style>
