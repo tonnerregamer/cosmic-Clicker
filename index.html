@@ -219,6 +219,9 @@ const UpgradeType = {
 
 // === FROM utils/format.ts ===
 const formatNumber = (num) => {
+    if (typeof num !== 'number' || isNaN(num)) {
+        num = 0;
+    }
     if (num < 1000) {
         return num.toFixed(1).replace(/\.0$/, '');
     }
@@ -510,9 +513,14 @@ const StatsPanel = ({ stardustHistory, nebulaHistory, stats, onReset }) => {
 
             <dl style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                 <StatDisplay label="Stardust/sec" value={formatNumber(stats.stardustPerSecond)} />
+                <StatDisplay label="Gaz Nébuleux/sec" value={formatNumber(stats.nebulaPerSecond)} />
                 <StatDisplay label="Stardust/clic" value={formatNumber(stats.stardustPerClick)} />
                 <StatDisplay label="Bonus de Prestige" value={stats.prestigeBonus} />
                 <StatDisplay label="Clics totaux" value={formatNumber(stats.totalClicks)} />
+                <StatDisplay label="Poussière d'étoiles (cette Supernova)" value={stats.totalStardustEver} />
+                <StatDisplay label="Gaz Nébuleux (cette Supernova)" value={stats.totalNebulaGasEver} />
+                <StatDisplay label="Orbes collectés" value={stats.orbsClicked} />
+                <StatDisplay label="Astéroïdes minés" value={stats.asteroidsMined} />
                 <StatDisplay label="Supernovas" value={stats.supernovaCount} />
                 <StatDisplay label="Temps de jeu" value={stats.playTime} />
             </dl>
@@ -1034,10 +1042,13 @@ const getInitialState = () => {
         upgrades: upgradesCopy,
         totalStardustEver: 0,
         totalNebulaGasEver: 0,
+        totalAntimatterEver: 0,
         stats: {
             totalClicks: 0,
             supernovaCount: 0,
             playTime: 0,
+            orbsClicked: 0,
+            asteroidsMined: 0,
         },
         lastTick: Date.now(),
         antimatterRetrofitDone: false,
@@ -1077,6 +1088,7 @@ const loadGameState = () => {
             currencies: savedState.currencies ?? initialState.currencies,
             totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
             totalNebulaGasEver: savedState.totalNebulaGasEver ?? initialState.totalNebulaGasEver,
+            totalAntimatterEver: savedState.totalAntimatterEver ?? initialState.totalAntimatterEver,
             stats: {
                 ...initialState.stats,
                 ...(savedState.stats ?? {}),
@@ -1114,13 +1126,14 @@ const App = () => {
   const [drones, setDrones] = useState([]);
   const [collectionEffects, setCollectionEffects] = useState([]);
   const [stardustPerSecond, setStardustPerSecond] = useState(0);
+  const [nebulaPerSecond, setNebulaPerSecond] = useState(0);
   const [supernovaPhase, setSupernovaPhase] = useState('idle'); // idle, start, collapse, explode, rebuild
   const [stardustHistory, setStardustHistory] = useState([]);
   const [nebulaHistory, setNebulaHistory] = useState([]);
   const [offlineReport, setOfflineReport] = useState(null);
   const lastHistoryUpdate = useRef(Date.now());
 
-  const prestigeCost = useMemo(() => 5e6 * Math.pow(4.5, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
+  const prestigeCost = useMemo(() => 1e6 * Math.pow(3.5, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
 
   useEffect(() => {
     const handleOfflineGains = () => {
@@ -1139,13 +1152,13 @@ const App = () => {
             
             const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
             const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-            const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+            const nps = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
             
             const temporalWarpBoost = upgrades.temporalWarp.effect(upgrades.temporalWarp.level);
             
             setOfflineReport({
                 stardust: sps * offlineTime * temporalWarpBoost,
-                nebulaGas: nebulaPerSecond * offlineTime * temporalWarpBoost,
+                nebulaGas: nps * offlineTime * temporalWarpBoost,
                 duration: offlineTime,
             });
         }
@@ -1226,6 +1239,7 @@ const App = () => {
         },
         totalStardustEver: prev.totalStardustEver + clickValue,
         totalNebulaGasEver: prev.totalNebulaGasEver + nebulaGainedFromClick,
+        totalAntimatterEver: (prev.totalAntimatterEver || 0) + antimatterGainedFromClick,
         stats: { ...prev.stats, totalClicks: prev.stats.totalClicks + 1 },
     }));
 
@@ -1245,6 +1259,7 @@ const App = () => {
       ...prev,
       currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + orb.value },
       totalStardustEver: prev.totalStardustEver + orb.value,
+      stats: { ...prev.stats, orbsClicked: (prev.stats.orbsClicked || 0) + 1 },
     }));
     
     setClickableOrbs(prev => prev.filter(o => o.id !== orbId));
@@ -1258,6 +1273,7 @@ const App = () => {
       ...prev,
       currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + asteroid.value },
       totalStardustEver: prev.totalStardustEver + asteroid.value,
+      stats: { ...prev.stats, asteroidsMined: (prev.stats.asteroidsMined || 0) + 1 },
     }));
     
     setAsteroids(prev => prev.filter(a => a.id !== asteroidId));
@@ -1269,9 +1285,12 @@ const App = () => {
       if (upgrade.level >= (upgrade.maxLevel ?? Infinity)) return prev;
 
       let cost = upgrade.cost;
-      const costReduction = prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level) * prev.upgrades.gasSpectroscopy.effect(prev.upgrades.gasSpectroscopy.level);
+      
       if (upgrade.currency !== Currency.Antimatter) {
-        cost *= costReduction;
+          cost *= prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level);
+      }
+      if (upgrade.currency === Currency.Stardust) {
+          cost *= prev.upgrades.gasSpectroscopy.effect(prev.upgrades.gasSpectroscopy.level);
       }
       
       if (prev.currencies[upgrade.currency] < cost) return prev;
@@ -1329,7 +1348,13 @@ const App = () => {
               upgrades: prestigeUpgrades,
               totalStardustEver: startingStardust,
               totalNebulaGasEver: startingNebulaGas,
-              stats: { ...prev.stats, supernovaCount: prev.stats.supernovaCount + 1 },
+              totalAntimatterEver: (prev.totalAntimatterEver || 0) + antimatterGained,
+              stats: { 
+                  ...prev.stats, 
+                  supernovaCount: prev.stats.supernovaCount + 1,
+                  orbsClicked: 0,
+                  asteroidsMined: 0,
+              },
               lastTick: Date.now(),
           };
       });
@@ -1354,6 +1379,7 @@ const App = () => {
         setAsteroids([]);
         setDrones([]);
         setStardustPerSecond(0);
+        setNebulaPerSecond(0);
         setStardustHistory([]);
         setNebulaHistory([]);
         lastHistoryUpdate.current = Date.now();
@@ -1397,7 +1423,8 @@ const App = () => {
     
     const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
     const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-    const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+    const nps = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+    setNebulaPerSecond(nps);
 
     // --- Prepare for State Changes (Work on copies) ---
     let stardustFromCollection = 0;
@@ -1437,13 +1464,16 @@ const App = () => {
     if (collectedAsteroidIds.size > 0) {
         newAsteroids = newAsteroids.filter(a => !collectedAsteroidIds.has(a.id));
     }
+    const numAsteroidsCollectedByDrones = collectedAsteroidIds.size;
     
     // --- Orb Collection by Drones ---
     const orbitalDroneLevel = upgrades.orbitalDrones.level;
+    let numOrbsCollectedByDrones = 0;
     if (orbitalDroneLevel >= 3 && newOrbs.length > 0) {
         const valueFromOrbs = newOrbs.reduce((sum, o) => sum + o.value, 0);
         stardustFromCollection += valueFromOrbs;
         newOrbs.forEach(triggerCollectionEffect);
+        numOrbsCollectedByDrones = newOrbs.length;
         newOrbs = [];
     }
 
@@ -1485,7 +1515,7 @@ const App = () => {
 
     setGameState(prev => {
         const stardustFromPassive = sps * timeDelta;
-        const nebulaFromPassive = nebulaPerSecond * timeDelta;
+        const nebulaFromPassive = nps * timeDelta;
 
         const newStardust = prev.currencies[Currency.Stardust] + stardustFromPassive + stardustFromCollection;
         const newNebulaGas = prev.currencies[Currency.NebulaGas] + nebulaFromPassive;
@@ -1511,7 +1541,12 @@ const App = () => {
             },
             totalStardustEver: prev.totalStardustEver + stardustFromPassive + stardustFromCollection,
             totalNebulaGasEver: prev.totalNebulaGasEver + nebulaFromPassive,
-            stats: { ...prev.stats, playTime: prev.stats.playTime + timeDelta },
+            stats: { 
+                ...prev.stats, 
+                playTime: prev.stats.playTime + timeDelta,
+                asteroidsMined: (prev.stats.asteroidsMined || 0) + numAsteroidsCollectedByDrones,
+                orbsClicked: (prev.stats.orbsClicked || 0) + numOrbsCollectedByDrones,
+            },
             lastTick: now,
         };
     });
@@ -1533,13 +1568,18 @@ const App = () => {
 
       return {
           stardustPerSecond: stardustPerSecond,
+          nebulaPerSecond: nebulaPerSecond,
           stardustPerClick: getClickValue(),
           totalClicks: gameState.stats.totalClicks,
           supernovaCount: gameState.stats.supernovaCount,
           playTime: formattedPlayTime,
           prestigeBonus: `${(gameState.stats.supernovaCount * prestigeBonusRaw * 100).toFixed(0)}%`,
+          totalStardustEver: formatNumber(gameState.totalStardustEver),
+          totalNebulaGasEver: formatNumber(gameState.totalNebulaGasEver),
+          orbsClicked: formatNumber(gameState.stats.orbsClicked || 0),
+          asteroidsMined: formatNumber(gameState.stats.asteroidsMined || 0),
       }
-  }, [stardustPerSecond, getClickValue, gameState.stats, gameState.upgrades]);
+  }, [stardustPerSecond, nebulaPerSecond, getClickValue, gameState]);
 
   return (
     <div className="app-container">
