@@ -124,6 +124,12 @@
         90% { opacity: 1; }
         100% { transform: translateY(-100vh); opacity: 0; }
       }
+      @keyframes ripple-effect-anim {
+        to {
+          transform: translate(-50%, -50%) scale(4);
+          opacity: 0;
+        }
+      }
       
       /* New Grand Distillation Animations */
       @keyframes distillation-fade-in-out {
@@ -134,12 +140,17 @@
       }
       @keyframes distillation-burst {
         0% { transform: scale(0.1); opacity: 0; }
-        50% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(500); opacity: 0; }
+        20% { opacity: 1; }
+        100% { transform: scale(50); opacity: 0; }
       }
       @keyframes distillation-wave {
         0% { transform: scale(0); opacity: 1; }
         100% { transform: scale(3); opacity: 0; }
+      }
+      @keyframes distillation-flash-anim {
+        0% { transform: scale(0); opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { transform: scale(2); opacity: 0; }
       }
 
       /* Prestige Sequence Animations */
@@ -149,23 +160,16 @@
         50% { transform: translateX(5px); }
         75% { transform: translateX(-5px); }
       }
-      @keyframes ui-slide-out-top {
-        to { transform: translateY(-150%); opacity: 0; }
+      @keyframes ui-dissolve-out {
+        to { transform: scale(0.8); opacity: 0; filter: blur(5px); }
       }
-      @keyframes ui-slide-out-right {
-        to { transform: translateX(150%); opacity: 0; }
-      }
-       @keyframes ui-slide-in-top {
-        from { transform: translateY(-150%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      @keyframes ui-slide-in-right {
-        from { transform: translateX(150%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+      @keyframes ui-reform-in {
+        from { transform: scale(0.8); opacity: 0; filter: blur(5px); }
+        to { transform: scale(1); opacity: 1; filter: blur(0); }
       }
       @keyframes flask-collapse-to-center {
-        0% { transform: scale(1); }
-        100% { transform: scale(0); }
+        0% { transform: scale(1); filter: brightness(1); }
+        100% { transform: scale(0); filter: brightness(50); }
       }
       @keyframes modal-fade-in {
         from { opacity: 0; transform: scale(0.95); }
@@ -224,12 +228,12 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <!-- Load Babel for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
   }
 }
 </script>
@@ -652,6 +656,12 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
                         }
                         .distillation-button:hover:not(:disabled) {
                           background-color: #f65f77;
+                          transform: translateY(-2px);
+                          box-shadow: 0 15px 20px -5px rgba(244, 63, 94, 0.3), 0 6px 8px -3px rgba(244, 63, 94, 0.3);
+                        }
+                        .distillation-button:active:not(:disabled) {
+                          transform: translateY(0px);
+                          box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.2), 0 4px 6px -2px rgba(244, 63, 94, 0.2);
                         }
                         .distillation-button:disabled {
                           background-color: var(--rose-800);
@@ -660,7 +670,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
                           box-shadow: none;
                         }
                       `}</style>
-                        Begin Distillation
+                        Begin the Great Work
                     </button>
                 </div>
                 {filteredUpgrades.map((upgrade) => (
@@ -713,9 +723,24 @@ const AnimatedParticles = () => {
 };
 
 const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssences, onEssenceClick, golems, onGolemClick, collectionEffects, homunculi, distillationPhase, lasers }) => {
+  const [ripples, setRipples] = useState([]);
   const safePower = (typeof alchemicalPower === 'number' && isFinite(alchemicalPower)) ? alchemicalPower : 0;
   const hueShift = Math.min(safePower * 0.1, 120); 
   const coreColor = `hsl(${180 + hueShift}, 80%, 50%)`;
+
+  const handleAtomClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const newRipple = { id: Date.now(), x, y };
+    setRipples(r => [...r, newRipple]);
+    setTimeout(() => {
+        setRipples(r => r.filter(rip => rip.id !== newRipple.id));
+    }, 1000);
+
+    onClick(e);
+  };
 
   const atomStyle = {
     position: 'relative',
@@ -868,7 +893,7 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
       })}
 
       <button
-        onClick={onClick}
+        onClick={handleAtomClick}
         className="active-scale-95 atom-button"
         aria-label="Click to generate Prima Materia"
         style={atomStyle}
@@ -910,12 +935,20 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
                 left: 50%;
                 transform: translateX(-50%);
             }
-            [data-distillation-phase="collapse"] .atom-button {
-                animation: flask-collapse-to-center 1s ease-in forwards;
+            [data-distillation-phase="collapsing"] .atom-button {
+                animation: flask-collapse-to-center 1s 0.2s ease-in forwards;
             }
-            [data-distillation-phase="explode"] .atom-button,
-            [data-distillation-phase="rebuild"] .atom-button {
+            [data-distillation-phase="exploding"] .atom-button,
+            [data-distillation-phase="reforming"] .atom-button {
                 opacity: 0;
+            }
+            .ripple-effect {
+              position: absolute;
+              border-radius: 50%;
+              border: 2px solid var(--sky-300);
+              pointer-events: none;
+              transform: translate(-50%, -50%) scale(0);
+              animation: ripple-effect-anim 1s ease-out;
             }
         `}</style>
         <div className="atom-container">
@@ -925,6 +958,10 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
             <div className="orbit orbit--3"><div className="electron"></div></div>
         </div>
         
+        {ripples.map(ripple => (
+            <div key={ripple.id} className="ripple-effect" style={{ left: ripple.x, top: ripple.y, width: '50px', height: '50px' }} />
+        ))}
+
         {/* Floating Numbers */}
         {floatingNumbers.map(num => (
           <div
@@ -1014,70 +1051,179 @@ const Header = ({ currencies }) => {
 };
 
 // === FROM App.tsx ===
+const LoadingScreen = ({ onLoaded }) => {
+    const [phase, setPhase] = useState('loading');
+
+    useEffect(() => {
+        const timer1 = setTimeout(() => setPhase('fading'), 2500);
+        const timer2 = setTimeout(() => {
+            setPhase('finished');
+            onLoaded();
+        }, 3500);
+
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+        };
+    }, [onLoaded]);
+
+    if (phase === 'finished') return null;
+
+    return (
+        <div className="loading-overlay" data-phase={phase}>
+            <style>{`
+                .loading-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background-color: var(--stone-950);
+                    z-index: 10000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    transition: opacity 1s ease-in-out;
+                    opacity: 1;
+                }
+                .loading-overlay[data-phase="fading"] {
+                    opacity: 0;
+                }
+                .alchemical-symbol {
+                    width: 150px;
+                    height: 150px;
+                    position: relative;
+                }
+                .alchemical-symbol svg {
+                    position: absolute;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    stroke: var(--sky-300);
+                    fill: none;
+                    stroke-width: 2;
+                    stroke-linecap: round;
+                }
+                .alchemical-symbol .circle-bg {
+                    stroke: var(--stone-800);
+                }
+                .alchemical-symbol .circle-draw {
+                    stroke-dasharray: 290;
+                    stroke-dashoffset: 290;
+                    animation: draw-circle 2s 0.5s ease-out forwards;
+                }
+                .alchemical-symbol .inner-symbols {
+                    opacity: 0;
+                    animation: fade-in-symbols 1s 1.5s ease-in forwards;
+                }
+                .alchemical-symbol .outer-ring {
+                    animation: spin-slow 20s linear infinite;
+                }
+                 .alchemical-symbol .inner-ring {
+                    transform-origin: center;
+                    animation: spin-slow-reverse 15s linear infinite;
+                }
+                .loading-title {
+                    font-family: var(--font-display);
+                    font-size: 2rem;
+                    color: var(--stone-200);
+                    margin-top: 1.5rem;
+                    opacity: 0;
+                    animation: fade-in-symbols 1.5s 1s ease-in forwards;
+                    text-shadow: 0 0 8px rgba(125, 211, 252, 0.5);
+                }
+
+                @keyframes draw-circle {
+                    to { stroke-dashoffset: 0; }
+                }
+                @keyframes fade-in-symbols {
+                    to { opacity: 1; }
+                }
+            `}</style>
+            <div className="alchemical-symbol">
+                 <svg viewBox="0 0 100 100" className="outer-ring">
+                    <circle className="circle-bg" cx="50" cy="50" r="48"/>
+                    <circle className="circle-draw" cx="50" cy="50" r="48" transform="rotate(-90 50 50)"/>
+                </svg>
+                <svg viewBox="0 0 100 100" className="inner-ring">
+                    <path className="inner-symbols" d="M50 10 L65 35 L50 60 L35 35 Z" strokeWidth="1.5" />
+                    <circle className="inner-symbols" cx="50" cy="50" r="20" strokeWidth="1.5" />
+                </svg>
+                 <svg viewBox="0 0 100 100">
+                    <path className="inner-symbols" d="M50 15 L50 85 M15 50 L85 50" strokeWidth="1" />
+                </svg>
+            </div>
+            <h1 className="loading-title">Alchemical Ascension</h1>
+        </div>
+    );
+};
+
+const ModalStyles = () => (
+    <style>{`
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background-color: var(--stone-800);
+            border: 1px solid var(--stone-700);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 28rem;
+            width: 90%;
+            text-align: center;
+            animation: modal-fade-in 0.3s ease-out;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+        }
+        .modal-content h2 {
+            font-family: var(--font-display);
+            color: var(--sky-300);
+            font-size: 1.5rem;
+            margin-top: 0;
+        }
+        .modal-content p {
+            color: var(--stone-400);
+            margin: 0.5rem 0 1.5rem;
+        }
+        .gains-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        .gain-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--stone-900);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        .gain-item .icon { width: 1.5rem; height: 1.5rem; }
+        .gain-item .amount { font-weight: bold; font-family: var(--font-display); }
+        .gain-item .name { font-size: 0.875rem; }
+        .modal-button {
+            width: 100%;
+            background-color: var(--sky-400);
+            color: var(--stone-900);
+            font-weight: bold;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 200ms, transform 150ms;
+        }
+        .modal-button:hover {
+            background-color: var(--sky-300);
+            transform: translateY(-2px);
+        }
+    `}</style>
+);
+
 const OfflineReportModal = ({ report, onClose }) => (
     <div className="modal-overlay">
-        <style>{`
-            .modal-overlay {
-                position: fixed;
-                inset: 0;
-                background-color: rgba(0, 0, 0, 0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-                backdrop-filter: blur(4px);
-            }
-            .modal-content {
-                background-color: var(--stone-800);
-                border: 1px solid var(--stone-700);
-                border-radius: 0.75rem;
-                padding: 2rem;
-                max-width: 28rem;
-                width: 90%;
-                text-align: center;
-                animation: modal-fade-in 0.3s ease-out;
-            }
-            .modal-content h2 {
-                font-family: var(--font-display);
-                color: var(--sky-300);
-                font-size: 1.5rem;
-                margin-top: 0;
-            }
-            .modal-content p {
-                color: var(--stone-400);
-                margin: 0.5rem 0 1.5rem;
-            }
-            .gains-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
-                margin: 1.5rem 0;
-                text-align: left;
-            }
-            .gain-item {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                background-color: var(--stone-900);
-                padding: 0.5rem;
-                border-radius: 0.5rem;
-            }
-            .gain-item .icon { width: 1.5rem; height: 1.5rem; }
-            .gain-item .amount { font-weight: bold; font-family: var(--font-display); }
-            .gain-item .name { font-size: 0.875rem; }
-            .modal-button {
-                width: 100%;
-                background-color: var(--sky-400);
-                color: var(--stone-900);
-                font-weight: bold;
-                padding: 0.75rem 1rem;
-                border-radius: 0.5rem;
-                transition: background-color 200ms;
-            }
-            .modal-button:hover {
-                background-color: var(--sky-300);
-            }
-        `}</style>
+        <ModalStyles />
         <div className="modal-content">
             <h2>Welcome Back, Alchemist!</h2>
             <p>While you were away for {formatDuration(report.duration)}, your laboratory produced:</p>
@@ -1116,6 +1262,82 @@ const OfflineReportModal = ({ report, onClose }) => (
                 )}
             </div>
             <button onClick={onClose} className="modal-button">Continue</button>
+        </div>
+    </div>
+);
+
+const DistillationConfirmationModal = ({ onConfirm, onCancel, cost, gain }) => (
+    <div className="modal-overlay">
+        <ModalStyles />
+        <style>{`
+          .distill-summary {
+            background-color: var(--stone-900);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: left;
+            border: 1px solid var(--stone-700);
+          }
+          .distill-summary > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+          }
+          .distill-summary > div:not(:last-child) {
+            border-bottom: 1px solid var(--stone-700);
+          }
+          .distill-summary span { color: var(--stone-400); }
+          .distill-summary .cost-value { font-weight: bold; color: var(--amber-300); font-family: var(--font-display); }
+          .distill-summary .gain-value { font-weight: bold; color: var(--rose-400); font-family: var(--font-display); }
+          .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+          .modal-button-cancel {
+            flex: 1; background-color: var(--stone-600); color: var(--stone-200); font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: background-color 200ms, transform 150ms;
+          }
+          .modal-button-cancel:hover { background-color: var(--stone-500); transform: translateY(-2px); }
+          .modal-button-confirm {
+            flex: 2; background-color: var(--rose-500); color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: background-color 200ms, transform 150ms;
+          }
+          .modal-button-confirm:hover { background-color: var(--rose-400); transform: translateY(-2px); }
+        `}</style>
+        <div className="modal-content">
+            <h2 style={{color: 'var(--rose-400)'}}>The Grand Distillation</h2>
+            <p>Your progress will be reset in exchange for Alkahest, granting immense power for future endeavors. This act is irreversible.</p>
+            <div className="distill-summary">
+              <div>
+                <span>Cost</span>
+                <span className="cost-value">{formatNumber(cost)} Prima Materia</span>
+              </div>
+              <div>
+                <span>Gain</span>
+                <span className="gain-value">+{formatNumber(gain)} Alkahest</span>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button onClick={onCancel} className="modal-button-cancel">Reconsider</button>
+              <button onClick={onConfirm} className="modal-button-confirm">Begin the Great Work</button>
+            </div>
+        </div>
+    </div>
+);
+
+const DistillationSummaryModal = ({ alkahestGained, onClose }) => (
+    <div className="modal-overlay">
+        <ModalStyles />
+        <div className="modal-content">
+            <h2>Distillation Complete</h2>
+            <p>The cosmos has been reformed by your will. Through sacrifice, you have achieved a new level of understanding.</p>
+            <div className="gains-grid" style={{gridTemplateColumns: '1fr'}}>
+               <div className="gain-item" style={{color: 'var(--rose-400)', justifyContent: 'center'}}>
+                    <div className="icon" style={{width: '2rem', height: '2rem'}}><AlkahestIcon /></div>
+                    <div>
+                        <div className="amount" style={{fontSize: '1.5rem'}}>+{formatNumber(alkahestGained)}</div>
+                        <div className="name">Alkahest</div>
+                    </div>
+                </div>
+            </div>
+            <p style={{marginTop: '1.5rem'}}>Your journey begins anew, bolstered by ancient knowledge.</p>
+            <button onClick={onClose} className="modal-button">Ascend Again</button>
         </div>
     </div>
 );
@@ -1228,10 +1450,6 @@ const loadGameState = () => {
             alkahestRetrofitDone: savedState.alkahestRetrofitDone ?? false,
         };
 
-        if (finalState.currencies[Currency.Aetherium]) {
-            delete finalState.currencies[Currency.Aetherium];
-        }
-
         // Retroactive Alkahest calculation
         if (!finalState.alkahestRetrofitDone && finalState.stats.distillationCount > 0) {
             const S = finalState.stats.distillationCount;
@@ -1252,6 +1470,7 @@ const loadGameState = () => {
 
 
 const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [gameState, setGameState] = useState(loadGameState);
   const [floatingNumbers, setFloatingNumbers] = useState([]);
   const [floatingEssences, setFloatingEssences] = useState([]);
@@ -1261,8 +1480,8 @@ const App = () => {
   const [lasers, setLasers] = useState([]);
   const [primaMateriaPerSecond, setPrimaMateriaPerSecond] = useState(0);
   const [philosophersDewPerSecond, setPhilosophersDewPerSecond] = useState(0);
-  const [aetheriumPerSecond, setAetheriumPerSecond] = useState(0);
   const [distillationPhase, setDistillationPhase] = useState('idle');
+  const [distillationSummary, setDistillationSummary] = useState(null);
   const [primaMateriaHistory, setPrimaMateriaHistory] = useState([]);
   const [philosophersDewHistory, setPhilosophersDewHistory] = useState([]);
   const [offlineReport, setOfflineReport] = useState(null);
@@ -1274,15 +1493,16 @@ const App = () => {
   }, [gameState]);
 
   const getClickValue = useCallback((state) => {
-    if (!state) state = gameState;
+    if (!state) state = gameStateRef.current;
     const { upgrades, stats, totalPhilosophersDewEver } = state;
     const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level, state)));
     const igneousBoost = upgrades.igneousDew.effect(upgrades.igneousDew.level, state);
     const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level, state) + upgrades.catalyticWand.effect(upgrades.catalyticWand.level, state);
     return baseClick * distillationBoost * igneousBoost;
-  }, [gameState]);
+  }, []);
 
   const prestigeCost = useMemo(() => 1e6 * Math.pow(3.5, gameState.stats.distillationCount), [gameState.stats.distillationCount]);
+  const alkahestToGain = useMemo(() => 1 + gameState.stats.distillationCount, [gameState.stats.distillationCount]);
 
   // Pass a snapshot of the gameState to the calculation functions
   const calculateRates = useCallback((state) => {
@@ -1310,34 +1530,35 @@ const App = () => {
         * temporalDistortionBoost;
     
     return { pmps, pdps };
-  }, [gameState, getClickValue]);
+  }, [getClickValue]);
 
 
   useEffect(() => {
     const handleOfflineGains = () => {
         const now = Date.now();
-        const offlineTime = (now - gameState.lastTick) / 1000;
+        const state = gameStateRef.current;
+        const offlineTime = (now - state.lastTick) / 1000;
 
         if (offlineTime > 10) { // Only show for more than 10s offline
-            const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level, gameState);
+            const aevumWarpBoost = state.upgrades.aevumWarp.effect(state.upgrades.aevumWarp.level, state);
             const effectiveOfflineTime = offlineTime * aevumWarpBoost;
 
-            const rates = calculateRates(gameState);
+            const rates = calculateRates(state);
             
             let essenceGains = 0;
             let golemGains = 0;
             let essencesCollected = 0;
             let golemsHarvested = 0;
 
-            if (gameState.upgrades.essenceHomunculi.level >= 3) {
-                const essenceSpawnRate = gameState.upgrades.essenceCollector.effect(gameState.upgrades.essenceCollector.level, gameState);
-                const essenceValue = (rates.pmps + getClickValue(gameState)) * (5 + gameState.upgrades.essenceCollector.level * 0.5) * gameState.upgrades.aethericWells.effect(gameState.upgrades.aethericWells.level, gameState);
+            if (state.upgrades.essenceHomunculi.level >= 3) {
+                const essenceSpawnRate = state.upgrades.essenceCollector.effect(state.upgrades.essenceCollector.level, state);
+                const essenceValue = (rates.pmps + getClickValue(state)) * (5 + state.upgrades.essenceCollector.level * 0.5) * state.upgrades.aethericWells.effect(state.upgrades.aethericWells.level, state);
                 essencesCollected = Math.floor(essenceSpawnRate * effectiveOfflineTime);
                 essenceGains = essencesCollected * essenceValue;
             }
-            if (gameState.upgrades.homunculusService.level >= 3) {
-                const golemSpawnRate = gameState.upgrades.golemProspecting.effect(gameState.upgrades.golemProspecting.level, gameState);
-                const golemValue = (rates.pmps + getClickValue(gameState)) * (10 + gameState.upgrades.golemProspecting.level); // Base value without laser damage
+            if (state.upgrades.homunculusService.level >= 3) {
+                const golemSpawnRate = state.upgrades.golemProspecting.effect(state.upgrades.golemProspecting.level, state);
+                const golemValue = (rates.pmps + getClickValue(state)) * (10 + state.upgrades.golemProspecting.level); // Base value without laser damage
                 golemsHarvested = Math.floor(golemSpawnRate * effectiveOfflineTime);
                 golemGains = golemsHarvested * golemValue;
             }
@@ -1346,32 +1567,34 @@ const App = () => {
             const philosophersDewGained = rates.pdps * effectiveOfflineTime;
             const totalMateriaGained = primaMateriaGained + essenceGains + golemGains;
 
-            setOfflineReport({
-                primaMateria: primaMateriaGained,
-                philosophersDew: philosophersDewGained,
-                essences: essenceGains,
-                golems: golemGains,
-                duration: offlineTime,
-            });
+            if (totalMateriaGained > 0 || philosophersDewGained > 0) {
+              setOfflineReport({
+                  primaMateria: primaMateriaGained,
+                  philosophersDew: philosophersDewGained,
+                  essences: essenceGains,
+                  golems: golemGains,
+                  duration: offlineTime,
+              });
 
-            // Apply the gains directly to the state
-            setGameState(prev => ({
-                ...prev,
-                currencies: {
-                    ...prev.currencies,
-                    [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + totalMateriaGained,
-                    [Currency.PhilosophersDew]: prev.currencies[Currency.PhilosophersDew] + philosophersDewGained,
-                },
-                totalPrimaMateriaEver: prev.totalPrimaMateriaEver + totalMateriaGained,
-                totalPhilosophersDewEver: prev.totalPhilosophersDewEver + philosophersDewGained,
-                stats: {
-                    ...prev.stats,
-                    playTime: prev.stats.playTime + offlineTime,
-                    golemsMined: (prev.stats.golemsMined || 0) + golemsHarvested,
-                    essencesClicked: (prev.stats.essencesClicked || 0) + essencesCollected,
-                },
-                lastTick: now, // IMPORTANT: Update lastTick to prevent gameLoop from re-applying gains
-            }));
+              // Apply the gains directly to the state
+              setGameState(prev => ({
+                  ...prev,
+                  currencies: {
+                      ...prev.currencies,
+                      [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + totalMateriaGained,
+                      [Currency.PhilosophersDew]: prev.currencies[Currency.PhilosophersDew] + philosophersDewGained,
+                  },
+                  totalPrimaMateriaEver: prev.totalPrimaMateriaEver + totalMateriaGained,
+                  totalPhilosophersDewEver: prev.totalPhilosophersDewEver + philosophersDewGained,
+                  stats: {
+                      ...prev.stats,
+                      playTime: prev.stats.playTime + offlineTime,
+                      golemsMined: (prev.stats.golemsMined || 0) + golemsHarvested,
+                      essencesClicked: (prev.stats.essencesClicked || 0) + essencesCollected,
+                  },
+                  lastTick: now, // IMPORTANT: Update lastTick to prevent gameLoop from re-applying gains
+              }));
+            }
         }
     };
     handleOfflineGains();
@@ -1398,7 +1621,7 @@ const App = () => {
   }, []);
 
   const handleFlaskClick = useCallback((e) => {
-    const clickValue = getClickValue(gameState);
+    const clickValue = getClickValue(gameStateRef.current);
     
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width * 100;
@@ -1417,7 +1640,7 @@ const App = () => {
     const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y };
     setFloatingNumbers(current => [...current, newFloatingNumber]);
     setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id)), 2000);
-  }, [getClickValue, gameState]);
+  }, [getClickValue]);
   
   const handleEssenceClick = useCallback((essenceId) => {
     const essence = floatingEssences.find(o => o.id === essenceId);
@@ -1479,15 +1702,20 @@ const App = () => {
 
   const handlePrestige = useCallback(() => {
     if (gameState.currencies[Currency.PrimaMateria] < prestigeCost || distillationPhase !== 'idle') return;
-    
-    setDistillationPhase('start');
+    setDistillationPhase('confirming');
+  }, [gameState.currencies, prestigeCost, distillationPhase]);
+  
+  const executePrestige = useCallback(() => {
+    setDistillationPhase('ui-dissolve');
 
-    setTimeout(() => setDistillationPhase('collapse'), 1000);
+    setTimeout(() => setDistillationPhase('collapsing'), 800);
 
     setTimeout(() => {
-      setDistillationPhase('explode');
+      setDistillationPhase('exploding');
+      const alkahestGained = 1 + gameStateRef.current.stats.distillationCount;
+      setDistillationSummary({ alkahestGained });
+
       setGameState(prev => {
-          const alkahestGained = 1 + prev.stats.distillationCount;
           const prestigeUpgrades = { ...prev.upgrades };
           
           Object.keys(INITIAL_UPGRADES).forEach(key => {
@@ -1516,6 +1744,7 @@ const App = () => {
               stats: { 
                   ...prev.stats, 
                   distillationCount: prev.stats.distillationCount + 1,
+                  totalClicks: 0,
                   essencesClicked: 0,
                   golemsMined: 0,
               },
@@ -1527,12 +1756,17 @@ const App = () => {
       setHomunculi([]);
       setPrimaMateriaHistory([]);
       setPhilosophersDewHistory([]);
-    }, 2000);
+    }, 1800);
 
-    setTimeout(() => setDistillationPhase('rebuild'), 3500);
-    setTimeout(() => setDistillationPhase('idle'), 4500);
+    setTimeout(() => setDistillationPhase('reforming'), 4000);
+    setTimeout(() => setDistillationPhase('summary'), 5000);
 
-  }, [gameState.currencies, prestigeCost, distillationPhase]);
+  }, []);
+
+  const closePrestigeSummary = useCallback(() => {
+    setDistillationPhase('idle');
+    setDistillationSummary(null);
+  }, []);
 
   const handleResetSave = useCallback(() => {
     if (window.confirm("Are you sure you want to reset your progress? This action is irreversible.")) {
@@ -1560,16 +1794,18 @@ const App = () => {
 
   const gameTick = useCallback(() => {
     const now = Date.now();
-    let timeDelta = (now - gameState.lastTick) / 1000;
+    let timeDelta = (now - gameStateRef.current.lastTick) / 1000;
     
-    const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level, gameState);
+    const currentState = gameStateRef.current;
+    
+    const aevumWarpBoost = currentState.upgrades.aevumWarp.effect(currentState.upgrades.aevumWarp.level, currentState);
     if (timeDelta > 5) { 
         timeDelta *= aevumWarpBoost;
     }
     timeDelta = Math.min(timeDelta, 86400);
     timeDelta = Math.max(0, timeDelta);
 
-    const rates = calculateRates(gameState);
+    const rates = calculateRates(currentState);
     setPrimaMateriaPerSecond(rates.pmps);
     setPhilosophersDewPerSecond(rates.pdps);
 
@@ -1611,7 +1847,7 @@ const App = () => {
     }
     const numGolemsCollected = collectedGolemIds.size;
     
-    const essenceHomunculiLevel = gameState.upgrades.essenceHomunculi.level;
+    const essenceHomunculiLevel = currentState.upgrades.essenceHomunculi.level;
     let numEssencesCollected = 0;
     if (essenceHomunculiLevel >= 3 && newEssences.length > 0) {
         const valueFromEssences = newEssences.reduce((sum, o) => sum + o.value, 0);
@@ -1622,9 +1858,9 @@ const App = () => {
     }
     
     // Laser damage to golems
-    if (gameState.upgrades.focusingLens.level > 0 && newGolems.length > 0) {
-        const laserDamage = gameState.upgrades.focusingLens.effect(gameState.upgrades.focusingLens.level, gameState) * timeDelta;
-        const critChance = gameState.upgrades.laserCritChance.effect(gameState.upgrades.laserCritChance.level, gameState);
+    if (currentState.upgrades.focusingLens.level > 0 && newGolems.length > 0) {
+        const laserDamage = currentState.upgrades.focusingLens.effect(currentState.upgrades.focusingLens.level, currentState) * timeDelta;
+        const critChance = currentState.upgrades.laserCritChance.effect(currentState.upgrades.laserCritChance.level, currentState);
         
         newGolems.forEach(golem => {
             let damage = laserDamage;
@@ -1647,25 +1883,25 @@ const App = () => {
     }
 
 
-    const collector = gameState.upgrades.essenceCollector;
+    const collector = currentState.upgrades.essenceCollector;
     if (collector.level > 0 && newEssences.length < 10) {
-        if (Math.random() < collector.effect(collector.level, gameState) * timeDelta) {
+        if (Math.random() < collector.effect(collector.level, currentState) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
             newEssences.push({
                 id: Date.now() + Math.random(),
-                value: (rates.pmps + getClickValue(gameState)) * (5 + collector.level * 0.5) * gameState.upgrades.aethericWells.effect(gameState.upgrades.aethericWells.level, gameState),
+                value: (rates.pmps + getClickValue(currentState)) * (5 + collector.level * 0.5) * currentState.upgrades.aethericWells.effect(currentState.upgrades.aethericWells.level, currentState),
                 x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
                 y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
             });
         }
     }
 
-    const prospector = gameState.upgrades.golemProspecting;
+    const prospector = currentState.upgrades.golemProspecting;
     if (prospector.level > 0 && newGolems.length < 5) {
-        if (Math.random() < prospector.effect(prospector.level, gameState) * timeDelta) {
+        if (Math.random() < prospector.effect(prospector.level, currentState) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
-            const baseValue = (rates.pmps + getClickValue(gameState)) * (10 + prospector.level);
-            const isGolden = Math.random() < gameState.upgrades.goldenTransmutation.effect(gameState.upgrades.goldenTransmutation.level, gameState);
+            const baseValue = (rates.pmps + getClickValue(currentState)) * (10 + prospector.level);
+            const isGolden = Math.random() < currentState.upgrades.goldenTransmutation.effect(currentState.upgrades.goldenTransmutation.level, currentState);
             const value = isGolden ? baseValue * 100 : baseValue;
             const maxHealth = 100 + prospector.level * 10;
 
@@ -1679,7 +1915,7 @@ const App = () => {
                 isGolden: isGolden
             };
             newGolems.push(newGolem);
-            if (gameState.upgrades.homunculusService.level >= 3 && !nextHomunculi.find(d => d.targetId === newGolem.id)) {
+            if (currentState.upgrades.homunculusService.level >= 3 && !nextHomunculi.find(d => d.targetId === newGolem.id)) {
                 nextHomunculi.push({ id: Date.now() + Math.random(), targetId: newGolem.id, x: 50, y: 50 });
             }
         }
@@ -1720,7 +1956,7 @@ const App = () => {
             lastTick: now,
         };
     });
-}, [gameState, getClickValue, golems, floatingEssences, homunculi, calculateRates]);
+}, [getClickValue, golems, floatingEssences, homunculi, calculateRates]);
 
   useGameLoop(gameTick, 100);
 
@@ -1739,7 +1975,7 @@ const App = () => {
       return {
           primaMateriaPerSecond: primaMateriaPerSecond,
           philosophersDewPerSecond: philosophersDewPerSecond,
-          primaMateriaPerClick: getClickValue(gameState),
+          primaMateriaPerClick: getClickValue(gameStateRef.current),
           totalClicks: gameState.stats.totalClicks,
           distillationCount: gameState.stats.distillationCount,
           playTime: formattedPlayTime,
@@ -1750,6 +1986,10 @@ const App = () => {
           golemsMined: formatNumber(gameState.stats.golemsMined || 0),
       }
   }, [primaMateriaPerSecond, philosophersDewPerSecond, getClickValue, gameState]);
+
+  if (isLoading) {
+    return <LoadingScreen onLoaded={() => setIsLoading(false)} />;
+  }
 
   return (
     <div className="app-container">
@@ -1781,23 +2021,19 @@ const App = () => {
           position: relative;
         }
         .upgrades-container, .header-wrapper {
-            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
         }
 
-        [data-distillation-phase="start"] .app-container {
+        [data-distillation-phase="ui-dissolve"] .app-container {
             animation: shake-subtle 0.5s;
         }
-        [data-distillation-phase="start"] .header-wrapper {
-            animation: ui-slide-out-top 0.8s ease-in forwards;
+        [data-distillation-phase="ui-dissolve"] .header-wrapper,
+        [data-distillation-phase="ui-dissolve"] .upgrades-container {
+            animation: ui-dissolve-out 0.8s ease-in forwards;
         }
-        [data-distillation-phase="start"] .upgrades-container {
-            animation: ui-slide-out-right 0.8s ease-in forwards;
-        }
-        [data-distillation-phase="rebuild"] .header-wrapper {
-            animation: ui-slide-in-top 0.8s 0.2s ease-out forwards;
-        }
-        [data-distillation-phase="rebuild"] .upgrades-container {
-            animation: ui-slide-in-right 0.8s 0.2s ease-out forwards;
+        [data-distillation-phase="reforming"] .header-wrapper,
+        [data-distillation-phase="reforming"] .upgrades-container {
+            animation: ui-reform-in 1s 0.2s ease-out forwards;
         }
 
         .distillation-overlay {
@@ -1809,29 +2045,28 @@ const App = () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle, var(--stone-700) 0%, var(--stone-950) 70%);
+            background: radial-gradient(circle, var(--stone-900) 0%, var(--stone-950) 100%);
             z-index: 9999;
             pointer-events: none;
-            animation: distillation-fade-in-out 3s ease-in-out forwards;
+            animation: distillation-fade-in-out 4s ease-in-out forwards;
         }
-        .distillation-overlay::before {
-            content: '';
-            position: absolute;
-            width: 1vmin;
-            height: 1vmin;
-            border-radius: 50%;
-            background-color: white;
-            box-shadow: 0 0 60px 30px white, 0 0 100px 60px var(--amber-300);
-            animation: distillation-burst 1.5s ease-in-out forwards;
+        .distillation-flash {
+            position: absolute; width: 100vw; height: 100vh;
+            background: white; border-radius: 50%;
+            transform: scale(0); opacity: 1;
+            animation: distillation-flash-anim 1.5s 0.2s ease-out forwards;
         }
-        .distillation-overlay::after {
-            content: '';
-            position: absolute;
-            width: 100vmin;
-            height: 100vmin;
+        .distillation-wave-1 {
+            position: absolute; width: 1vmin; height: 1vmin;
             border-radius: 50%;
-            border: 3px solid white;
-            animation: distillation-wave 1s 0.1s ease-out forwards;
+            border: 3px solid var(--amber-300);
+            animation: distillation-wave 1.5s 0.3s ease-out forwards;
+        }
+        .distillation-wave-2 {
+            position: absolute; width: 1vmin; height: 1vmin;
+            border-radius: 50%;
+            border: 4px solid var(--violet-300);
+            animation: distillation-wave 1.5s 0.5s ease-out forwards;
         }
 
         @media (min-width: 1024px) {
@@ -1847,7 +2082,27 @@ const App = () => {
         }
       `}</style>
       {offlineReport && <OfflineReportModal report={offlineReport} onClose={() => setOfflineReport(null)} />}
-      {distillationPhase === 'explode' && <div className="distillation-overlay"></div>}
+      {distillationPhase === 'confirming' && (
+        <DistillationConfirmationModal 
+            onConfirm={executePrestige} 
+            onCancel={() => setDistillationPhase('idle')}
+            cost={prestigeCost}
+            gain={alkahestToGain}
+        />
+      )}
+      {distillationPhase === 'summary' && distillationSummary && (
+        <DistillationSummaryModal
+            alkahestGained={distillationSummary.alkahestGained}
+            onClose={closePrestigeSummary}
+        />
+      )}
+      {distillationPhase === 'exploding' && (
+        <div className="distillation-overlay">
+            <div className="distillation-flash" />
+            <div className="distillation-wave-1" />
+            <div className="distillation-wave-2" />
+        </div>
+      )}
       <div data-distillation-phase={distillationPhase} className="distillation-phase-wrapper" style={{pointerEvents: distillationPhase !== 'idle' ? 'none' : 'auto'}}>
           <div className="header-wrapper" style={{padding: '1rem 1rem 0 1rem', flexShrink: 0}}>
             <Header currencies={gameState.currencies} />
