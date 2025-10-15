@@ -31,6 +31,8 @@
         --rose-800: #9f1239;
         
         --emerald-500: #10b981;
+        --teal-300: #5eead4;
+        --teal-400: #2dd4bf;
 
         --font-sans: 'Lora', serif;
         --font-display: 'Cinzel', var(--font-sans);
@@ -51,6 +53,7 @@
         background-color: var(--stone-950);
         color: var(--stone-200);
         line-height: 1.5;
+        background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%231c1917" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
       }
 
       #root {
@@ -114,6 +117,12 @@
           transform: translate(-50%, -50%) scale(1);
           opacity: 0;
         }
+      }
+      @keyframes particles-float {
+        0% { transform: translateY(0); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(-100vh); opacity: 0; }
       }
       
       /* New Grand Distillation Animations */
@@ -191,6 +200,22 @@
 
       button:disabled {
         cursor: not-allowed;
+      }
+      
+      /* Thematic Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--stone-900);
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: var(--stone-700);
+        border-radius: 4px;
+        border: 2px solid var(--stone-900);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--stone-500);
       }
 
     </style>
@@ -294,7 +319,6 @@ const HomunculusIcon = () => (
   </svg>
 );
 
-
 const StatsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
@@ -353,6 +377,21 @@ const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
           border-radius: 0.5rem;
           border: 1px solid var(--stone-700);
           transition: all 200ms;
+          position: relative;
+          overflow: hidden;
+        }
+        .upgrade-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(125, 211, 252, 0.1), transparent);
+          transition: left 400ms;
+        }
+        .upgrade-button:hover:not(:disabled)::before {
+          left: 100%;
         }
         .upgrade-button:hover:not(:disabled) {
           background-color: rgba(41, 37, 36, 0.7);
@@ -361,6 +400,10 @@ const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
         .upgrade-button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+        .upgrade-button:active:not(:disabled) {
+          transform: scale(0.98);
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
       `}</style>
       <div style={{pointerEvents: 'none'}}>
@@ -565,7 +608,7 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
     .filter((u) => u.currency === activeTab && isUpgradeUnlocked(u));
 
   return (
-    <div style={{backgroundColor: 'rgba(28, 25, 23, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', height: '100%', display: 'flex', flexDirection: 'column'}}>
+    <div style={{backgroundColor: 'rgba(28, 25, 23, 0.6)', backdropFilter: 'blur(8px)', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', height: '100%', display: 'flex', flexDirection: 'column'}}>
       <div style={{display: 'flex', borderBottom: '1px solid var(--stone-700)', flexShrink: 0}}>
         <TabButton tab={Currency.PrimaMateria} activeTab={activeTab} onClick={setActiveTab} icon={<PrimaMateriaIcon />} />
         <TabButton tab={Currency.PhilosophersDew} activeTab={activeTab} onClick={setActiveTab} icon={<PhilosophersDewIcon />} />
@@ -631,7 +674,45 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 };
 
 // === FROM components/MainGameArea.tsx ===
-const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssences, onEssenceClick, golems, onGolemClick, collectionEffects, homunculi, distillationPhase }) => {
+const AnimatedParticles = () => {
+  const particleCount = 20;
+  return (
+    <div className="particle-container">
+       <style>{`
+        .particle-container {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        .particle {
+          position: absolute;
+          bottom: 0;
+          background-color: var(--sky-300);
+          border-radius: 50%;
+          opacity: 0;
+          animation: particles-float 10s infinite ease-in;
+        }
+      `}</style>
+      {Array.from({ length: particleCount }).map((_, i) => (
+        <div
+          key={i}
+          className="particle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            width: `${Math.random() * 3 + 1}px`,
+            height: `${Math.random() * 3 + 1}px`,
+            animationDelay: `${Math.random() * 10}s`,
+            animationDuration: `${Math.random() * 10 + 5}s`,
+            filter: `blur(${Math.random() > 0.5 ? 1 : 0}px)`
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssences, onEssenceClick, golems, onGolemClick, collectionEffects, homunculi, distillationPhase, lasers }) => {
   const safePower = (typeof alchemicalPower === 'number' && isFinite(alchemicalPower)) ? alchemicalPower : 0;
   const hueShift = Math.min(safePower * 0.1, 120); 
   const coreColor = `hsl(${180 + hueShift}, 80%, 50%)`;
@@ -670,6 +751,7 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
     color: 'var(--stone-400)',
     filter: 'drop-shadow(0 4px 3px rgba(0,0,0,0.5))',
     zIndex: 10,
+    transition: 'opacity 0.2s'
   };
 
   const collectionEffectStyle = {
@@ -695,6 +777,24 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
 
   return (
     <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+      <AnimatedParticles />
+      {/* Lasers */}
+      {lasers.map(laser => (
+        <svg key={laser.id} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none', zIndex: 11 }}>
+          <line
+            x1={`${laser.from.x}%`}
+            y1={`${laser.from.y}%`}
+            x2={`${laser.to.x}%`}
+            y2={`${laser.to.y}%`}
+            stroke="#34d399"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+             <animate attributeName="opacity" from="1" to="0" dur="0.2s" fill="freeze" />
+          </line>
+        </svg>
+      ))}
+
       {/* Homunculi */}
       {homunculi.map(homunculus => (
         <div 
@@ -741,21 +841,31 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
       ))}
 
       {/* Golems */}
-      {golems.map(golem => (
-        <button
-          key={golem.id}
-          onClick={() => onGolemClick(golem.id)}
-          className="animate-golem-float"
-          style={{
-            ...golemStyle,
-            left: `${golem.x}%`,
-            top: `${golem.y}%`,
-          }}
-          aria-label={`Click to harvest ${formatNumber(golem.value)} Prima Materia`}
-        >
-          <GolemIcon />
-        </button>
-      ))}
+      {golems.map(golem => {
+          const damageOpacity = golem.health / golem.maxHealth;
+          return (
+            <button
+              key={golem.id}
+              onClick={() => onGolemClick(golem.id)}
+              className="animate-golem-float"
+              style={{
+                ...golemStyle,
+                left: `${golem.x}%`,
+                top: `${golem.y}%`,
+              }}
+              aria-label={`Click to harvest Prima Materia`}
+            >
+              <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <div style={{ position: 'absolute', inset: 0, opacity: 0.2, transition: 'opacity 0.2s' }}>
+                      <GolemIcon />
+                  </div>
+                  <div style={{ position: 'absolute', inset: 0, opacity: damageOpacity, clipPath: `inset(${(1 - damageOpacity) * 100}% 0 0 0)` }}>
+                      <GolemIcon />
+                  </div>
+              </div>
+            </button>
+          )
+      })}
 
       <button
         onClick={onClick}
@@ -824,7 +934,7 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
                 position: 'absolute',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                color: num.isDew ? 'var(--violet-300)' : 'var(--amber-300)',
+                color: num.isDew ? 'var(--violet-300)' : num.isCrit ? 'var(--rose-400)' : 'var(--amber-300)',
                 textShadow: '0 0 5px black',
                 pointerEvents: 'none',
                 left: `${num.x}%`,
@@ -848,10 +958,10 @@ const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssen
 
 // === FROM components/Header.tsx ===
 const CurrencyDisplay = ({ icon, amount, name, color }) => (
-    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(28, 25, 23, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', color}}>
-        <div style={{width: '2rem', height: '2rem'}}>{icon}</div>
+    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(28, 25, 23, 0.6)', backdropFilter: 'blur(8px)', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', color}}>
+        <div style={{width: '2rem', height: '2rem', filter: `drop-shadow(0 0 4px ${color})`}}>{icon}</div>
         <div>
-            <div className="font-cinzel" style={{fontSize: '1.25rem', lineHeight: 'none'}}>{formatNumber(amount)}</div>
+            <div className="font-cinzel" style={{fontSize: '1.125rem', lineHeight: 1}}>{formatNumber(amount)}</div>
             <div style={{fontSize: '0.75rem', color: 'var(--stone-400)'}}>{name}</div>
         </div>
     </div>
@@ -862,14 +972,14 @@ const Header = ({ currencies }) => {
   return (
     <header style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '1rem'}}>
       <style>{`
-        @media (min-width: 640px) {
+        @media (min-width: 1024px) {
           header {
             flex-direction: row;
             gap: 1rem;
           }
         }
       `}</style>
-      <h1 className="font-cinzel" style={{fontSize: '1.875rem', fontWeight: 'bold', color: 'var(--sky-300)', textShadow: '0 0 8px rgba(125, 211, 252, 0.5)'}}>
+      <h1 className="font-cinzel" style={{fontSize: '1.875rem', fontWeight: 'bold', color: 'var(--sky-300)', textShadow: '0 0 8px rgba(125, 211, 252, 0.5)', textAlign: 'center'}}>
          <style>{`
             @media (min-width: 1024px) {
               h1 {
@@ -879,14 +989,7 @@ const Header = ({ currencies }) => {
         `}</style>
         Alchemical Ascension
       </h1>
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.5rem'}}>
-        <style>{`
-            @media (min-width: 768px) {
-              div[style*="grid-template-columns"] {
-                gap: 1rem;
-              }
-            }
-        `}</style>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', width: '100%', maxWidth: '48rem'}}>
         <CurrencyDisplay
             icon={<PrimaMateriaIcon />}
             amount={currencies[Currency.PrimaMateria]}
@@ -946,15 +1049,10 @@ const OfflineReportModal = ({ report, onClose }) => (
             }
             .gains-grid {
                 display: grid;
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
                 gap: 0.5rem;
                 margin: 1.5rem 0;
                 text-align: left;
-            }
-            @media (min-width: 640px) {
-              .gains-grid {
-                grid-template-columns: 1fr 1fr;
-              }
             }
             .gain-item {
                 display: flex;
@@ -998,6 +1096,24 @@ const OfflineReportModal = ({ report, onClose }) => (
                         <div className="name">Philosopher's Dew</div>
                     </div>
                 </div>
+                {report.essences > 0 && (
+                    <div className="gain-item" style={{color: 'var(--amber-300)'}}>
+                        <div className="icon" style={{opacity: 0.8}}><PrimaMateriaIcon /></div>
+                        <div>
+                            <div className="amount">{formatNumber(report.essences)}</div>
+                            <div className="name">From Essences</div>
+                        </div>
+                    </div>
+                )}
+                {report.golems > 0 && (
+                    <div className="gain-item" style={{color: 'var(--amber-300)'}}>
+                        <div className="icon"><GolemIcon /></div>
+                        <div>
+                            <div className="amount">{formatNumber(report.golems)}</div>
+                            <div className="name">From Golems</div>
+                        </div>
+                    </div>
+                )}
             </div>
             <button onClick={onClose} className="modal-button">Continue</button>
         </div>
@@ -1006,44 +1122,33 @@ const OfflineReportModal = ({ report, onClose }) => (
 
 
 const INITIAL_UPGRADES = {
-  // Prima Materia Upgrades
+  // --- Prima Materia Upgrades ---
   clickPower1: { id: 'clickPower1', name: 'Potent Stirring', description: 'Increases Prima Materia per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, effect: level => level * 1, type: UpgradeType.Click, currency: Currency.PrimaMateria },
-  bellows: { id: 'bellows', name: 'Automated Bellows', description: 'Passively generates Prima Materia.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, effect: level => level * 0.5, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'clickPower1', level: 5 } },
-  clickPower2: { id: 'clickPower2', name: 'Catalytic Wand', description: 'Each level grants a bonus to Potent Stirring.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, effect: level => level * 5, type: UpgradeType.Click, currency: Currency.PrimaMateria, requirement: { upgradeId: 'clickPower1', level: 10 } },
-  reinforcedBellows: { id: 'reinforcedBellows', name: 'Reinforced Bellows', description: 'Automated Bellows are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'bellows', level: 10 } },
-  golemCrafting: { id: 'golemCrafting', name: 'Golem Crafting', description: 'Animate Golems for a new source of Prima Materia.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, effect: level => level * 10, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'bellows', level: 25 } },
-  golemProspecting: { id: 'golemProspecting', name: 'Golem Prospecting', description: 'Your bellows sometimes unearth clickable Golems.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.3, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 1 } },
-  geomancy: { id: 'geomancy', name: 'Geomancy', description: 'Boosts Golem Crafting production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 5 } },
-  golemHeartstone: { id: 'golemHeartstone', name: 'Golem Heartstone', description: 'Increases the amount of Prima Materia gained from Golems.', level: 0, baseCost: 250000, cost: 250000, costIncrease: 1.8, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemProspecting', level: 5 } },
-  leyLines: { id: 'leyLines', name: 'Ley Lines', description: 'Boosts all passive Prima Materia generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, effect: level => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 15 } },
+  bellows: { id: 'bellows', name: 'Automated Bellows', description: 'Passively generates Prima Materia. Bonus from total clicks.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, effect: (level, state) => level * 0.5 * (1 + Math.log10(state.stats.totalClicks + 1) * 0.1), type: UpgradeType.Passive, currency: Currency.PrimaMateria },
+  catalyticWand: { id: 'catalyticWand', name: 'Catalytic Wand', description: 'Grants a powerful bonus to click power.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, effect: level => level * 5, type: UpgradeType.Click, currency: Currency.PrimaMateria, requirement: { upgradeId: 'clickPower1', level: 10 } },
+  golemProspecting: { id: 'golemProspecting', name: 'Golem Prospecting', description: 'Your bellows sometimes unearth clickable Golems.', level: 0, baseCost: 2500, cost: 2500, costIncrease: 1.3, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'bellows', level: 10 } },
   homunculusService: { id: 'homunculusService', name: 'Homunculus Service', description: 'Automatically harvest Golems. At Lvl 3, a Homunculus is dispatched for each Golem.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.PrimaMateria, maxLevel: 3, requirement: { upgradeId: 'golemProspecting', level: 1 } },
-  philosophersEngine: { id: 'philosophersEngine', name: "Philosopher's Engine", description: 'Construct a massive engine for huge passive Prima Materia generation.', level: 0, baseCost: 1e7, cost: 1e7, costIncrease: 1.4, effect: level => level * 1500, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'leyLines', level: 5 } },
-  essenceCatalysis: { id: 'essenceCatalysis', name: 'Essence Catalysis', description: 'Clicking has a small chance to generate a burst of Philosopher\'s Dew.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: level => level * 0.005, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'philosophersEngine', level: 1 } },
-  swiftHomunculi: { id: 'swiftHomunculi', name: 'Swift Homunculi', description: 'Homunculi travel 50% faster.', level: 0, baseCost: 5e6, cost: 5e6, costIncrease: 4, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, maxLevel: 5, requirement: { upgradeId: 'homunculusService', level: 3 } },
-  echoingStir: { id: 'echoingStir', name: 'Echoing Stir', description: 'Passively clicks the flask once per second.', level: 0, baseCost: 1e9, cost: 1e9, costIncrease: 3, effect: level => level, type: UpgradeType.Passive, currency: Currency.PrimaMateria, maxLevel: 10, requirement: { upgradeId: 'essenceCatalysis', level: 5 } },
-  engineSynergy: { id: 'engineSynergy', name: 'Engine Synergy', description: "Philosopher's Engine production is boosted by total clicks.", level: 0, baseCost: 5e9, cost: 5e9, costIncrease: 5, effect: (level, state) => 1 + level * Math.log10(state?.stats.totalClicks + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'philosophersEngine', level: 10 } },
-  
-  // Philosopher's Dew Upgrades
+  focusingLens: { id: 'focusingLens', name: 'Focusing Lens', description: 'Atom electrons fire lasers at Golems, increasing your click reward.', level: 0, baseCost: 150000, cost: 150000, costIncrease: 1.5, effect: level => level * 5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemProspecting', level: 5 } },
+  philosophersEngine: { id: 'philosophersEngine', name: "Philosopher's Engine", description: 'Huge passive Prima Materia generation, boosted by Dew/sec.', level: 0, baseCost: 1e7, cost: 1e7, costIncrease: 1.4, effect: (level, state) => level * 1500 * (1 + Math.log10(state.philosophersDewPerSecond + 1) * 0.05), type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemProspecting', level: 15 } },
+  echoingStir: { id: 'echoingStir', name: 'Echoing Stir', description: 'Passively clicks the atom once per second.', level: 0, baseCost: 1e9, cost: 1e9, costIncrease: 3, effect: level => level, type: UpgradeType.Passive, currency: Currency.PrimaMateria, maxLevel: 10, requirement: { upgradeId: 'philosophersEngine', level: 5 } },
+
+  // --- Philosopher's Dew Upgrades ---
   alembic: { id: 'alembic', name: 'Alembic Condenser', description: "Passively generates Philosopher's Dew.", level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, effect: level => level * 0.2, type: UpgradeType.Passive, currency: Currency.PrimaMateria },
-  essenceCollector: { id: 'essenceCollector', name: 'Essence Collector', description: 'Spawns clickable Prima Materia Essences around the flask.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 100, requirement: { upgradeId: 'alembic', level: 1 } },
-  hermeticSeal: { id: 'hermeticSeal', name: 'Hermetic Seal', description: "Boosts all passive Philosopher's Dew generation by 20%.", level: 0, baseCost: 50, cost: 50, costIncrease: 2, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'alembic', level: 5 } },
+  essenceCollector: { id: 'essenceCollector', name: 'Essence Collector', description: 'Spawns clickable Prima Materia Essences around the atom.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 100, requirement: { upgradeId: 'alembic', level: 1 } },
   moonWaterSiphon: { id: 'moonWaterSiphon', name: 'Moon Water Siphon', description: "A new powerful source of passive Philosopher's Dew.", level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, effect: level => level * 1, type: UpgradeType.Passive, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'alembic', level: 15 } },
   essenceHomunculi: { id: 'essenceHomunculi', name: 'Essence Homunculi', description: 'Automatically collect Essences. At Lvl 3, collection is instant.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 3, requirement: { upgradeId: 'essenceCollector', level: 1 } },
-  arcanumForge: { id: 'arcanumForge', name: 'Arcanum Forge', description: "Boosts Prima Materia click power by 1% of your Philosopher's Dew per second.", level: 0, baseCost: 250, cost: 250, costIncrease: 5, effect: (level, state) => { if (!state) return 1; const dewPerSecond = (state.upgrades.alembic.effect(state.upgrades.alembic.level) + state.upgrades.moonWaterSiphon.effect(state.upgrades.moonWaterSiphon.level)); return 1 + (level * 0.01 * dewPerSecond); }, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'hermeticSeal', level: 5 } },
   aethericWells: { id: 'aethericWells', name: 'Aetheric Wells', description: 'Increases the value of clickable Essences.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'essenceCollector', level: 10 } },
-  alkahestCatalyst: { id: 'alkahestCatalyst', name: 'Alkahest Catalyst', description: 'Each point of Alkahest increases click power by 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => { if (!state) return 1; return 1 + (level * 0.02 * state.currencies[Currency.Alkahest]); }, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'aethericWells', level: 5 } },
-  worldTreeSap: { id: 'worldTreeSap', name: 'World Tree Sap', description: "Greatly increases passive Philosopher's Dew generation.", level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'moonWaterSiphon', level: 5 } },
-  materiaDistillation: { id: 'materiaDistillation', name: 'Materia Distillation', description: 'All Prima Materia upgrades are 5% cheaper per level.', level: 0, baseCost: 750, cost: 750, costIncrease: 2, effect: level => 1 - level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 10, requirement: { upgradeId: 'arcanumForge', level: 3 } },
-  transmutationCircles: { id: 'transmutationCircles', name: 'Transmutation Circles', description: 'Boosts all passive generation (Materia & Dew) by 5% per level.', level: 0, baseCost: 1500, cost: 1500, costIncrease: 2.5, effect: level => 1 + level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'materiaDistillation', level: 2 } },
-  igneousDew: { id: 'igneousDew', name: 'Igneous Dew', description: "Boosts click power based on your total Philosopher's Dew.", level: 0, baseCost: 5000, cost: 5000, costIncrease: 3, effect: (level, state) => 1 + level * Math.log10(state?.totalPhilosophersDewEver + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'transmutationCircles', level: 5 } },
-  alkahestPrecipitation: { id: 'alkahestPrecipitation', name: 'Alkahest Precipitation', description: 'Clicking has a very small chance to generate 1 Alkahest.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 10, effect: level => level * 0.00001, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 5, requirement: { upgradeId: 'igneousDew', level: 1 } },
+  alchemicalSynergy: { id: 'alchemicalSynergy', name: 'Alchemical Synergy', description: 'Passive Materia generation is boosted by 1% of your Dew/sec.', level: 0, baseCost: 750, cost: 750, costIncrease: 2.2, effect: (level, state) => 1 + level * 0.01 * (state.philosophersDewPerSecond || 0), type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'moonWaterSiphon', level: 5 } },
+  goldenTransmutation: { id: 'goldenTransmutation', name: 'Golden Transmutation', description: 'Each Golem has a chance to be a Golden Golem, worth 100x more.', level: 0, baseCost: 1500, cost: 1500, costIncrease: 2.5, effect: level => level * 0.005, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 10, requirement: { upgradeId: 'alchemicalSynergy', level: 3 } },
+  igneousDew: { id: 'igneousDew', name: 'Igneous Dew', description: "Boosts click power based on your total Philosopher's Dew.", level: 0, baseCost: 5000, cost: 5000, costIncrease: 3, effect: (level, state) => 1 + level * Math.log10(state?.totalPhilosophersDewEver + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'goldenTransmutation', level: 1 } },
+  laserCritChance: { id: 'laserCritChance', name: 'Laser Criticals', description: 'Lasers have a chance to deal 10x damage to Golems.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.8, effect: level => level * 0.01, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 25, requirement: { upgradeId: 'igneousDew', level: 1 } },
+  temporalDistortion: { id: 'temporalDistortion', name: 'Temporal Distortion', description: 'Boosts all passive generation by a percentage of your total Alkahest.', level: 0, baseCost: 100000, cost: 100000, costIncrease: 2.5, effect: (level, state) => 1 + level * 0.001 * state.currencies[Currency.Alkahest], type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'laserCritChance', level: 5 } },
 
-  // Alkahest Upgrades
+  // --- Alkahest Upgrades ---
   ancientKnowledge: { id: 'ancientKnowledge', name: 'Ancient Knowledge', description: 'Reduces the cost of all non-Alkahest upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, effect: level => 1 - level * 0.02, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 25 },
   primordialSoup: { id: 'primordialSoup', name: 'Primordial Soup', description: 'Start each Distillation with a base amount of Prima Materia.', level: 0, baseCost: 5, cost: 5, costIncrease: 2, effect: level => level * 1000, type: UpgradeType.Distillation, currency: Currency.Alkahest },
   celestialDew: { id: 'celestialDew', name: 'Celestial Dew', description: "Start each Distillation with a base amount of Philosopher's Dew.", level: 0, baseCost: 15, cost: 15, costIncrease: 2.5, effect: level => level * 100, type: UpgradeType.Distillation, currency: Currency.Alkahest, requirement: { upgradeId: 'primordialSoup', level: 1 } },
   magnumOpus: { id: 'magnumOpus', name: 'Magnum Opus', description: 'Increases passive generation of Materia and Dew by 15% per level.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: level => 1 + level * 0.15, type: UpgradeType.Distillation, currency: Currency.Alkahest },
-  persistentBellows: { id: 'persistentBellows', name: 'Persistent Bellows', description: 'Start each Distillation with 5 free levels of Automated Bellows.', level: 0, baseCost: 30, cost: 30, costIncrease: 4, effect: level => level * 5, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 10, requirement: { upgradeId: 'primordialSoup', level: 5 } },
   aevumWarp: { id: 'aevumWarp', name: 'Aevum Warp', description: 'Offline progress is calculated at 2% higher efficiency per level.', level: 0, baseCost: 50, cost: 50, costIncrease: 5, effect: level => 1 + level * 0.02, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 25, requirement: { upgradeId: 'magnumOpus', level: 3 } },
   quintessence: { id: 'quintessence', name: 'Quintessence', description: 'The passive bonus from Distillations is 1% more effective per level.', level: 0, baseCost: 100, cost: 100, costIncrease: 2, effect: level => level * 0.01, type: UpgradeType.Distillation, currency: Currency.Alkahest, requirement: { upgradeId: 'aevumWarp', level: 1 } },
   unlockMateriaUpgrades: { id: 'unlockMateriaUpgrades', name: 'Materia Blueprints', description: 'Keep Prima Materia upgrades after a Distillation.', level: 0, baseCost: 250, cost: 250, costIncrease: 10, effect: level => level, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 1, requirement: { upgradeId: 'quintessence', level: 5 } },
@@ -1056,7 +1161,7 @@ const getInitialState = () => {
     const upgradesCopy = {};
     for (const key of Object.keys(INITIAL_UPGRADES)) {
         const upgrade = INITIAL_UPGRADES[key];
-        upgradesCopy[key] = { ...upgrade, baseEffect: upgrade.effect(1, null) }; // Simplified for non-state-dependent effects
+        upgradesCopy[key] = { ...upgrade, costAetherium: 0 };
     }
 
     return {
@@ -1098,10 +1203,9 @@ const loadGameState = () => {
                     const savedLevel = saved.level;
                     if (typeof savedLevel === 'number' && isFinite(savedLevel) && savedLevel >= 0) {
                         currentUpgrades[id].level = savedLevel;
-                        const newCost = Math.ceil(initial.baseCost * Math.pow(initial.costIncrease, savedLevel));
+                        let newCost = Math.ceil(initial.baseCost * Math.pow(initial.costIncrease, savedLevel));
                         currentUpgrades[id].cost = isFinite(newCost) ? newCost : initial.cost;
                     } else {
-                        console.warn(`Corrupted level for upgrade '${id}'. Resetting.`);
                         currentUpgrades[id].level = initial.level;
                         currentUpgrades[id].cost = initial.cost;
                     }
@@ -1124,10 +1228,13 @@ const loadGameState = () => {
             alkahestRetrofitDone: savedState.alkahestRetrofitDone ?? false,
         };
 
+        if (finalState.currencies[Currency.Aetherium]) {
+            delete finalState.currencies[Currency.Aetherium];
+        }
+
         // Retroactive Alkahest calculation
         if (!finalState.alkahestRetrofitDone && finalState.stats.distillationCount > 0) {
             const S = finalState.stats.distillationCount;
-            // Sum of (1+i) for i from 0 to S-1
             const expectedAlkahest = S + (S * (S - 1) / 2);
             if (finalState.currencies[Currency.Alkahest] < expectedAlkahest) {
                 finalState.currencies[Currency.Alkahest] = expectedAlkahest;
@@ -1151,126 +1258,163 @@ const App = () => {
   const [golems, setGolems] = useState([]);
   const [homunculi, setHomunculi] = useState([]);
   const [collectionEffects, setCollectionEffects] = useState([]);
+  const [lasers, setLasers] = useState([]);
   const [primaMateriaPerSecond, setPrimaMateriaPerSecond] = useState(0);
   const [philosophersDewPerSecond, setPhilosophersDewPerSecond] = useState(0);
-  const [distillationPhase, setDistillationPhase] = useState('idle'); // idle, start, collapse, explode, rebuild
+  const [aetheriumPerSecond, setAetheriumPerSecond] = useState(0);
+  const [distillationPhase, setDistillationPhase] = useState('idle');
   const [primaMateriaHistory, setPrimaMateriaHistory] = useState([]);
   const [philosophersDewHistory, setPhilosophersDewHistory] = useState([]);
   const [offlineReport, setOfflineReport] = useState(null);
   const lastHistoryUpdate = useRef(Date.now());
+  const gameStateRef = useRef(gameState);
+
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+
+  const getClickValue = useCallback((state) => {
+    if (!state) state = gameState;
+    const { upgrades, stats, totalPhilosophersDewEver } = state;
+    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level, state)));
+    const igneousBoost = upgrades.igneousDew.effect(upgrades.igneousDew.level, state);
+    const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level, state) + upgrades.catalyticWand.effect(upgrades.catalyticWand.level, state);
+    return baseClick * distillationBoost * igneousBoost;
+  }, [gameState]);
 
   const prestigeCost = useMemo(() => 1e6 * Math.pow(3.5, gameState.stats.distillationCount), [gameState.stats.distillationCount]);
 
+  // Pass a snapshot of the gameState to the calculation functions
+  const calculateRates = useCallback((state) => {
+    const { upgrades, stats } = state;
+
+    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
+    const magnumOpusBoost = upgrades.magnumOpus.effect(upgrades.magnumOpus.level);
+    const temporalDistortionBoost = upgrades.temporalDistortion.effect(upgrades.temporalDistortion.level, state);
+
+    // Dew per second for use in other calculations
+    const pdps = (upgrades.alembic.effect(upgrades.alembic.level, state) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level, state)) 
+        * magnumOpusBoost 
+        * temporalDistortionBoost;
+
+    // Materia per second
+    const bellowsProduction = upgrades.bellows.effect(upgrades.bellows.level, state);
+    const engineProduction = upgrades.philosophersEngine.effect(upgrades.philosophersEngine.level, { ...state, philosophersDewPerSecond: pdps });
+    const autoClickProduction = upgrades.echoingStir.effect(upgrades.echoingStir.level, state) * getClickValue(state);
+    const synergyBoost = upgrades.alchemicalSynergy.effect(upgrades.alchemicalSynergy.level, { ...state, philosophersDewPerSecond: pdps });
+
+    const pmps = (bellowsProduction + engineProduction + autoClickProduction) 
+        * distillationBoost 
+        * magnumOpusBoost 
+        * synergyBoost
+        * temporalDistortionBoost;
+    
+    return { pmps, pdps };
+  }, [gameState, getClickValue]);
+
+
   useEffect(() => {
     const handleOfflineGains = () => {
-        const offlineTime = (Date.now() - gameState.lastTick) / 1000;
-        if (offlineTime > 10) { // Only show for more than 10 seconds offline
-            const { upgrades, stats } = gameState;
-            const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
-            const leyLinesBoost = upgrades.leyLines.effect(upgrades.leyLines.level);
-            const magnumOpusBoost = upgrades.magnumOpus.effect(upgrades.magnumOpus.level);
-            const plasmaBoost = upgrades.transmutationCircles.effect(upgrades.transmutationCircles.level);
-            const bellowsProduction = upgrades.bellows.effect(upgrades.bellows.level) * upgrades.reinforcedBellows.effect(upgrades.reinforcedBellows.level);
-            const golemProduction = upgrades.golemCrafting.effect(upgrades.golemCrafting.level) * upgrades.geomancy.effect(upgrades.geomancy.level);
-            const engineProduction = upgrades.philosophersEngine.effect(upgrades.philosophersEngine.level) * upgrades.engineSynergy.effect(upgrades.engineSynergy.level, gameState);
-            const autoClickProduction = upgrades.echoingStir.effect(upgrades.echoingStir.level) * getClickValue();
-            const pmps = (bellowsProduction + golemProduction + engineProduction + autoClickProduction) * distillationBoost * leyLinesBoost * magnumOpusBoost * plasmaBoost;
+        const now = Date.now();
+        const offlineTime = (now - gameState.lastTick) / 1000;
+
+        if (offlineTime > 10) { // Only show for more than 10s offline
+            const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level, gameState);
+            const effectiveOfflineTime = offlineTime * aevumWarpBoost;
+
+            const rates = calculateRates(gameState);
             
-            const hermeticSealBoost = upgrades.hermeticSeal.effect(upgrades.hermeticSeal.level);
-            const worldTreeSapBoost = upgrades.worldTreeSap.effect(upgrades.worldTreeSap.level);
-            const pdps = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level)) * hermeticSealBoost * worldTreeSapBoost * magnumOpusBoost * plasmaBoost;
+            let essenceGains = 0;
+            let golemGains = 0;
+            let essencesCollected = 0;
+            let golemsHarvested = 0;
+
+            if (gameState.upgrades.essenceHomunculi.level >= 3) {
+                const essenceSpawnRate = gameState.upgrades.essenceCollector.effect(gameState.upgrades.essenceCollector.level, gameState);
+                const essenceValue = (rates.pmps + getClickValue(gameState)) * (5 + gameState.upgrades.essenceCollector.level * 0.5) * gameState.upgrades.aethericWells.effect(gameState.upgrades.aethericWells.level, gameState);
+                essencesCollected = Math.floor(essenceSpawnRate * effectiveOfflineTime);
+                essenceGains = essencesCollected * essenceValue;
+            }
+            if (gameState.upgrades.homunculusService.level >= 3) {
+                const golemSpawnRate = gameState.upgrades.golemProspecting.effect(gameState.upgrades.golemProspecting.level, gameState);
+                const golemValue = (rates.pmps + getClickValue(gameState)) * (10 + gameState.upgrades.golemProspecting.level); // Base value without laser damage
+                golemsHarvested = Math.floor(golemSpawnRate * effectiveOfflineTime);
+                golemGains = golemsHarvested * golemValue;
+            }
             
-            const aevumWarpBoost = upgrades.aevumWarp.effect(upgrades.aevumWarp.level);
-            
+            const primaMateriaGained = rates.pmps * effectiveOfflineTime;
+            const philosophersDewGained = rates.pdps * effectiveOfflineTime;
+            const totalMateriaGained = primaMateriaGained + essenceGains + golemGains;
+
             setOfflineReport({
-                primaMateria: pmps * offlineTime * aevumWarpBoost,
-                philosophersDew: pdps * offlineTime * aevumWarpBoost,
+                primaMateria: primaMateriaGained,
+                philosophersDew: philosophersDewGained,
+                essences: essenceGains,
+                golems: golemGains,
                 duration: offlineTime,
             });
+
+            // Apply the gains directly to the state
+            setGameState(prev => ({
+                ...prev,
+                currencies: {
+                    ...prev.currencies,
+                    [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + totalMateriaGained,
+                    [Currency.PhilosophersDew]: prev.currencies[Currency.PhilosophersDew] + philosophersDewGained,
+                },
+                totalPrimaMateriaEver: prev.totalPrimaMateriaEver + totalMateriaGained,
+                totalPhilosophersDewEver: prev.totalPhilosophersDewEver + philosophersDewGained,
+                stats: {
+                    ...prev.stats,
+                    playTime: prev.stats.playTime + offlineTime,
+                    golemsMined: (prev.stats.golemsMined || 0) + golemsHarvested,
+                    essencesClicked: (prev.stats.essencesClicked || 0) + essencesCollected,
+                },
+                lastTick: now, // IMPORTANT: Update lastTick to prevent gameLoop from re-applying gains
+            }));
         }
     };
     handleOfflineGains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const saveInterval = setInterval(() => {
+    const save = () => {
         try {
-            setGameState(currentGameState => {
-                const stateToSave = { ...currentGameState, lastTick: Date.now() };
-                localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
-                return currentGameState;
-            });
+            const stateToSave = { ...gameStateRef.current, lastTick: Date.now() };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
         } catch (error) {
             console.error("Failed to save game state:", error);
         }
-    }, 5000);
-
-    const handleBeforeUnload = () => {
-        setGameState(currentGameState => {
-            const stateToSave = { ...currentGameState, lastTick: Date.now() };
-            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
-            return currentGameState;
-        });
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    const saveInterval = setInterval(save, 5000);
+    window.addEventListener('beforeunload', save);
 
     return () => {
         clearInterval(saveInterval);
-        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('beforeunload', save);
     };
   }, []);
 
-
-  const getClickValue = useCallback(() => {
-    const { upgrades, stats, currencies, totalPhilosophersDewEver } = gameState;
-    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
-    const forgeBoost = upgrades.arcanumForge.effect(upgrades.arcanumForge.level, gameState);
-    const catalystBoost = upgrades.alkahestCatalyst.effect(upgrades.alkahestCatalyst.level, gameState);
-    const igneousBoost = upgrades.igneousDew.effect(upgrades.igneousDew.level, gameState);
-    const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
-    return baseClick * distillationBoost * forgeBoost * catalystBoost * igneousBoost;
-  }, [gameState]);
-
   const handleFlaskClick = useCallback((e) => {
-    const clickValue = getClickValue();
-    let dewGainedFromClick = 0;
-    let alkahestGainedFromClick = 0;
-    const { upgrades } = gameState;
-    
-    if (Math.random() < upgrades.essenceCatalysis.effect(upgrades.essenceCatalysis.level)) {
-        const dewPerSecond = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level));
-        dewGainedFromClick = (dewPerSecond + 1) * 60; // 1 minute of production
-    }
-    if (Math.random() < upgrades.alkahestPrecipitation.effect(upgrades.alkahestPrecipitation.level)) {
-        alkahestGainedFromClick = 1;
-    }
+    const clickValue = getClickValue(gameState);
     
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width * 100;
     const y = (e.clientY - rect.top) / rect.height * 100;
-
-    if (dewGainedFromClick > 0) {
-        const newFloatingDew = { id: Date.now() + Math.random(), value: `+${formatNumber(dewGainedFromClick)} Dew!`, x, y, isDew: true };
-        setFloatingNumbers(current => [...current, newFloatingDew]);
-        setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingDew.id)), 2000);
-    }
 
     setGameState(prev => ({
         ...prev,
         currencies: { 
           ...prev.currencies, 
           [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + clickValue,
-          [Currency.PhilosophersDew]: prev.currencies[Currency.PhilosophersDew] + dewGainedFromClick,
-          [Currency.Alkahest]: prev.currencies[Currency.Alkahest] + alkahestGainedFromClick,
         },
         totalPrimaMateriaEver: prev.totalPrimaMateriaEver + clickValue,
-        totalPhilosophersDewEver: prev.totalPhilosophersDewEver + dewGainedFromClick,
-        totalAlkahestEver: (prev.totalAlkahestEver || 0) + alkahestGainedFromClick,
         stats: { ...prev.stats, totalClicks: prev.stats.totalClicks + 1 },
     }));
 
-    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, isDew: false };
+    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y };
     setFloatingNumbers(current => [...current, newFloatingNumber]);
     setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id)), 2000);
   }, [getClickValue, gameState]);
@@ -1293,10 +1437,13 @@ const App = () => {
     const golem = golems.find(a => a.id === golemId);
     if (!golem) return;
 
+    const damageMultiplier = golem.maxHealth / golem.health;
+    const value = golem.value * damageMultiplier;
+
     setGameState(prev => ({
       ...prev,
-      currencies: { ...prev.currencies, [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + golem.value },
-      totalPrimaMateriaEver: prev.totalPrimaMateriaEver + golem.value,
+      currencies: { ...prev.currencies, [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + value },
+      totalPrimaMateriaEver: prev.totalPrimaMateriaEver + value,
       stats: { ...prev.stats, golemsMined: (prev.stats.golemsMined || 0) + 1 },
     }));
     
@@ -1311,10 +1458,7 @@ const App = () => {
       let cost = upgrade.cost;
       
       if (upgrade.currency !== Currency.Alkahest) {
-          cost *= prev.upgrades.ancientKnowledge.effect(prev.upgrades.ancientKnowledge.level);
-      }
-      if (upgrade.currency === Currency.PrimaMateria) {
-          cost *= prev.upgrades.materiaDistillation.effect(prev.upgrades.materiaDistillation.level);
+          cost *= prev.upgrades.ancientKnowledge.effect(prev.upgrades.ancientKnowledge.level, prev);
       }
       
       if (prev.currencies[upgrade.currency] < cost) return prev;
@@ -1324,7 +1468,10 @@ const App = () => {
 
       return {
         ...prev,
-        currencies: { ...prev.currencies, [upgrade.currency]: prev.currencies[upgrade.currency] - cost },
+        currencies: { 
+            ...prev.currencies, 
+            [upgrade.currency]: prev.currencies[upgrade.currency] - cost,
+        },
         upgrades: { ...prev.upgrades, [upgradeId]: { ...upgrade, level: newLevel, cost: newCost } },
       };
     });
@@ -1351,16 +1498,9 @@ const App = () => {
 
               prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
           });
-
-          const persistentBellowsLevel = prev.upgrades.persistentBellows.effect(prev.upgrades.persistentBellows.level);
-          if (persistentBellowsLevel > 0) {
-              const bellows = prestigeUpgrades.bellows;
-              bellows.level = persistentBellowsLevel;
-              bellows.cost = Math.ceil(bellows.baseCost * Math.pow(bellows.costIncrease, bellows.level));
-          }
           
-          const startingMateria = prev.upgrades.primordialSoup.effect(prev.upgrades.primordialSoup.level);
-          const startingDew = prev.upgrades.celestialDew.effect(prev.upgrades.celestialDew.level);
+          const startingMateria = prev.upgrades.primordialSoup.effect(prev.upgrades.primordialSoup.level, prev);
+          const startingDew = prev.upgrades.celestialDew.effect(prev.upgrades.celestialDew.level, prev);
 
           return {
               ...prev,
@@ -1422,41 +1562,22 @@ const App = () => {
     const now = Date.now();
     let timeDelta = (now - gameState.lastTick) / 1000;
     
-    // --- Offline Progress Calculation ---
-    const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level);
-    if (timeDelta > 5) { // more than 5 seconds offline
+    const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level, gameState);
+    if (timeDelta > 5) { 
         timeDelta *= aevumWarpBoost;
     }
-    timeDelta = Math.min(timeDelta, 86400); // Cap offline time to 24h to prevent exploits/overflow
-    timeDelta = Math.max(0, timeDelta); // Ensure no negative time delta
+    timeDelta = Math.min(timeDelta, 86400);
+    timeDelta = Math.max(0, timeDelta);
 
-    // --- Passive Generation Calculation ---
-    const { upgrades, stats } = gameState;
-    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
-    const leyLinesBoost = upgrades.leyLines.effect(upgrades.leyLines.level);
-    const magnumOpusBoost = upgrades.magnumOpus.effect(upgrades.magnumOpus.level);
-    const plasmaBoost = upgrades.transmutationCircles.effect(upgrades.transmutationCircles.level);
-    
-    const bellowsProduction = upgrades.bellows.effect(upgrades.bellows.level) * upgrades.reinforcedBellows.effect(upgrades.reinforcedBellows.level);
-    const golemProduction = upgrades.golemCrafting.effect(upgrades.golemCrafting.level) * upgrades.geomancy.effect(upgrades.geomancy.level);
-    const engineProduction = upgrades.philosophersEngine.effect(upgrades.philosophersEngine.level) * upgrades.engineSynergy.effect(upgrades.engineSynergy.level, gameState);
-    const autoClickProduction = upgrades.echoingStir.effect(upgrades.echoingStir.level) * getClickValue();
-    
-    const pmps = (bellowsProduction + golemProduction + engineProduction + autoClickProduction) * distillationBoost * leyLinesBoost * magnumOpusBoost * plasmaBoost;
-    setPrimaMateriaPerSecond(pmps);
-    
-    const hermeticSealBoost = upgrades.hermeticSeal.effect(upgrades.hermeticSeal.level);
-    const worldTreeSapBoost = upgrades.worldTreeSap.effect(upgrades.worldTreeSap.level);
-    const pdps = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level)) * hermeticSealBoost * worldTreeSapBoost * magnumOpusBoost * plasmaBoost;
-    setPhilosophersDewPerSecond(pdps);
+    const rates = calculateRates(gameState);
+    setPrimaMateriaPerSecond(rates.pmps);
+    setPhilosophersDewPerSecond(rates.pdps);
 
-    // --- Prepare for State Changes (Work on copies) ---
     let materiaFromCollection = 0;
     let newGolems = [...golems];
     let newEssences = [...floatingEssences];
 
-    // --- Golem Collection by Homunculi ---
-    const homunculusSpeed = 20 * upgrades.swiftHomunculi.effect(upgrades.swiftHomunculi.level);
+    const homunculusSpeed = 20;
     const moveDist = homunculusSpeed * timeDelta;
     const collectedGolemIds = new Set();
     
@@ -1469,10 +1590,11 @@ const App = () => {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist <= moveDist) {
-            materiaFromCollection += target.value;
+            const damageMultiplier = target.maxHealth / target.health;
+            materiaFromCollection += target.value * damageMultiplier;
             collectedGolemIds.add(target.id);
             triggerCollectionEffect(target);
-            return null; // Homunculus is consumed after collection
+            return null;
         } else if (dist > 0) {
             return {
                 ...homunculus,
@@ -1489,8 +1611,7 @@ const App = () => {
     }
     const numGolemsCollected = collectedGolemIds.size;
     
-    // --- Essence Collection by Homunculi ---
-    const essenceHomunculiLevel = upgrades.essenceHomunculi.level;
+    const essenceHomunculiLevel = gameState.upgrades.essenceHomunculi.level;
     let numEssencesCollected = 0;
     if (essenceHomunculiLevel >= 3 && newEssences.length > 0) {
         const valueFromEssences = newEssences.reduce((sum, o) => sum + o.value, 0);
@@ -1499,60 +1620,86 @@ const App = () => {
         numEssencesCollected = newEssences.length;
         newEssences = [];
     }
+    
+    // Laser damage to golems
+    if (gameState.upgrades.focusingLens.level > 0 && newGolems.length > 0) {
+        const laserDamage = gameState.upgrades.focusingLens.effect(gameState.upgrades.focusingLens.level, gameState) * timeDelta;
+        const critChance = gameState.upgrades.laserCritChance.effect(gameState.upgrades.laserCritChance.level, gameState);
+        
+        newGolems.forEach(golem => {
+            let damage = laserDamage;
+            if (Math.random() < critChance) damage *= 10;
+            golem.health = Math.max(1, golem.health - damage);
+        });
 
-    // --- Object Spawning ---
-    const collector = upgrades.essenceCollector;
+        // Visual lasers
+        if (Math.random() < 0.5) { // Fire lasers intermittently for performance
+             const golemToShoot = newGolems[Math.floor(Math.random() * newGolems.length)];
+             const angle = Math.random() * 2 * Math.PI;
+             const newLaser = {
+                id: Date.now() + Math.random(),
+                from: { x: 50 + Math.cos(angle) * 30, y: 50 + Math.sin(angle) * 30 },
+                to: { x: golemToShoot.x, y: golemToShoot.y }
+             };
+             setLasers(current => [...current, newLaser]);
+             setTimeout(() => setLasers(current => current.filter(l => l.id !== newLaser.id)), 200);
+        }
+    }
+
+
+    const collector = gameState.upgrades.essenceCollector;
     if (collector.level > 0 && newEssences.length < 10) {
-        if (Math.random() < collector.effect(collector.level) * timeDelta) {
+        if (Math.random() < collector.effect(collector.level, gameState) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
             newEssences.push({
                 id: Date.now() + Math.random(),
-                value: (pmps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.aethericWells.effect(upgrades.aethericWells.level),
+                value: (rates.pmps + getClickValue(gameState)) * (5 + collector.level * 0.5) * gameState.upgrades.aethericWells.effect(gameState.upgrades.aethericWells.level, gameState),
                 x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
                 y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
             });
         }
     }
 
-    const prospector = upgrades.golemProspecting;
+    const prospector = gameState.upgrades.golemProspecting;
     if (prospector.level > 0 && newGolems.length < 5) {
-        if (Math.random() < prospector.effect(prospector.level) * timeDelta) {
+        if (Math.random() < prospector.effect(prospector.level, gameState) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
+            const baseValue = (rates.pmps + getClickValue(gameState)) * (10 + prospector.level);
+            const isGolden = Math.random() < gameState.upgrades.goldenTransmutation.effect(gameState.upgrades.goldenTransmutation.level, gameState);
+            const value = isGolden ? baseValue * 100 : baseValue;
+            const maxHealth = 100 + prospector.level * 10;
+
             const newGolem = {
                 id: Date.now() + Math.random(),
-                value: (pmps + getClickValue()) * (10 + prospector.level) * upgrades.golemHeartstone.effect(upgrades.golemHeartstone.level),
+                value: value,
                 x: 50 + Math.cos(angle) * (45 + Math.random() * 5),
                 y: 50 + Math.sin(angle) * (45 + Math.random() * 5),
+                maxHealth: maxHealth,
+                health: maxHealth,
+                isGolden: isGolden
             };
             newGolems.push(newGolem);
-            if (upgrades.homunculusService.level >= 3 && !nextHomunculi.find(d => d.targetId === newGolem.id)) {
+            if (gameState.upgrades.homunculusService.level >= 3 && !nextHomunculi.find(d => d.targetId === newGolem.id)) {
                 nextHomunculi.push({ id: Date.now() + Math.random(), targetId: newGolem.id, x: 50, y: 50 });
             }
         }
     }
     
-    // --- Commit All State Updates Atomically ---
     setGolems(newGolems);
     setFloatingEssences(newEssences);
     setHomunculi(nextHomunculi);
 
     setGameState(prev => {
-        const materiaFromPassive = pmps * timeDelta;
-        const dewFromPassive = pdps * timeDelta;
-
+        const materiaFromPassive = rates.pmps * timeDelta;
+        const dewFromPassive = rates.pdps * timeDelta;
+        
         const newPrimaMateria = prev.currencies[Currency.PrimaMateria] + materiaFromPassive + materiaFromCollection;
         const newPhilosophersDew = prev.currencies[Currency.PhilosophersDew] + dewFromPassive;
         
         if (now - lastHistoryUpdate.current >= 1000) {
             lastHistoryUpdate.current = now;
-            setPrimaMateriaHistory(prevHistory => {
-                const newEntry = { timestamp: now, total: newPrimaMateria };
-                return [...prevHistory, newEntry].slice(-60);
-            });
-            setPhilosophersDewHistory(prevHistory => {
-                const newEntry = { timestamp: now, total: newPhilosophersDew };
-                return [...prevHistory, newEntry].slice(-60);
-            });
+            setPrimaMateriaHistory(prevHistory => [...prevHistory, { timestamp: now, total: newPrimaMateria }].slice(-60));
+            setPhilosophersDewHistory(prevHistory => [...prevHistory, { timestamp: now, total: newPhilosophersDew }].slice(-60));
         }
         
         return {
@@ -1573,7 +1720,7 @@ const App = () => {
             lastTick: now,
         };
     });
-}, [gameState, getClickValue, golems, floatingEssences, homunculi]);
+}, [gameState, getClickValue, golems, floatingEssences, homunculi, calculateRates]);
 
   useGameLoop(gameTick, 100);
 
@@ -1587,12 +1734,12 @@ const App = () => {
       const minutes = Math.floor((playTime % 3600) / 60);
       const seconds = Math.floor(playTime % 60);
       const formattedPlayTime = `${hours}h ${minutes}m ${seconds}s`;
-      const distillationBonusRaw = 0.25 + gameState.upgrades.quintessence.effect(gameState.upgrades.quintessence.level);
+      const distillationBonusRaw = 0.25 + gameState.upgrades.quintessence.effect(gameState.upgrades.quintessence.level, gameState);
 
       return {
           primaMateriaPerSecond: primaMateriaPerSecond,
           philosophersDewPerSecond: philosophersDewPerSecond,
-          primaMateriaPerClick: getClickValue(),
+          primaMateriaPerClick: getClickValue(gameState),
           totalClicks: gameState.stats.totalClicks,
           distillationCount: gameState.stats.distillationCount,
           playTime: formattedPlayTime,
@@ -1611,7 +1758,7 @@ const App = () => {
           height: 100%;
           display: flex;
           flex-direction: column;
-          background: radial-gradient(ellipse at bottom, #292524 0%, #0c0a09 100%);
+          background: radial-gradient(ellipse at bottom, var(--stone-800) 0%, var(--stone-950) 100%);
         }
         .distillation-phase-wrapper {
           flex: 1;
@@ -1631,6 +1778,7 @@ const App = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          position: relative;
         }
         .upgrades-container, .header-wrapper {
             transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
@@ -1717,6 +1865,7 @@ const App = () => {
                   collectionEffects={collectionEffects}
                   homunculi={homunculi}
                   distillationPhase={distillationPhase}
+                  lasers={lasers}
                 />
             </div>
             <div className="upgrades-container">
