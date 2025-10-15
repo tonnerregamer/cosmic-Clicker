@@ -3,51 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cosmic Clicker</title>
+    <title>Alchemical Ascension</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
       :root {
-        --slate-900: #0f172a;
-        --slate-800: #1e293b;
-        --slate-700: #334155;
-        --slate-400: #94a3b8;
-        --gray-100: #f3f4f6;
-        --cyan-300: #67e8f9;
-        --cyan-400: #22d3ee;
-        --yellow-200: #fef08a;
-        --yellow-300: #fde047;
-        --yellow-400: #facc15;
-        --yellow-500: #eab308;
-        --purple-300: #d8b4fe;
-        --purple-400: #c084fc;
-        --red-400: #f87171;
-        --red-500: #ef4444;
-        --red-600: #dc2626;
-        --red-800: #991b1b;
-        --green-600: #16a34a;
+        --stone-950: #0c0a09;
+        --stone-900: #1c1917;
+        --stone-800: #292524;
+        --stone-700: #44403c;
+        --stone-500: #78716c;
+        --stone-400: #a8a29e;
+        --stone-200: #e7e5e4;
+        
+        --sky-300: #7dd3fc;
+        --sky-400: #38bdf8;
 
-        --font-sans: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-        --font-display: 'Orbitron', var(--font-sans);
+        --amber-300: #fcd34d;
+        --amber-400: #fbbf24;
+        
+        --violet-300: #c4b5fd;
+        --violet-400: #a78bfa;
+
+        --rose-400: #fb7185;
+        --rose-500: #f43f5e;
+        --rose-800: #9f1239;
+        
+        --emerald-500: #10b981;
+
+        --font-sans: 'Lora', serif;
+        --font-display: 'Cinzel', var(--font-sans);
       }
 
       *, *::before, *::after {
         box-sizing: border-box;
       }
 
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+
       body {
         margin: 0;
         font-family: var(--font-sans);
-        background-color: var(--slate-900);
-        color: var(--gray-100);
+        background-color: var(--stone-950);
+        color: var(--stone-200);
         line-height: 1.5;
       }
 
       #root {
-        min-height: 100vh;
+        height: 100%;
         display: flex;
         flex-direction: column;
       }
       
-      .font-orbitron {
+      .font-cinzel {
         font-family: var(--font-display);
       }
 
@@ -70,7 +82,7 @@
           transform: translate(-50%, -100%) translateY(-50px);
         }
       }
-      @keyframes orb-pulse {
+      @keyframes essence-pulse {
           0%, 100% {
               transform: translate(-50%, -50%) scale(1);
               opacity: 0.8;
@@ -88,9 +100,10 @@
           opacity: .5;
         }
       }
-      @keyframes asteroid-float {
-        0% { transform: translate(-50%, -50%) rotate(0deg) translateX(5px) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg) translateX(5px) rotate(-360deg); }
+      @keyframes golem-float {
+        0% { transform: translateY(0px) rotate(-5deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+        100% { transform: translateY(0px) rotate(-5deg); }
       }
       @keyframes collect-effect {
         from {
@@ -103,20 +116,19 @@
         }
       }
       
-      /* New Supernova Animations */
-      @keyframes supernova-fade-in-out {
+      /* New Grand Distillation Animations */
+      @keyframes distillation-fade-in-out {
         0% { opacity: 0; }
         10% { opacity: 1; }
         90% { opacity: 1; }
         100% { opacity: 0; }
       }
-      @keyframes supernova-core-collapse-explode {
-        0% { transform: scale(300); opacity: 0.5; }
-        33% { transform: scale(0.1); opacity: 1; } /* Collapse phase */
-        37% { transform: scale(0.1); opacity: 1; } /* Hold */
-        100% { transform: scale(500); opacity: 0; } /* Explode phase */
+      @keyframes distillation-burst {
+        0% { transform: scale(0.1); opacity: 0; }
+        50% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(500); opacity: 0; }
       }
-      @keyframes supernova-shockwave-ring {
+      @keyframes distillation-wave {
         0% { transform: scale(0); opacity: 1; }
         100% { transform: scale(3); opacity: 0; }
       }
@@ -142,7 +154,7 @@
         from { transform: translateX(150%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
       }
-      @keyframes star-collapse-to-center {
+      @keyframes flask-collapse-to-center {
         0% { transform: scale(1); }
         100% { transform: scale(0); }
       }
@@ -155,9 +167,9 @@
       .animate-spin-slow { animation: spin-slow 20s linear infinite; }
       .animate-spin-slow-reverse { animation: spin-slow-reverse 30s linear infinite; }
       .animate-float-up { animation: float-up 2s ease-out forwards; }
-      .animate-orb-pulse { animation: orb-pulse 2.5s ease-in-out infinite; }
+      .animate-essence-pulse { animation: essence-pulse 2.5s ease-in-out infinite; }
       .animate-pulse { animation: pulse 3s cubic-bezier(0.4,0,0.6,1) infinite; }
-      .animate-asteroid-float { animation: asteroid-float 10s linear infinite; }
+      .animate-golem-float { animation: golem-float 10s ease-in-out infinite; }
       .animate-collect-effect { animation: collect-effect 0.5s ease-out forwards; }
       
       button {
@@ -197,23 +209,23 @@
 }
 </script>
 </head>
-  <body class="bg-slate-900 text-gray-100">
+  <body>
     <div id="root"></div>
     <script type="text/babel" data-presets="react,typescript">
 const { useState, useEffect, useCallback, useMemo, useRef, StrictMode } = React;
 
 // === FROM types.ts ===
 const Currency = {
-  Stardust: 'Stardust',
-  NebulaGas: 'Nebula Gas',
-  Antimatter: 'Antimatter',
+  PrimaMateria: 'Prima Materia',
+  PhilosophersDew: "Philosopher's Dew",
+  Alkahest: 'Alkahest',
 };
 
 const UpgradeType = {
   Click: 'Click',
   Passive: 'Passive',
   Utility: 'Utility',
-  Prestige: 'Prestige',
+  Distillation: 'Distillation',
 };
 
 
@@ -245,42 +257,40 @@ const formatNumber = (num) => {
 };
 
 const formatDuration = (seconds) => {
-    if (seconds < 60) return `${Math.floor(seconds)} secondes`;
+    if (seconds < 60) return `${Math.floor(seconds)} seconds`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} heures`;
-    return `${Math.floor(seconds / 86400)} jours`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours`;
+    return `${Math.floor(seconds / 86400)} days`;
 };
 
 // === FROM components/icons.tsx ===
-const StardustIcon = () => (
+const PrimaMateriaIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z" clipRule="evenodd" />
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.41 7.41l-2.82 2.82c-.38-.38-.83-.69-1.33-.9l3.24-3.24c.3-.3.77-.3 1.06 0s.3.77 0 1.06zM12 20c-1.85 0-3.53-.71-4.79-1.85l1.06-1.06c.94.83 2.16 1.35 3.53 1.35s2.59-.52 3.53-1.35l1.06 1.06C15.53 19.29 13.85 20 12 20zm-2.82-4.24l-3.24-3.24c-.3-.3-.3-.77 0-1.06s.77-.3 1.06 0l2.82 2.82c-.21.5-.52.95-.9 1.33zm9.23-2.35c-.12-.34-.31-.65-.55-.92l-1.95 1.95c.23.27.42.58.55.92H20v-1h-1.59zM4 11.59c.13-.34.32-.65.55-.92l1.95 1.95c-.23.27-.42.58-.55.92H4v-1h1.59zM12 6c1.85 0 3.53.71 4.79 1.85l-1.06 1.06C14.8 8.08 13.58 7.56 12.2 7.56s-2.6.52-3.53 1.35L7.61 7.85C8.87 6.71 10.55 6 12 6z"/>
   </svg>
 );
 
-const NebulaGasIcon = () => (
+const PhilosophersDewIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-        <path d="M6.061 3.144C7.035 1.833 8.835 1.48 10.29 2.213L11 2.667l.71-.453c1.454-.733 3.255-.38 4.228.931s.913 3.233-.043 4.54L15.41 8.5l.485.647c1.157 1.543 1.293 3.695.38 5.433s-2.73 2.613-4.48 2.373l-.855-.117-.855.117c-1.75.24-3.57.067-4.48-2.373s-.777-3.89.38-5.433L6.59 8.5l-.485-.809c-.957-1.307-.753-3.233.228-4.54zM4.5 15.75c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h15c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-15z" />
+        <path d="M12 2C8.69 2 6 4.69 6 8c0 2.25 1.83 4.22 3 5.41V20c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-6.59c1.17-1.19 3-3.16 3-5.41 0-3.31-2.69-6-6-6zm-2 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"/>
     </svg>
 );
 
-const AntimatterIcon = () => (
+const AlkahestIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 000-4z" />
-        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010 16z" transform="rotate(45 12 12)"/>
+        <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm0 3c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5z"/>
     </svg>
 );
 
-const AsteroidIcon = () => (
+const GolemIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-    <path fillRule="evenodd" d="M12.96 3.63a.75.75 0 01.103.023l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033zM5.48 8.924a.75.75 0 01.103-.023l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033z" clipRule="evenodd" />
-    <path d="M11.03 13.5a.75.75 0 01.11-.01l7.5 3.001a.75.75 0 010 1.393l-7.5 3a.75.75 0 01-.866-.104l-3-3.75a.75.75 0 01.047-.98l3.75-3.75a.75.75 0 01.926-.033z" />
+    <path d="M7 2v2H3v16h18V4h-4V2h-4v2h-2V2H7zm-2 4h14v12H5V6zm4 2v2h2V8H9zm4 0v2h2V8h-2zm-4 4v2h2v-2H9zm4 0v2h2v-2h-2z"/>
   </svg>
 );
 
-const DroneIcon = () => (
+const HomunculusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-    <path d="M12 2.25a.75.75 0 01.75.75v2.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.196a.75.75 0 00-1.06-1.06l-1.768 1.768a.75.75 0 101.06 1.06l1.768-1.768zM6.196 18.894a.75.75 0 001.06 1.06l1.768-1.768a.75.75 0 10-1.06-1.06l-1.768 1.768zM18.894 18.894a.75.75 0 001.06-1.06l-1.768-1.768a.75.75 0 10-1.06 1.06l1.768 1.768zM6.196 6.196a.75.75 0 00-1.06 1.06l1.768 1.768a.75.75 0 101.06-1.06L6.196 6.196zM12 21.75a.75.75 0 01-.75-.75v-2.5a.75.75 0 011.5 0V21a.75.75 0 01-.75.75zM3 12.75a.75.75 0 01-.75-.75H.75a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75v0a.75.75 0 01-.75.75zM21 12a.75.75 0 00.75.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 00-.75.75z" />
+    <path d="M12 5.5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zM12 13c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
   </svg>
 );
 
@@ -311,30 +321,22 @@ const useGameLoop = (callback, interval) => {
 };
 
 // === FROM components/UpgradeButton.tsx ===
-const getCurrencyIcon = (currency) => {
+const getCurrencyStyle = (currency) => {
   switch (currency) {
-    case Currency.Stardust:
-      return <StardustIcon />;
-    case Currency.NebulaGas:
-      return <NebulaGasIcon />;
-    case Currency.Antimatter:
-      return <AntimatterIcon />;
+    case Currency.PrimaMateria:
+      return { icon: <PrimaMateriaIcon />, color: 'var(--amber-400)' };
+    case Currency.PhilosophersDew:
+      return { icon: <PhilosophersDewIcon />, color: 'var(--violet-400)' };
+    case Currency.Alkahest:
+      return { icon: <AlkahestIcon />, color: 'var(--rose-400)' };
+    default:
+      return { icon: null, color: 'inherit' };
   }
 };
 
-const getCurrencyColor = (currency) => {
-  switch (currency) {
-    case Currency.Stardust:
-      return '#fde047';
-    case Currency.NebulaGas:
-      return '#d8b4fe';
-    case Currency.Antimatter:
-      return '#f87171';
-  }
-}
-
 const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
   const isMaxLevel = upgrade.maxLevel && upgrade.level >= upgrade.maxLevel;
+  const { icon, color } = getCurrencyStyle(upgrade.currency);
 
   return (
     <button
@@ -347,14 +349,14 @@ const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
           width: 100%;
           text-align: left;
           padding: 0.75rem;
-          background-color: rgba(15, 23, 42, 0.5);
+          background-color: rgba(12, 10, 9, 0.5);
           border-radius: 0.5rem;
-          border: 1px solid #334155;
+          border: 1px solid var(--stone-700);
           transition: all 200ms;
         }
         .upgrade-button:hover:not(:disabled) {
-          background-color: rgba(51, 65, 85, 0.5);
-          border-color: #22d3ee;
+          background-color: rgba(41, 37, 36, 0.7);
+          border-color: var(--sky-400);
         }
         .upgrade-button:disabled {
           opacity: 0.5;
@@ -363,23 +365,23 @@ const UpgradeButton = ({ upgrade, onPurchase, canAfford }) => {
       `}</style>
       <div style={{pointerEvents: 'none'}}>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <h4 className="font-orbitron" style={{fontWeight: 'bold'}}>{upgrade.name}</h4>
+          <h4 className="font-cinzel" style={{fontWeight: 'bold'}}>{upgrade.name}</h4>
           <span style={{
             fontSize: '0.875rem',
             fontWeight: 600,
             padding: '0.25rem 0.5rem',
             borderRadius: '0.25rem',
-            backgroundColor: isMaxLevel ? '#16a34a' : '#334155',
+            backgroundColor: isMaxLevel ? 'var(--emerald-500)' : 'var(--stone-700)',
             color: isMaxLevel ? 'white' : 'inherit'
           }}>
               {isMaxLevel ? 'MAX' : `Lvl ${upgrade.level}`}
           </span>
         </div>
-        <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem'}}>{upgrade.description}</p>
-        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', fontWeight: 600, color: getCurrencyColor(upgrade.currency)}}>
+        <p style={{fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--stone-400)', marginTop: '0.25rem'}}>{upgrade.description}</p>
+        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', fontWeight: 600, color}}>
           {!isMaxLevel && (
               <>
-                  <div style={{width: '1rem', height: '1rem'}}>{getCurrencyIcon(upgrade.currency)}</div>
+                  <div style={{width: '1rem', height: '1rem'}}>{icon}</div>
                   <span>{formatNumber(upgrade.cost)}</span>
               </>
           )}
@@ -411,14 +413,14 @@ const TabButton = ({ tab, activeTab, onClick, icon }) => (
           border-bottom: 2px solid;
           transition: color 200ms, border-color 200ms;
           border-color: transparent;
-          color: #94a3b8;
+          color: var(--stone-400);
         }
         .tab-button:hover {
-          color: #67e8f9;
+          color: var(--sky-300);
         }
         .tab-button[data-active="true"] {
-          border-color: #22d3ee;
-          color: #22d3ee;
+          border-color: var(--sky-400);
+          color: var(--sky-400);
         }
       `}</style>
         <div style={{width: '1.25rem', height: '1.25rem', pointerEvents: 'none'}}>{icon}</div>
@@ -427,104 +429,104 @@ const TabButton = ({ tab, activeTab, onClick, icon }) => (
 );
 
 const StatDisplay = ({ label, value }) => (
-    <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
-        <dt style={{fontSize: '0.875rem', color: '#94a3b8'}}>{label}</dt>
-        <dd className="font-orbitron" style={{fontWeight: 'bold', color: '#67e8f9'}}>{value}</dd>
+    <div style={{backgroundColor: 'rgba(12, 10, 9, 0.5)', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
+        <dt style={{fontSize: '0.875rem', color: 'var(--stone-400)'}}>{label}</dt>
+        <dd className="font-cinzel" style={{fontWeight: 'bold', color: 'var(--sky-300)'}}>{value}</dd>
     </div>
 );
 
-const StatsPanel = ({ stardustHistory, nebulaHistory, stats, onReset }) => {
-    const stardustPoints = stardustHistory.map(d => d.totalStardust);
-    const stardustMaxY = Math.max(...stardustPoints, 1);
-    const stardustMinY = stardustHistory.length > 0 ? Math.min(...stardustPoints) : 0;
-    const stardustRange = stardustMaxY - stardustMinY;
+const StatsPanel = ({ primaMateriaHistory, philosophersDewHistory, stats, onReset }) => {
+    const primaMateriaPoints = primaMateriaHistory.map(d => d.total);
+    const primaMateriaMaxY = Math.max(...primaMateriaPoints, 1);
+    const primaMateriaMinY = primaMateriaHistory.length > 0 ? Math.min(...primaMateriaPoints) : 0;
+    const primaMateriaRange = primaMateriaMaxY - primaMateriaMinY;
     
-    const getStardustPathData = () => {
-        if (stardustRange <= 0) return 'M 0,50 L 300,50';
-        return stardustPoints.map((p, i) => {
-            const x = (i / (stardustPoints.length - 1)) * 300;
-            const y = 100 - ((p - stardustMinY) / stardustRange) * 100;
+    const getPrimaMateriaPathData = () => {
+        if (primaMateriaRange <= 0) return 'M 0,50 L 300,50';
+        return primaMateriaPoints.map((p, i) => {
+            const x = (i / (primaMateriaPoints.length - 1)) * 300;
+            const y = 100 - ((p - primaMateriaMinY) / primaMateriaRange) * 100;
             return `${x},${y}`;
         }).join(' L ');
     };
-    const stardustPathData = stardustHistory.length < 2 ? 'M 0,50 L 300,50' : getStardustPathData();
+    const primaMateriaPathData = primaMateriaHistory.length < 2 ? 'M 0,50 L 300,50' : getPrimaMateriaPathData();
 
-    const nebulaPoints = nebulaHistory.map(d => d.totalNebulaGas);
-    const nebulaMaxY = Math.max(...nebulaPoints, 1);
-    const nebulaMinY = nebulaHistory.length > 0 ? Math.min(...nebulaPoints) : 0;
-    const nebulaRange = nebulaMaxY - nebulaMinY;
+    const dewPoints = philosophersDewHistory.map(d => d.total);
+    const dewMaxY = Math.max(...dewPoints, 1);
+    const dewMinY = philosophersDewHistory.length > 0 ? Math.min(...dewPoints) : 0;
+    const dewRange = dewMaxY - dewMinY;
 
-    const getNebulaPathData = () => {
-        if (nebulaRange <= 0) return 'M 0,50 L 300,50';
-        return nebulaPoints.map((p, i) => {
-            const x = (i / (nebulaPoints.length - 1)) * 300;
-            const y = 100 - ((p - nebulaMinY) / nebulaRange) * 100;
+    const getDewPathData = () => {
+        if (dewRange <= 0) return 'M 0,50 L 300,50';
+        return dewPoints.map((p, i) => {
+            const x = (i / (dewPoints.length - 1)) * 300;
+            const y = 100 - ((p - dewMinY) / dewRange) * 100;
             return `${x},${y}`;
         }).join(' L ');
     };
-    const nebulaPathData = nebulaHistory.length < 2 ? 'M 0,50 L 300,50' : getNebulaPathData();
+    const dewPathData = philosophersDewHistory.length < 2 ? 'M 0,50 L 300,50' : getDewPathData();
 
 
     return (
         <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
             <div>
-                <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: '#67e8f9'}}>Stardust Total</h3>
-                {stardustHistory.length < 2 ? (
-                    <div style={{textAlign: 'center', padding: '1rem', color: '#94a3b8'}}>Collecte des données...</div>
+                <h3 className="font-cinzel" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--amber-400)'}}>Prima Materia Total</h3>
+                {primaMateriaHistory.length < 2 ? (
+                    <div style={{textAlign: 'center', padding: '1rem', color: 'var(--stone-400)'}}>Gathering data...</div>
                 ) : (
                     <div style={{position: 'relative', height: '6rem'}}>
                         <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
                             <defs>
-                                <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4"/>
-                                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0"/>
+                                <linearGradient id="primaMateriaAreaGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="var(--amber-400)" stopOpacity="0.4"/>
+                                    <stop offset="100%" stopColor="var(--amber-400)" stopOpacity="0"/>
                                 </linearGradient>
                             </defs>
-                            <path d={'M ' + stardustPathData} fill="none" stroke="#06b6d4" strokeWidth="2" />
-                            <path d={`M ${stardustPathData.split(' ')[0]} L ${stardustPathData} L 300,100 L 0,100 Z`} fill="url(#areaGradient)" />
+                            <path d={'M ' + primaMateriaPathData} fill="none" stroke="var(--amber-400)" strokeWidth="2" />
+                            <path d={`M ${primaMateriaPathData.split(' ')[0]} L ${primaMateriaPathData} L 300,100 L 0,100 Z`} fill="url(#primaMateriaAreaGradient)" />
                         </svg>
-                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(stardustMaxY)}</div>
-                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(stardustMinY)}</div>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: 'var(--stone-400)'}}>{formatNumber(primaMateriaMaxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: 'var(--stone-400)'}}>{formatNumber(primaMateriaMinY)}</div>
                     </div>
                 )}
             </div>
 
             <div>
-                <h3 className="font-orbitron" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--purple-400)'}}>Nebula Gas Total</h3>
-                {nebulaHistory.length < 2 ? (
-                    <div style={{textAlign: 'center', padding: '1rem', color: '#94a3b8'}}>Collecte des données...</div>
+                <h3 className="font-cinzel" style={{fontSize: '1.125rem', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--violet-400)'}}>Philosopher's Dew Total</h3>
+                {philosophersDewHistory.length < 2 ? (
+                    <div style={{textAlign: 'center', padding: '1rem', color: 'var(--stone-400)'}}>Gathering data...</div>
                 ) : (
                     <div style={{position: 'relative', height: '6rem'}}>
                         <svg viewBox={`0 0 300 100`} style={{width: '100%', height: '100%'}} preserveAspectRatio="none">
                             <defs>
-                                <linearGradient id="nebulaAreaGradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stopColor="var(--purple-400)" stopOpacity="0.4"/>
-                                    <stop offset="100%" stopColor="var(--purple-400)" stopOpacity="0"/>
+                                <linearGradient id="dewAreaGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="var(--violet-400)" stopOpacity="0.4"/>
+                                    <stop offset="100%" stopColor="var(--violet-400)" stopOpacity="0"/>
                                 </linearGradient>
                             </defs>
-                            <path d={'M ' + nebulaPathData} fill="none" stroke="var(--purple-400)" strokeWidth="2" />
-                            <path d={`M ${nebulaPathData.split(' ')[0]} L ${nebulaPathData} L 300,100 L 0,100 Z`} fill="url(#nebulaAreaGradient)" />
+                            <path d={'M ' + dewPathData} fill="none" stroke="var(--violet-400)" strokeWidth="2" />
+                            <path d={`M ${dewPathData.split(' ')[0]} L ${dewPathData} L 300,100 L 0,100 Z`} fill="url(#dewAreaGradient)" />
                         </svg>
-                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(nebulaMaxY)}</div>
-                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: '#94a3b8'}}>{formatNumber(nebulaMinY)}</div>
+                        <div style={{position: 'absolute', top: 0, left: 0, fontSize: '0.75rem', color: 'var(--stone-400)'}}>{formatNumber(dewMaxY)}</div>
+                        <div style={{position: 'absolute', bottom: 0, left: 0, fontSize: '0.75rem', color: 'var(--stone-400)'}}>{formatNumber(dewMinY)}</div>
                     </div>
                 )}
             </div>
 
             <dl style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
-                <StatDisplay label="Stardust/sec" value={formatNumber(stats.stardustPerSecond)} />
-                <StatDisplay label="Gaz Nébuleux/sec" value={formatNumber(stats.nebulaPerSecond)} />
-                <StatDisplay label="Stardust/clic" value={formatNumber(stats.stardustPerClick)} />
-                <StatDisplay label="Bonus de Prestige" value={stats.prestigeBonus} />
-                <StatDisplay label="Clics totaux" value={formatNumber(stats.totalClicks)} />
-                <StatDisplay label="Poussière d'étoiles (cette Supernova)" value={stats.totalStardustEver} />
-                <StatDisplay label="Gaz Nébuleux (cette Supernova)" value={stats.totalNebulaGasEver} />
-                <StatDisplay label="Orbes collectés" value={stats.orbsClicked} />
-                <StatDisplay label="Astéroïdes minés" value={stats.asteroidsMined} />
-                <StatDisplay label="Supernovas" value={stats.supernovaCount} />
-                <StatDisplay label="Temps de jeu" value={stats.playTime} />
+                <StatDisplay label="Materia/sec" value={formatNumber(stats.primaMateriaPerSecond)} />
+                <StatDisplay label="Dew/sec" value={formatNumber(stats.philosophersDewPerSecond)} />
+                <StatDisplay label="Materia/click" value={formatNumber(stats.primaMateriaPerClick)} />
+                <StatDisplay label="Distillation Bonus" value={stats.distillationBonus} />
+                <StatDisplay label="Total Clicks" value={formatNumber(stats.totalClicks)} />
+                <StatDisplay label="Materia (this Distillate)" value={stats.totalPrimaMateriaEver} />
+                <StatDisplay label="Dew (this Distillate)" value={stats.totalPhilosophersDewEver} />
+                <StatDisplay label="Essences Collected" value={stats.essencesClicked} />
+                <StatDisplay label="Golems Harvested" value={stats.golemsMined} />
+                <StatDisplay label="Distillations" value={stats.distillationCount} />
+                <StatDisplay label="Play Time" value={stats.playTime} />
             </dl>
-            <div style={{paddingTop: '1rem', marginTop: '1rem', borderTop: '1px solid #334155'}}>
+            <div style={{paddingTop: '1rem', marginTop: '1rem', borderTop: '1px solid var(--stone-700)'}}>
               <button
                 onClick={onReset}
                 className="button-reset"
@@ -532,7 +534,7 @@ const StatsPanel = ({ stardustHistory, nebulaHistory, stats, onReset }) => {
                 <style>{`
                   .button-reset {
                     width: 100%;
-                    background-color: #4b5563;
+                    background-color: var(--stone-600);
                     color: white;
                     font-weight: bold;
                     padding: 0.5rem 1rem;
@@ -540,18 +542,18 @@ const StatsPanel = ({ stardustHistory, nebulaHistory, stats, onReset }) => {
                     transition: background-color 200ms;
                   }
                   .button-reset:hover {
-                    background-color: #6b7280;
+                    background-color: var(--stone-500);
                   }
                 `}</style>
-                Réinitialiser la Sauvegarde
+                Reset Save Data
               </button>
             </div>
         </div>
     );
 };
 
-const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, stardustHistory, nebulaHistory, detailedStats, onResetSave }) => {
-  const [activeTab, setActiveTab] = useState(Currency.Stardust);
+const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPrestige, prestigeCost, primaMateriaHistory, philosophersDewHistory, detailedStats, onResetSave }) => {
+  const [activeTab, setActiveTab] = useState(Currency.PrimaMateria);
 
   const isUpgradeUnlocked = (upgrade) => {
     if (!upgrade.requirement) return true;
@@ -563,16 +565,16 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
     .filter((u) => u.currency === activeTab && isUpgradeUnlocked(u));
 
   return (
-    <div style={{backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column'}}>
-      <div style={{display: 'flex', borderBottom: '1px solid #334155'}}>
-        <TabButton tab={Currency.Stardust} activeTab={activeTab} onClick={setActiveTab} icon={<StardustIcon />} />
-        <TabButton tab={Currency.NebulaGas} activeTab={activeTab} onClick={setActiveTab} icon={<NebulaGasIcon />} />
-        <TabButton tab={Currency.Antimatter} activeTab={activeTab} onClick={setActiveTab} icon={<AntimatterIcon />} />
+    <div style={{backgroundColor: 'rgba(28, 25, 23, 0.5)', backdropFilter: 'blur(4px)', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', height: '100%', display: 'flex', flexDirection: 'column'}}>
+      <div style={{display: 'flex', borderBottom: '1px solid var(--stone-700)', flexShrink: 0}}>
+        <TabButton tab={Currency.PrimaMateria} activeTab={activeTab} onClick={setActiveTab} icon={<PrimaMateriaIcon />} />
+        <TabButton tab={Currency.PhilosophersDew} activeTab={activeTab} onClick={setActiveTab} icon={<PhilosophersDewIcon />} />
+        <TabButton tab={Currency.Alkahest} activeTab={activeTab} onClick={setActiveTab} icon={<AlkahestIcon />} />
         <TabButton tab={'Stats'} activeTab={activeTab} onClick={setActiveTab} icon={<StatsIcon />} />
       </div>
 
-      <div style={{flexGrow: 1, overflowY: 'auto'}}>
-        {activeTab !== Currency.Antimatter && activeTab !== 'Stats' && (
+      <div style={{flex: 1, overflowY: 'auto', minHeight: 0}}>
+        {activeTab !== Currency.Alkahest && activeTab !== 'Stats' && (
           <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
             {filteredUpgrades.map((upgrade) => (
               <UpgradeButton key={upgrade.id} upgrade={upgrade} onPurchase={onPurchase} canAfford={currencies[upgrade.currency] >= upgrade.cost}/>
@@ -580,42 +582,42 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
           </div>
         )}
 
-        {activeTab === 'Stats' && <StatsPanel stardustHistory={stardustHistory} nebulaHistory={nebulaHistory} stats={detailedStats} onReset={onResetSave} />}
+        {activeTab === 'Stats' && <StatsPanel primaMateriaHistory={primaMateriaHistory} philosophersDewHistory={philosophersDewHistory} stats={detailedStats} onReset={onResetSave} />}
 
-        {activeTab === Currency.Antimatter && (
+        {activeTab === Currency.Alkahest && (
             <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
-                <div style={{backgroundColor: 'rgba(15, 23, 42, 0.5)', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)'}}>
-                    <h3 className="font-orbitron" style={{fontSize: '1.125rem', color: '#f87171'}}>SUPERNOVA</h3>
-                    <p style={{fontSize: '0.875rem', color: '#d1d5db', marginTop: '0.5rem'}}>Réinitialisez votre progression pour gagner de l'Antimatière et débloquer de puissantes améliorations permanentes.</p>
-                    <p style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem'}}>Coût : {formatNumber(prestigeCost)} Stardust.</p>
+                <div style={{backgroundColor: 'rgba(12, 10, 9, 0.5)', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid var(--rose-800)'}}>
+                    <h3 className="font-cinzel" style={{fontSize: '1.125rem', color: 'var(--rose-400)'}}>GRAND DISTILLATION</h3>
+                    <p style={{fontSize: '0.875rem', color: 'var(--stone-400)', marginTop: '0.5rem'}}>Reset your progress to gain Alkahest and unlock powerful permanent enhancements.</p>
+                    <p style={{fontSize: '0.75rem', color: 'var(--stone-500)', marginTop: '0.5rem'}}>Cost: {formatNumber(prestigeCost)} Prima Materia.</p>
                     <button 
                         onClick={onPrestige}
                         disabled={!canPrestige}
-                        className="supernova-button"
+                        className="distillation-button"
                     >
                       <style>{`
-                        .supernova-button {
+                        .distillation-button {
                           margin-top: 1rem;
                           width: 100%;
-                          background-color: #dc2626;
+                          background-color: var(--rose-500);
                           color: white;
                           font-weight: bold;
                           padding: 0.5rem 1rem;
                           border-radius: 0.5rem;
                           transition: all 200ms;
-                          box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2), 0 4px 6px -2px rgba(239, 68, 68, 0.2);
+                          box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.2), 0 4px 6px -2px rgba(244, 63, 94, 0.2);
                         }
-                        .supernova-button:hover:not(:disabled) {
-                          background-color: #ef4444;
+                        .distillation-button:hover:not(:disabled) {
+                          background-color: #f65f77;
                         }
-                        .supernova-button:disabled {
-                          background-color: #991b1b;
-                          color: #94a3b8;
+                        .distillation-button:disabled {
+                          background-color: var(--rose-800);
+                          color: var(--stone-400);
                           cursor: not-allowed;
                           box-shadow: none;
                         }
                       `}</style>
-                        Go Supernova
+                        Begin Distillation
                     </button>
                 </div>
                 {filteredUpgrades.map((upgrade) => (
@@ -629,35 +631,28 @@ const UpgradesPanel = ({ upgrades, onPurchase, currencies, onPrestige, canPresti
 };
 
 // === FROM components/MainGameArea.tsx ===
-const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs, onOrbClick, asteroids, onAsteroidClick, collectionEffects, drones, supernovaPhase }) => {
-  const safeStarPower = (typeof starPowerLevel === 'number' && isFinite(starPowerLevel)) ? starPowerLevel : 0;
-  const hueShift = Math.min(safeStarPower * 0.25, 45); 
-  const baseHue = 50;
-  
-  const fromColor = `hsl(${baseHue - hueShift}, 100%, 60%)`;
-  const viaColor = `hsl(${30 - hueShift}, 95%, 55%)`;
-  const toColor = `hsl(${10 - hueShift}, 90%, 50%)`;
+const MainGameArea = ({ onClick, floatingNumbers, alchemicalPower, floatingEssences, onEssenceClick, golems, onGolemClick, collectionEffects, homunculi, distillationPhase }) => {
+  const safePower = (typeof alchemicalPower === 'number' && isFinite(alchemicalPower)) ? alchemicalPower : 0;
+  const hueShift = Math.min(safePower * 0.1, 120); 
+  const coreColor = `hsl(${180 + hueShift}, 80%, 50%)`;
 
-  const starStyle = {
-    background: `radial-gradient(circle at 30% 30%, ${fromColor}, ${viaColor}, ${toColor})`,
+  const atomStyle = {
     position: 'relative',
-    width: '75%',
-    height: '75%',
-    borderRadius: '9999px',
-    boxShadow: '0 25px 50px -12px rgba(234, 179, 8, 0.3)',
+    width: '80%',
+    height: '80%',
     transition: 'transform 100ms ease-in-out',
+    filter: 'drop-shadow(0 10px 8px rgba(0,0,0,0.4))'
   };
   
-  const orbStyle = {
+  const essenceStyle = {
     position: 'absolute',
     width: '3rem',
     height: '3rem',
     borderRadius: '9999px',
-    backgroundColor: 'rgba(253, 224, 71, 0.8)',
+    backgroundColor: 'rgba(251, 191, 36, 0.8)',
     backdropFilter: 'blur(4px)',
-    border: '2px solid #fef08a',
-    boxShadow: '0 10px 15px -3px rgba(250, 204, 21, 0.3), 0 4px 6px -2px rgba(250, 204, 21, 0.3)',
-    animation: 'orb-pulse 2.5s ease-in-out infinite',
+    border: '2px solid var(--amber-300)',
+    boxShadow: '0 10px 15px -3px rgba(251, 191, 36, 0.3), 0 4px 6px -2px rgba(251, 191, 36, 0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -668,14 +663,13 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
     zIndex: 10,
   };
 
-  const asteroidStyle = {
+  const golemStyle = {
     position: 'absolute',
     width: '2.5rem',
     height: '2.5rem',
-    color: '#94a3b8',
+    color: 'var(--stone-400)',
     filter: 'drop-shadow(0 4px 3px rgba(0,0,0,0.5))',
     zIndex: 10,
-    animation: 'asteroid-float 10s linear infinite'
   };
 
   const collectionEffectStyle = {
@@ -683,17 +677,17 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
     width: '3rem',
     height: '3rem',
     borderRadius: '9999px',
-    border: '2px solid #67e8f9',
+    border: '2px solid var(--sky-300)',
     zIndex: 11,
     pointerEvents: 'none'
   };
 
-  const droneStyle = {
+  const homunculusStyle = {
     position: 'absolute',
     width: '1.5rem',
     height: '1.5rem',
-    color: '#67e8f9',
-    filter: 'drop-shadow(0 0 5px #67e8f9)',
+    color: 'var(--sky-300)',
+    filter: 'drop-shadow(0 0 5px var(--sky-300))',
     zIndex: 12,
     transition: 'left 0.1s linear, top 0.1s linear',
     pointerEvents: 'none',
@@ -701,20 +695,17 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
 
   return (
     <div style={{position: 'relative', width: '100%', maxWidth: '32rem', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-      {/* Background Glow */}
-      <div style={{position: 'absolute', inset: 0, backgroundColor: 'rgba(250, 204, 21, 0.2)', filter: 'blur(48px)', borderRadius: '9999px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', pointerEvents: 'none'}}></div>
-
-      {/* Drones */}
-      {drones.map(drone => (
+      {/* Homunculi */}
+      {homunculi.map(homunculus => (
         <div 
-          key={drone.id}
+          key={homunculus.id}
           style={{
-            ...droneStyle,
-            left: `${drone.x}%`,
-            top: `${drone.y}%`,
+            ...homunculusStyle,
+            left: `${homunculus.x}%`,
+            top: `${homunculus.y}%`,
           }}
         >
-          <DroneIcon />
+          <HomunculusIcon />
         </div>
       ))}
 
@@ -731,78 +722,113 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
         />
       ))}
 
-       {/* Clickable Orbs */}
-       {clickableOrbs.map(orb => (
+       {/* Floating Essences */}
+       {floatingEssences.map(essence => (
         <button
-          key={orb.id}
-          onClick={() => onOrbClick(orb.id)}
-          className="animate-orb-pulse"
+          key={essence.id}
+          onClick={() => onEssenceClick(essence.id)}
+          className="animate-essence-pulse"
           style={{
-            ...orbStyle,
-            left: `${orb.x}%`,
-            top: `${orb.y}%`,
+            ...essenceStyle,
+            left: `${essence.x}%`,
+            top: `${essence.y}%`,
             transform: 'translate(-50%, -50%)',
           }}
-          aria-label={`Click to collect ${formatNumber(orb.value)} stardust`}
+          aria-label={`Click to collect ${formatNumber(essence.value)} Prima Materia`}
         >
-          +{formatNumber(orb.value)}
+          +{formatNumber(essence.value)}
         </button>
       ))}
 
-      {/* Clickable Asteroids */}
-      {asteroids.map(asteroid => (
+      {/* Golems */}
+      {golems.map(golem => (
         <button
-          key={asteroid.id}
-          onClick={() => onAsteroidClick(asteroid.id)}
+          key={golem.id}
+          onClick={() => onGolemClick(golem.id)}
+          className="animate-golem-float"
           style={{
-            ...asteroidStyle,
-            left: `${asteroid.x}%`,
-            top: `${asteroid.y}%`,
+            ...golemStyle,
+            left: `${golem.x}%`,
+            top: `${golem.y}%`,
           }}
-          aria-label={`Click to mine ${formatNumber(asteroid.value)} stardust`}
+          aria-label={`Click to harvest ${formatNumber(golem.value)} Prima Materia`}
         >
-          <AsteroidIcon />
+          <GolemIcon />
         </button>
       ))}
 
       <button
         onClick={onClick}
-        className="active-scale-95 star-button"
-        aria-label="Click to generate stardust"
-        style={starStyle}
+        className="active-scale-95 atom-button"
+        aria-label="Click to generate Prima Materia"
+        style={atomStyle}
       >
         <style>{`
-            .star-button {
+            .atom-button {
                 opacity: 1;
                 transform: scale(1);
             }
-            [data-supernova-phase="collapse"] .star-button {
-                animation: star-collapse-to-center 1s ease-in forwards;
+            .atom-container {
+                width: 100%; height: 100%; position: relative;
+                display: flex; align-items: center; justify-content: center;
+                transform: scale(0.75);
             }
-            [data-supernova-phase="explode"] .star-button,
-            [data-supernova-phase="rebuild"] .star-button {
+            .nucleus {
+                width: 25%; height: 25%;
+                background-color: ${coreColor};
+                border-radius: 50%;
+                box-shadow: 0 0 20px 8px ${coreColor}, inset 0 0 10px rgba(255,255,255,0.5);
+                animation: pulse 2s infinite ease-in-out;
+                z-index: 1;
+            }
+            .orbit {
+                position: absolute;
+                width: 100%; height: 100%;
+                border: 2px solid rgba(125, 211, 252, 0.3);
+                border-radius: 50%;
+            }
+            .orbit--1 { animation: spin-slow 8s linear infinite; }
+            .orbit--2 { transform: rotate(60deg); animation: spin-slow 10s linear infinite reverse; }
+            .orbit--3 { transform: rotate(-60deg); animation: spin-slow 12s linear infinite; }
+            .electron {
+                position: absolute;
+                width: 8%; height: 8%;
+                background-color: var(--sky-300);
+                border-radius: 50%;
+                box-shadow: 0 0 10px var(--sky-300);
+                top: -4%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            [data-distillation-phase="collapse"] .atom-button {
+                animation: flask-collapse-to-center 1s ease-in forwards;
+            }
+            [data-distillation-phase="explode"] .atom-button,
+            [data-distillation-phase="rebuild"] .atom-button {
                 opacity: 0;
             }
         `}</style>
-        {/* Star Core */}
-        <div style={{position: 'absolute', inset: 0, borderRadius: '9999px', backgroundColor: 'rgba(255, 255, 255, 0.5)', animation: 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite', pointerEvents: 'none'}}></div>
-        {/* Star Flares */}
-        <div className="animate-spin-slow" style={{position: 'absolute', inset: '0.5rem', borderRadius: '9999px', border: '2px solid rgba(253, 224, 71, 0.5)', pointerEvents: 'none'}}></div>
-        <div className="animate-spin-slow-reverse" style={{position: 'absolute', inset: '1rem', borderRadius: '9999px', border: '2px solid rgba(251, 146, 60, 0.3)', pointerEvents: 'none'}}></div>
+        <div className="atom-container">
+            <div className="nucleus"></div>
+            <div className="orbit orbit--1"><div className="electron"></div></div>
+            <div className="orbit orbit--2"><div className="electron"></div></div>
+            <div className="orbit orbit--3"><div className="electron"></div></div>
+        </div>
         
         {/* Floating Numbers */}
         {floatingNumbers.map(num => (
           <div
             key={num.id}
-            className="font-orbitron animate-float-up"
+            className="font-cinzel animate-float-up"
             style={{
                 position: 'absolute',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                color: num.isNebula ? '#d8b4fe' : '#fef08a',
+                color: num.isDew ? 'var(--violet-300)' : 'var(--amber-300)',
+                textShadow: '0 0 5px black',
                 pointerEvents: 'none',
-                left: `${num.x}px`,
-                top: `${num.y}px`,
+                left: `${num.x}%`,
+                top: `${num.y}%`,
                 transform: 'translate(-50%, -50%)'
             }}
           >
@@ -822,11 +848,11 @@ const MainGameArea = ({ onClick, floatingNumbers, starPowerLevel, clickableOrbs,
 
 // === FROM components/Header.tsx ===
 const CurrencyDisplay = ({ icon, amount, name, color }) => (
-    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', color}}>
+    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(28, 25, 23, 0.5)', backdropFilter: 'blur(4px)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--stone-700)', color}}>
         <div style={{width: '2rem', height: '2rem'}}>{icon}</div>
         <div>
-            <div className="font-orbitron" style={{fontSize: '1.25rem', lineHeight: 'none'}}>{formatNumber(amount)}</div>
-            <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>{name}</div>
+            <div className="font-cinzel" style={{fontSize: '1.25rem', lineHeight: 'none'}}>{formatNumber(amount)}</div>
+            <div style={{fontSize: '0.75rem', color: 'var(--stone-400)'}}>{name}</div>
         </div>
     </div>
 );
@@ -843,7 +869,7 @@ const Header = ({ currencies }) => {
           }
         }
       `}</style>
-      <h1 className="font-orbitron" style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#67e8f9', textShadow: '0 0 8px rgba(107,235,242,0.5)'}}>
+      <h1 className="font-cinzel" style={{fontSize: '1.875rem', fontWeight: 'bold', color: 'var(--sky-300)', textShadow: '0 0 8px rgba(125, 211, 252, 0.5)'}}>
          <style>{`
             @media (min-width: 1024px) {
               h1 {
@@ -851,7 +877,7 @@ const Header = ({ currencies }) => {
               }
             }
         `}</style>
-        Cosmic Clicker
+        Alchemical Ascension
       </h1>
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.5rem'}}>
         <style>{`
@@ -862,22 +888,22 @@ const Header = ({ currencies }) => {
             }
         `}</style>
         <CurrencyDisplay
-            icon={<StardustIcon />}
-            amount={currencies[Currency.Stardust]}
-            name="Stardust"
-            color="#fde047"
+            icon={<PrimaMateriaIcon />}
+            amount={currencies[Currency.PrimaMateria]}
+            name="Prima Materia"
+            color="var(--amber-300)"
         />
         <CurrencyDisplay
-            icon={<NebulaGasIcon />}
-            amount={currencies[Currency.NebulaGas]}
-            name="Nebula Gas"
-            color="#d8b4fe"
+            icon={<PhilosophersDewIcon />}
+            amount={currencies[Currency.PhilosophersDew]}
+            name="Philosopher's Dew"
+            color="var(--violet-300)"
         />
         <CurrencyDisplay
-            icon={<AntimatterIcon />}
-            amount={currencies[Currency.Antimatter]}
-            name="Antimatter"
-            color="#f87171"
+            icon={<AlkahestIcon />}
+            amount={currencies[Currency.Alkahest]}
+            name="Alkahest"
+            color="var(--rose-400)"
         />
       </div>
     </header>
@@ -899,8 +925,8 @@ const OfflineReportModal = ({ report, onClose }) => (
                 backdrop-filter: blur(4px);
             }
             .modal-content {
-                background-color: var(--slate-800);
-                border: 1px solid var(--slate-700);
+                background-color: var(--stone-800);
+                border: 1px solid var(--stone-700);
                 border-radius: 0.75rem;
                 padding: 2rem;
                 max-width: 28rem;
@@ -910,12 +936,12 @@ const OfflineReportModal = ({ report, onClose }) => (
             }
             .modal-content h2 {
                 font-family: var(--font-display);
-                color: var(--cyan-300);
+                color: var(--sky-300);
                 font-size: 1.5rem;
                 margin-top: 0;
             }
             .modal-content p {
-                color: var(--slate-400);
+                color: var(--stone-400);
                 margin: 0.5rem 0 1.5rem;
             }
             .gains-grid {
@@ -934,7 +960,7 @@ const OfflineReportModal = ({ report, onClose }) => (
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
-                background-color: var(--slate-900);
+                background-color: var(--stone-900);
                 padding: 0.5rem;
                 border-radius: 0.5rem;
             }
@@ -943,88 +969,88 @@ const OfflineReportModal = ({ report, onClose }) => (
             .gain-item .name { font-size: 0.875rem; }
             .modal-button {
                 width: 100%;
-                background-color: var(--cyan-400);
-                color: var(--slate-900);
+                background-color: var(--sky-400);
+                color: var(--stone-900);
                 font-weight: bold;
                 padding: 0.75rem 1rem;
                 border-radius: 0.5rem;
                 transition: background-color 200ms;
             }
             .modal-button:hover {
-                background-color: var(--cyan-300);
+                background-color: var(--sky-300);
             }
         `}</style>
         <div className="modal-content">
-            <h2>Bon Retour !</h2>
-            <p>Pendant votre absence de {formatDuration(report.duration)}, votre empire a généré :</p>
+            <h2>Welcome Back, Alchemist!</h2>
+            <p>While you were away for {formatDuration(report.duration)}, your laboratory produced:</p>
             <div className="gains-grid">
-                <div className="gain-item" style={{color: 'var(--yellow-300)'}}>
-                    <div className="icon"><StardustIcon /></div>
+                <div className="gain-item" style={{color: 'var(--amber-300)'}}>
+                    <div className="icon"><PrimaMateriaIcon /></div>
                     <div>
-                        <div className="amount">{formatNumber(report.stardust)}</div>
-                        <div className="name">Stardust</div>
+                        <div className="amount">{formatNumber(report.primaMateria)}</div>
+                        <div className="name">Prima Materia</div>
                     </div>
                 </div>
-                <div className="gain-item" style={{color: 'var(--purple-300)'}}>
-                    <div className="icon"><NebulaGasIcon /></div>
+                <div className="gain-item" style={{color: 'var(--violet-300)'}}>
+                    <div className="icon"><PhilosophersDewIcon /></div>
                     <div>
-                        <div className="amount">{formatNumber(report.nebulaGas)}</div>
-                        <div className="name">Nebula Gas</div>
+                        <div className="amount">{formatNumber(report.philosophersDew)}</div>
+                        <div className="name">Philosopher's Dew</div>
                     </div>
                 </div>
             </div>
-            <button onClick={onClose} className="modal-button">Continuer</button>
+            <button onClick={onClose} className="modal-button">Continue</button>
         </div>
     </div>
 );
 
 
 const INITIAL_UPGRADES = {
-  // Stardust Upgrades
-  clickPower1: { id: 'clickPower1', name: 'Cosmic Tap', description: 'Increases Stardust per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, effect: level => level * 1, type: UpgradeType.Click, currency: Currency.Stardust },
-  probe: { id: 'probe', name: 'Stardust Probe', description: 'Passively generates Stardust.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, effect: level => level * 0.5, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 5 } },
-  clickPower2: { id: 'clickPower2', name: 'Star Gazer', description: 'Each level grants a bonus to Cosmic Tap.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, effect: level => level * 5, type: UpgradeType.Click, currency: Currency.Stardust, requirement: { upgradeId: 'clickPower1', level: 10 } },
-  reinforcedProbes: { id: 'reinforcedProbes', name: 'Reinforced Probes', description: 'Stardust Probes are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 10 } },
-  asteroidMining: { id: 'asteroidMining', name: 'Asteroid Mining', description: 'Mine asteroids for a new source of Stardust.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, effect: level => level * 10, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'probe', level: 25 } },
-  asteroidProspecting: { id: 'asteroidProspecting', name: 'Asteroid Prospecting', description: 'Deploy probes that have a chance to find clickable asteroids.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.3, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 1 } },
-  cometChasers: { id: 'cometChasers', name: 'Comet Chasers', description: 'Boosts Asteroid Mining production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 5 } },
-  asteroidCracker: { id: 'asteroidCracker', name: 'Asteroid Cracker', description: 'Increases the amount of Stardust gained from asteroids.', level: 0, baseCost: 250000, cost: 250000, costIncrease: 1.8, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidProspecting', level: 5 } },
-  solarWinds: { id: 'solarWinds', name: 'Solar Winds', description: 'Boosts all passive Stardust generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, effect: level => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'asteroidMining', level: 15 } },
-  collectorDrones: { id: 'collectorDrones', name: 'Collector Drones', description: 'Automatically collect asteroids. At Lvl 3, a drone is dispatched for each asteroid.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 3, requirement: { upgradeId: 'asteroidProspecting', level: 1 } },
-  dysonSwarm: { id: 'dysonSwarm', name: 'Dyson Swarm', description: 'Construct a massive swarm for huge passive Stardust generation.', level: 0, baseCost: 1e7, cost: 1e7, costIncrease: 1.4, effect: level => level * 1500, type: UpgradeType.Passive, currency: Currency.Stardust, requirement: { upgradeId: 'solarWinds', level: 5 } },
-  starFusion: { id: 'starFusion', name: 'Stellar Fusion', description: 'Clicking has a small chance to generate a burst of Nebula Gas.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: level => level * 0.005, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'dysonSwarm', level: 1 } },
-  magneticCollectors: { id: 'magneticCollectors', name: 'Magnetic Collectors', description: 'Collector Drones travel 50% faster.', level: 0, baseCost: 5e6, cost: 5e6, costIncrease: 4, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.Stardust, maxLevel: 5, requirement: { upgradeId: 'collectorDrones', level: 3 } },
-  photonicImpulse: { id: 'photonicImpulse', name: 'Photonic Impulse', description: 'Passively clicks the star once per second.', level: 0, baseCost: 1e9, cost: 1e9, costIncrease: 3, effect: level => level, type: UpgradeType.Passive, currency: Currency.Stardust, maxLevel: 10, requirement: { upgradeId: 'starFusion', level: 5 } },
-  swarmSynergy: { id: 'swarmSynergy', name: 'Swarm Synergy', description: 'Dyson Swarm production is boosted by total clicks.', level: 0, baseCost: 5e9, cost: 5e9, costIncrease: 5, effect: (level, state) => 1 + level * Math.log10(state?.stats.totalClicks + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'dysonSwarm', level: 10 } },
+  // Prima Materia Upgrades
+  clickPower1: { id: 'clickPower1', name: 'Potent Stirring', description: 'Increases Prima Materia per click.', level: 1, baseCost: 5, cost: 5, costIncrease: 1.15, effect: level => level * 1, type: UpgradeType.Click, currency: Currency.PrimaMateria },
+  bellows: { id: 'bellows', name: 'Automated Bellows', description: 'Passively generates Prima Materia.', level: 0, baseCost: 15, cost: 15, costIncrease: 1.18, effect: level => level * 0.5, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'clickPower1', level: 5 } },
+  clickPower2: { id: 'clickPower2', name: 'Catalytic Wand', description: 'Each level grants a bonus to Potent Stirring.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.2, effect: level => level * 5, type: UpgradeType.Click, currency: Currency.PrimaMateria, requirement: { upgradeId: 'clickPower1', level: 10 } },
+  reinforcedBellows: { id: 'reinforcedBellows', name: 'Reinforced Bellows', description: 'Automated Bellows are 25% more effective.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'bellows', level: 10 } },
+  golemCrafting: { id: 'golemCrafting', name: 'Golem Crafting', description: 'Animate Golems for a new source of Prima Materia.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 1.2, effect: level => level * 10, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'bellows', level: 25 } },
+  golemProspecting: { id: 'golemProspecting', name: 'Golem Prospecting', description: 'Your bellows sometimes unearth clickable Golems.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 1.3, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 1 } },
+  geomancy: { id: 'geomancy', name: 'Geomancy', description: 'Boosts Golem Crafting production by 50%.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 2.5, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 5 } },
+  golemHeartstone: { id: 'golemHeartstone', name: 'Golem Heartstone', description: 'Increases the amount of Prima Materia gained from Golems.', level: 0, baseCost: 250000, cost: 250000, costIncrease: 1.8, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemProspecting', level: 5 } },
+  leyLines: { id: 'leyLines', name: 'Ley Lines', description: 'Boosts all passive Prima Materia generation by 10%.', level: 0, baseCost: 15000, cost: 15000, costIncrease: 3, effect: level => 1 + level * 0.1, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'golemCrafting', level: 15 } },
+  homunculusService: { id: 'homunculusService', name: 'Homunculus Service', description: 'Automatically harvest Golems. At Lvl 3, a Homunculus is dispatched for each Golem.', level: 0, baseCost: 75000, cost: 75000, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.PrimaMateria, maxLevel: 3, requirement: { upgradeId: 'golemProspecting', level: 1 } },
+  philosophersEngine: { id: 'philosophersEngine', name: "Philosopher's Engine", description: 'Construct a massive engine for huge passive Prima Materia generation.', level: 0, baseCost: 1e7, cost: 1e7, costIncrease: 1.4, effect: level => level * 1500, type: UpgradeType.Passive, currency: Currency.PrimaMateria, requirement: { upgradeId: 'leyLines', level: 5 } },
+  essenceCatalysis: { id: 'essenceCatalysis', name: 'Essence Catalysis', description: 'Clicking has a small chance to generate a burst of Philosopher\'s Dew.', level: 0, baseCost: 1e8, cost: 1e8, costIncrease: 2.2, effect: level => level * 0.005, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'philosophersEngine', level: 1 } },
+  swiftHomunculi: { id: 'swiftHomunculi', name: 'Swift Homunculi', description: 'Homunculi travel 50% faster.', level: 0, baseCost: 5e6, cost: 5e6, costIncrease: 4, effect: level => 1 + level * 0.5, type: UpgradeType.Utility, currency: Currency.PrimaMateria, maxLevel: 5, requirement: { upgradeId: 'homunculusService', level: 3 } },
+  echoingStir: { id: 'echoingStir', name: 'Echoing Stir', description: 'Passively clicks the flask once per second.', level: 0, baseCost: 1e9, cost: 1e9, costIncrease: 3, effect: level => level, type: UpgradeType.Passive, currency: Currency.PrimaMateria, maxLevel: 10, requirement: { upgradeId: 'essenceCatalysis', level: 5 } },
+  engineSynergy: { id: 'engineSynergy', name: 'Engine Synergy', description: "Philosopher's Engine production is boosted by total clicks.", level: 0, baseCost: 5e9, cost: 5e9, costIncrease: 5, effect: (level, state) => 1 + level * Math.log10(state?.stats.totalClicks + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'philosophersEngine', level: 10 } },
   
-  // Nebula Gas Upgrades
-  gasHarvester: { id: 'gasHarvester', name: 'Gas Harvester', description: 'Passively generates Nebula Gas.', level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, effect: level => level * 0.2, type: UpgradeType.Passive, currency: Currency.Stardust },
-  orbitalCollector: { id: 'orbitalCollector', name: 'Orbital Collector', description: 'Spawns clickable Stardust Fragments around the star.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 100, requirement: { upgradeId: 'gasHarvester', level: 1 } },
-  nebulaCondenser: { id: 'nebulaCondenser', name: 'Nebula Condenser', description: 'Boosts all passive Nebula Gas generation by 20%.', level: 0, baseCost: 50, cost: 50, costIncrease: 2, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 5 } },
-  gasGiantSiphon: { id: 'gasGiantSiphon', name: 'Gas Giant Siphon', description: 'A new powerful source of passive Nebula Gas.', level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, effect: level => level * 1, type: UpgradeType.Passive, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasHarvester', level: 15 } },
-  orbitalDrones: { id: 'orbitalDrones', name: 'Orbital Drones', description: 'Automatically collect Stardust Fragments. At Lvl 3, collection is instant.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 3, requirement: { upgradeId: 'orbitalCollector', level: 1 } },
-  cosmicForge: { id: 'cosmicForge', name: 'Cosmic Forge', description: 'Boosts Stardust click power by 1% of your Nebula Gas per second.', level: 0, baseCost: 250, cost: 250, costIncrease: 5, effect: (level, state) => { if (!state) return 1; const nebulaPerSecond = (state.upgrades.gasHarvester.effect(state.upgrades.gasHarvester.level) + state.upgrades.gasGiantSiphon.effect(state.upgrades.gasGiantSiphon.level)); return 1 + (level * 0.01 * nebulaPerSecond); }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'nebulaCondenser', level: 5 } },
-  gravityWells: { id: 'gravityWells', name: 'Gravity Wells', description: 'Increases the value of clickable Stardust Fragments.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'orbitalCollector', level: 10 } },
-  antimatterCatalyst: { id: 'antimatterCatalyst', name: 'Antimatter Catalyst', description: 'Each point of Antimatter increases click power by 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => { if (!state) return 1; return 1 + (level * 0.02 * state.currencies[Currency.Antimatter]); }, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gravityWells', level: 5 } },
-  stellarNursery: { id: 'stellarNursery', name: 'Stellar Nursery', description: 'Greatly increases passive Nebula Gas generation.', level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.Stardust, requirement: { upgradeId: 'gasGiantSiphon', level: 5 } },
-  gasSpectroscopy: { id: 'gasSpectroscopy', name: 'Gas Spectroscopy', description: 'All Stardust upgrades are 5% cheaper per level.', level: 0, baseCost: 750, cost: 750, costIncrease: 2, effect: level => 1 - level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 10, requirement: { upgradeId: 'cosmicForge', level: 3 } },
-  plasmaConduits: { id: 'plasmaConduits', name: 'Plasma Conduits', description: 'Boosts all passive generation (Stardust & Gas) by 5% per level.', level: 0, baseCost: 1500, cost: 1500, costIncrease: 2.5, effect: level => 1 + level * 0.05, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'gasSpectroscopy', level: 2 } },
-  exoticMatter: { id: 'exoticMatter', name: 'Exotic Matter', description: 'Boosts click power based on your total Nebula Gas.', level: 0, baseCost: 5000, cost: 5000, costIncrease: 3, effect: (level, state) => 1 + level * Math.log10(state?.totalNebulaGasEver + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.NebulaGas, requirement: { upgradeId: 'plasmaConduits', level: 5 } },
-  nebulaRefining: { id: 'nebulaRefining', name: 'Nebula Refining', description: 'Clicking has a very small chance to generate 1 Antimatter.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 10, effect: level => level * 0.00001, type: UpgradeType.Utility, currency: Currency.NebulaGas, maxLevel: 5, requirement: { upgradeId: 'exoticMatter', level: 1 } },
+  // Philosopher's Dew Upgrades
+  alembic: { id: 'alembic', name: 'Alembic Condenser', description: "Passively generates Philosopher's Dew.", level: 0, baseCost: 10000, cost: 10000, costIncrease: 1.25, effect: level => level * 0.2, type: UpgradeType.Passive, currency: Currency.PrimaMateria },
+  essenceCollector: { id: 'essenceCollector', name: 'Essence Collector', description: 'Spawns clickable Prima Materia Essences around the flask.', level: 0, baseCost: 25, cost: 25, costIncrease: 1.5, effect: level => level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 100, requirement: { upgradeId: 'alembic', level: 1 } },
+  hermeticSeal: { id: 'hermeticSeal', name: 'Hermetic Seal', description: "Boosts all passive Philosopher's Dew generation by 20%.", level: 0, baseCost: 50, cost: 50, costIncrease: 2, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'alembic', level: 5 } },
+  moonWaterSiphon: { id: 'moonWaterSiphon', name: 'Moon Water Siphon', description: "A new powerful source of passive Philosopher's Dew.", level: 0, baseCost: 100, cost: 100, costIncrease: 1.3, effect: level => level * 1, type: UpgradeType.Passive, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'alembic', level: 15 } },
+  essenceHomunculi: { id: 'essenceHomunculi', name: 'Essence Homunculi', description: 'Automatically collect Essences. At Lvl 3, collection is instant.', level: 0, baseCost: 250, cost: 250, costIncrease: 3, effect: level => level, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 3, requirement: { upgradeId: 'essenceCollector', level: 1 } },
+  arcanumForge: { id: 'arcanumForge', name: 'Arcanum Forge', description: "Boosts Prima Materia click power by 1% of your Philosopher's Dew per second.", level: 0, baseCost: 250, cost: 250, costIncrease: 5, effect: (level, state) => { if (!state) return 1; const dewPerSecond = (state.upgrades.alembic.effect(state.upgrades.alembic.level) + state.upgrades.moonWaterSiphon.effect(state.upgrades.moonWaterSiphon.level)); return 1 + (level * 0.01 * dewPerSecond); }, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'hermeticSeal', level: 5 } },
+  aethericWells: { id: 'aethericWells', name: 'Aetheric Wells', description: 'Increases the value of clickable Essences.', level: 0, baseCost: 500, cost: 500, costIncrease: 2, effect: level => 1 + level * 0.25, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'essenceCollector', level: 10 } },
+  alkahestCatalyst: { id: 'alkahestCatalyst', name: 'Alkahest Catalyst', description: 'Each point of Alkahest increases click power by 2%.', level: 0, baseCost: 1000, cost: 1000, costIncrease: 2.5, effect: (level, state) => { if (!state) return 1; return 1 + (level * 0.02 * state.currencies[Currency.Alkahest]); }, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'aethericWells', level: 5 } },
+  worldTreeSap: { id: 'worldTreeSap', name: 'World Tree Sap', description: "Greatly increases passive Philosopher's Dew generation.", level: 0, baseCost: 500000, cost: 500000, costIncrease: 2.5, effect: level => 1 + level * 0.2, type: UpgradeType.Utility, currency: Currency.PrimaMateria, requirement: { upgradeId: 'moonWaterSiphon', level: 5 } },
+  materiaDistillation: { id: 'materiaDistillation', name: 'Materia Distillation', description: 'All Prima Materia upgrades are 5% cheaper per level.', level: 0, baseCost: 750, cost: 750, costIncrease: 2, effect: level => 1 - level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 10, requirement: { upgradeId: 'arcanumForge', level: 3 } },
+  transmutationCircles: { id: 'transmutationCircles', name: 'Transmutation Circles', description: 'Boosts all passive generation (Materia & Dew) by 5% per level.', level: 0, baseCost: 1500, cost: 1500, costIncrease: 2.5, effect: level => 1 + level * 0.05, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'materiaDistillation', level: 2 } },
+  igneousDew: { id: 'igneousDew', name: 'Igneous Dew', description: "Boosts click power based on your total Philosopher's Dew.", level: 0, baseCost: 5000, cost: 5000, costIncrease: 3, effect: (level, state) => 1 + level * Math.log10(state?.totalPhilosophersDewEver + 1) * 0.01, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, requirement: { upgradeId: 'transmutationCircles', level: 5 } },
+  alkahestPrecipitation: { id: 'alkahestPrecipitation', name: 'Alkahest Precipitation', description: 'Clicking has a very small chance to generate 1 Alkahest.', level: 0, baseCost: 25000, cost: 25000, costIncrease: 10, effect: level => level * 0.00001, type: UpgradeType.Utility, currency: Currency.PhilosophersDew, maxLevel: 5, requirement: { upgradeId: 'igneousDew', level: 1 } },
 
-  // Antimatter Upgrades
-  acceleratedLearning: { id: 'acceleratedLearning', name: 'Accelerated Learning', description: 'Reduces the cost of all non-Antimatter upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, effect: level => 1 - level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 25 },
-  darkMatter: { id: 'darkMatter', name: 'Initial Dark Matter', description: 'Start each Supernova with a base amount of Stardust.', level: 0, baseCost: 5, cost: 5, costIncrease: 2, effect: level => level * 1000, type: UpgradeType.Prestige, currency: Currency.Antimatter },
-  quantumFoam: { id: 'quantumFoam', name: 'Quantum Foam', description: 'Start each Supernova with a base amount of Nebula Gas.', level: 0, baseCost: 15, cost: 15, costIncrease: 2.5, effect: level => level * 100, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'darkMatter', level: 1 } },
-  cosmicEssence: { id: 'cosmicEssence', name: 'Cosmic Essence', description: 'Increases passive generation of Stardust and Nebula Gas by 15% per level.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: level => 1 + level * 0.15, type: UpgradeType.Prestige, currency: Currency.Antimatter },
-  persistentProbes: { id: 'persistentProbes', name: 'Persistent Probes', description: 'Start each Supernova with 5 free levels of Stardust Probes.', level: 0, baseCost: 30, cost: 30, costIncrease: 4, effect: level => level * 5, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 10, requirement: { upgradeId: 'darkMatter', level: 5 } },
-  temporalWarp: { id: 'temporalWarp', name: 'Temporal Warp', description: 'Offline progress is calculated at 2% higher efficiency per level.', level: 0, baseCost: 50, cost: 50, costIncrease: 5, effect: level => 1 + level * 0.02, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 25, requirement: { upgradeId: 'cosmicEssence', level: 3 } },
-  singularity: { id: 'singularity', name: 'Singularity', description: 'The passive bonus from Supernovas is 1% more effective per level.', level: 0, baseCost: 100, cost: 100, costIncrease: 2, effect: level => level * 0.01, type: UpgradeType.Prestige, currency: Currency.Antimatter, requirement: { upgradeId: 'temporalWarp', level: 1 } },
-  unlockStardustUpgrades: { id: 'unlockStardustUpgrades', name: 'Stardust Blueprints', description: 'Keep Stardust upgrades after a Supernova.', level: 0, baseCost: 250, cost: 250, costIncrease: 10, effect: level => level, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 1, requirement: { upgradeId: 'singularity', level: 5 } },
-  unlockNebulaUpgrades: { id: 'unlockNebulaUpgrades', name: 'Nebula Schematics', description: 'Keep Nebula Gas upgrades after a Supernova.', level: 0, baseCost: 500, cost: 500, costIncrease: 10, effect: level => level, type: UpgradeType.Prestige, currency: Currency.Antimatter, maxLevel: 1, requirement: { upgradeId: 'unlockStardustUpgrades', level: 1 } },
+  // Alkahest Upgrades
+  ancientKnowledge: { id: 'ancientKnowledge', name: 'Ancient Knowledge', description: 'Reduces the cost of all non-Alkahest upgrades by 2% per level.', level: 0, baseCost: 10, cost: 10, costIncrease: 4, effect: level => 1 - level * 0.02, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 25 },
+  primordialSoup: { id: 'primordialSoup', name: 'Primordial Soup', description: 'Start each Distillation with a base amount of Prima Materia.', level: 0, baseCost: 5, cost: 5, costIncrease: 2, effect: level => level * 1000, type: UpgradeType.Distillation, currency: Currency.Alkahest },
+  celestialDew: { id: 'celestialDew', name: 'Celestial Dew', description: "Start each Distillation with a base amount of Philosopher's Dew.", level: 0, baseCost: 15, cost: 15, costIncrease: 2.5, effect: level => level * 100, type: UpgradeType.Distillation, currency: Currency.Alkahest, requirement: { upgradeId: 'primordialSoup', level: 1 } },
+  magnumOpus: { id: 'magnumOpus', name: 'Magnum Opus', description: 'Increases passive generation of Materia and Dew by 15% per level.', level: 0, baseCost: 25, cost: 25, costIncrease: 3, effect: level => 1 + level * 0.15, type: UpgradeType.Distillation, currency: Currency.Alkahest },
+  persistentBellows: { id: 'persistentBellows', name: 'Persistent Bellows', description: 'Start each Distillation with 5 free levels of Automated Bellows.', level: 0, baseCost: 30, cost: 30, costIncrease: 4, effect: level => level * 5, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 10, requirement: { upgradeId: 'primordialSoup', level: 5 } },
+  aevumWarp: { id: 'aevumWarp', name: 'Aevum Warp', description: 'Offline progress is calculated at 2% higher efficiency per level.', level: 0, baseCost: 50, cost: 50, costIncrease: 5, effect: level => 1 + level * 0.02, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 25, requirement: { upgradeId: 'magnumOpus', level: 3 } },
+  quintessence: { id: 'quintessence', name: 'Quintessence', description: 'The passive bonus from Distillations is 1% more effective per level.', level: 0, baseCost: 100, cost: 100, costIncrease: 2, effect: level => level * 0.01, type: UpgradeType.Distillation, currency: Currency.Alkahest, requirement: { upgradeId: 'aevumWarp', level: 1 } },
+  unlockMateriaUpgrades: { id: 'unlockMateriaUpgrades', name: 'Materia Blueprints', description: 'Keep Prima Materia upgrades after a Distillation.', level: 0, baseCost: 250, cost: 250, costIncrease: 10, effect: level => level, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 1, requirement: { upgradeId: 'quintessence', level: 5 } },
+  unlockDewUpgrades: { id: 'unlockDewUpgrades', name: 'Dew Schematics', description: "Keep Philosopher's Dew upgrades after a Distillation.", level: 0, baseCost: 500, cost: 500, costIncrease: 10, effect: level => level, type: UpgradeType.Distillation, currency: Currency.Alkahest, maxLevel: 1, requirement: { upgradeId: 'unlockMateriaUpgrades', level: 1 } },
 };
 
-const SAVE_KEY = 'cosmicClickerSave';
+const SAVE_KEY = 'alchemicalAscensionSave';
 
 const getInitialState = () => {
     const upgradesCopy = {};
@@ -1035,23 +1061,23 @@ const getInitialState = () => {
 
     return {
         currencies: {
-          [Currency.Stardust]: 0,
-          [Currency.NebulaGas]: 0,
-          [Currency.Antimatter]: 0,
+          [Currency.PrimaMateria]: 0,
+          [Currency.PhilosophersDew]: 0,
+          [Currency.Alkahest]: 0,
         },
         upgrades: upgradesCopy,
-        totalStardustEver: 0,
-        totalNebulaGasEver: 0,
-        totalAntimatterEver: 0,
+        totalPrimaMateriaEver: 0,
+        totalPhilosophersDewEver: 0,
+        totalAlkahestEver: 0,
         stats: {
             totalClicks: 0,
-            supernovaCount: 0,
+            distillationCount: 0,
             playTime: 0,
-            orbsClicked: 0,
-            asteroidsMined: 0,
+            essencesClicked: 0,
+            golemsMined: 0,
         },
         lastTick: Date.now(),
-        antimatterRetrofitDone: false,
+        alkahestRetrofitDone: false,
     };
 };
 
@@ -1086,27 +1112,27 @@ const loadGameState = () => {
         const finalState = {
             ...initialState,
             currencies: savedState.currencies ?? initialState.currencies,
-            totalStardustEver: savedState.totalStardustEver ?? initialState.totalStardustEver,
-            totalNebulaGasEver: savedState.totalNebulaGasEver ?? initialState.totalNebulaGasEver,
-            totalAntimatterEver: savedState.totalAntimatterEver ?? initialState.totalAntimatterEver,
+            totalPrimaMateriaEver: savedState.totalPrimaMateriaEver ?? initialState.totalPrimaMateriaEver,
+            totalPhilosophersDewEver: savedState.totalPhilosophersDewEver ?? initialState.totalPhilosophersDewEver,
+            totalAlkahestEver: savedState.totalAlkahestEver ?? initialState.totalAlkahestEver,
             stats: {
                 ...initialState.stats,
                 ...(savedState.stats ?? {}),
             },
             upgrades: currentUpgrades,
             lastTick: savedState.lastTick ?? Date.now(),
-            antimatterRetrofitDone: savedState.antimatterRetrofitDone ?? false,
+            alkahestRetrofitDone: savedState.alkahestRetrofitDone ?? false,
         };
 
-        // Retroactive Antimatter calculation
-        if (!finalState.antimatterRetrofitDone && finalState.stats.supernovaCount > 0) {
-            const S = finalState.stats.supernovaCount;
+        // Retroactive Alkahest calculation
+        if (!finalState.alkahestRetrofitDone && finalState.stats.distillationCount > 0) {
+            const S = finalState.stats.distillationCount;
             // Sum of (1+i) for i from 0 to S-1
-            const expectedAntimatter = S + (S * (S - 1) / 2);
-            if (finalState.currencies[Currency.Antimatter] < expectedAntimatter) {
-                finalState.currencies[Currency.Antimatter] = expectedAntimatter;
+            const expectedAlkahest = S + (S * (S - 1) / 2);
+            if (finalState.currencies[Currency.Alkahest] < expectedAlkahest) {
+                finalState.currencies[Currency.Alkahest] = expectedAlkahest;
             }
-            finalState.antimatterRetrofitDone = true;
+            finalState.alkahestRetrofitDone = true;
         }
 
         return finalState;
@@ -1121,44 +1147,44 @@ const loadGameState = () => {
 const App = () => {
   const [gameState, setGameState] = useState(loadGameState);
   const [floatingNumbers, setFloatingNumbers] = useState([]);
-  const [clickableOrbs, setClickableOrbs] = useState([]);
-  const [asteroids, setAsteroids] = useState([]);
-  const [drones, setDrones] = useState([]);
+  const [floatingEssences, setFloatingEssences] = useState([]);
+  const [golems, setGolems] = useState([]);
+  const [homunculi, setHomunculi] = useState([]);
   const [collectionEffects, setCollectionEffects] = useState([]);
-  const [stardustPerSecond, setStardustPerSecond] = useState(0);
-  const [nebulaPerSecond, setNebulaPerSecond] = useState(0);
-  const [supernovaPhase, setSupernovaPhase] = useState('idle'); // idle, start, collapse, explode, rebuild
-  const [stardustHistory, setStardustHistory] = useState([]);
-  const [nebulaHistory, setNebulaHistory] = useState([]);
+  const [primaMateriaPerSecond, setPrimaMateriaPerSecond] = useState(0);
+  const [philosophersDewPerSecond, setPhilosophersDewPerSecond] = useState(0);
+  const [distillationPhase, setDistillationPhase] = useState('idle'); // idle, start, collapse, explode, rebuild
+  const [primaMateriaHistory, setPrimaMateriaHistory] = useState([]);
+  const [philosophersDewHistory, setPhilosophersDewHistory] = useState([]);
   const [offlineReport, setOfflineReport] = useState(null);
   const lastHistoryUpdate = useRef(Date.now());
 
-  const prestigeCost = useMemo(() => 1e6 * Math.pow(3.5, gameState.stats.supernovaCount), [gameState.stats.supernovaCount]);
+  const prestigeCost = useMemo(() => 1e6 * Math.pow(3.5, gameState.stats.distillationCount), [gameState.stats.distillationCount]);
 
   useEffect(() => {
     const handleOfflineGains = () => {
         const offlineTime = (Date.now() - gameState.lastTick) / 1000;
         if (offlineTime > 10) { // Only show for more than 10 seconds offline
             const { upgrades, stats } = gameState;
-            const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
-            const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
-            const cosmicEssenceBoost = upgrades.cosmicEssence.effect(upgrades.cosmicEssence.level);
-            const plasmaBoost = upgrades.plasmaConduits.effect(upgrades.plasmaConduits.level);
-            const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
-            const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
-            const dysonProduction = upgrades.dysonSwarm.effect(upgrades.dysonSwarm.level) * upgrades.swarmSynergy.effect(upgrades.swarmSynergy.level, gameState);
-            const autoClickProduction = upgrades.photonicImpulse.effect(upgrades.photonicImpulse.level) * getClickValue();
-            const sps = (probeProduction + asteroidProduction + dysonProduction + autoClickProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost * plasmaBoost;
+            const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
+            const leyLinesBoost = upgrades.leyLines.effect(upgrades.leyLines.level);
+            const magnumOpusBoost = upgrades.magnumOpus.effect(upgrades.magnumOpus.level);
+            const plasmaBoost = upgrades.transmutationCircles.effect(upgrades.transmutationCircles.level);
+            const bellowsProduction = upgrades.bellows.effect(upgrades.bellows.level) * upgrades.reinforcedBellows.effect(upgrades.reinforcedBellows.level);
+            const golemProduction = upgrades.golemCrafting.effect(upgrades.golemCrafting.level) * upgrades.geomancy.effect(upgrades.geomancy.level);
+            const engineProduction = upgrades.philosophersEngine.effect(upgrades.philosophersEngine.level) * upgrades.engineSynergy.effect(upgrades.engineSynergy.level, gameState);
+            const autoClickProduction = upgrades.echoingStir.effect(upgrades.echoingStir.level) * getClickValue();
+            const pmps = (bellowsProduction + golemProduction + engineProduction + autoClickProduction) * distillationBoost * leyLinesBoost * magnumOpusBoost * plasmaBoost;
             
-            const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
-            const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-            const nps = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
+            const hermeticSealBoost = upgrades.hermeticSeal.effect(upgrades.hermeticSeal.level);
+            const worldTreeSapBoost = upgrades.worldTreeSap.effect(upgrades.worldTreeSap.level);
+            const pdps = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level)) * hermeticSealBoost * worldTreeSapBoost * magnumOpusBoost * plasmaBoost;
             
-            const temporalWarpBoost = upgrades.temporalWarp.effect(upgrades.temporalWarp.level);
+            const aevumWarpBoost = upgrades.aevumWarp.effect(upgrades.aevumWarp.level);
             
             setOfflineReport({
-                stardust: sps * offlineTime * temporalWarpBoost,
-                nebulaGas: nps * offlineTime * temporalWarpBoost,
+                primaMateria: pmps * offlineTime * aevumWarpBoost,
+                philosophersDew: pdps * offlineTime * aevumWarpBoost,
                 duration: offlineTime,
             });
         }
@@ -1197,87 +1223,85 @@ const App = () => {
 
 
   const getClickValue = useCallback(() => {
-    const { upgrades, stats, currencies, totalNebulaGasEver } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
-    const forgeBoost = upgrades.cosmicForge.effect(upgrades.cosmicForge.level, gameState);
-    const catalystBoost = upgrades.antimatterCatalyst.effect(upgrades.antimatterCatalyst.level, gameState);
-    const exoticBoost = upgrades.exoticMatter.effect(upgrades.exoticMatter.level, gameState);
+    const { upgrades, stats, currencies, totalPhilosophersDewEver } = gameState;
+    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
+    const forgeBoost = upgrades.arcanumForge.effect(upgrades.arcanumForge.level, gameState);
+    const catalystBoost = upgrades.alkahestCatalyst.effect(upgrades.alkahestCatalyst.level, gameState);
+    const igneousBoost = upgrades.igneousDew.effect(upgrades.igneousDew.level, gameState);
     const baseClick = upgrades.clickPower1.effect(upgrades.clickPower1.level) + upgrades.clickPower2.effect(upgrades.clickPower2.level);
-    return baseClick * supernovaBoost * forgeBoost * catalystBoost * exoticBoost;
+    return baseClick * distillationBoost * forgeBoost * catalystBoost * igneousBoost;
   }, [gameState]);
 
-  const handleStarClick = useCallback((e) => {
+  const handleFlaskClick = useCallback((e) => {
     const clickValue = getClickValue();
-    let nebulaGainedFromClick = 0;
-    let antimatterGainedFromClick = 0;
+    let dewGainedFromClick = 0;
+    let alkahestGainedFromClick = 0;
     const { upgrades } = gameState;
     
-    if (Math.random() < upgrades.starFusion.effect(upgrades.starFusion.level)) {
-        const nebulaPerSecond = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level));
-        nebulaGainedFromClick = (nebulaPerSecond + 1) * 60; // 1 minute of production
+    if (Math.random() < upgrades.essenceCatalysis.effect(upgrades.essenceCatalysis.level)) {
+        const dewPerSecond = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level));
+        dewGainedFromClick = (dewPerSecond + 1) * 60; // 1 minute of production
     }
-    if (Math.random() < upgrades.nebulaRefining.effect(upgrades.nebulaRefining.level)) {
-        antimatterGainedFromClick = 1;
+    if (Math.random() < upgrades.alkahestPrecipitation.effect(upgrades.alkahestPrecipitation.level)) {
+        alkahestGainedFromClick = 1;
     }
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width * 100;
+    const y = (e.clientY - rect.top) / rect.height * 100;
 
-    if (nebulaGainedFromClick > 0) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const newFloatingNebula = { id: Date.now() + Math.random(), value: `+${formatNumber(nebulaGainedFromClick)} Gas!`, x, y, isNebula: true };
-        setFloatingNumbers(current => [...current, newFloatingNebula]);
-        setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNebula.id)), 2000);
+    if (dewGainedFromClick > 0) {
+        const newFloatingDew = { id: Date.now() + Math.random(), value: `+${formatNumber(dewGainedFromClick)} Dew!`, x, y, isDew: true };
+        setFloatingNumbers(current => [...current, newFloatingDew]);
+        setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingDew.id)), 2000);
     }
 
     setGameState(prev => ({
         ...prev,
         currencies: { 
           ...prev.currencies, 
-          [Currency.Stardust]: prev.currencies[Currency.Stardust] + clickValue,
-          [Currency.NebulaGas]: prev.currencies[Currency.NebulaGas] + nebulaGainedFromClick,
-          [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGainedFromClick,
+          [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + clickValue,
+          [Currency.PhilosophersDew]: prev.currencies[Currency.PhilosophersDew] + dewGainedFromClick,
+          [Currency.Alkahest]: prev.currencies[Currency.Alkahest] + alkahestGainedFromClick,
         },
-        totalStardustEver: prev.totalStardustEver + clickValue,
-        totalNebulaGasEver: prev.totalNebulaGasEver + nebulaGainedFromClick,
-        totalAntimatterEver: (prev.totalAntimatterEver || 0) + antimatterGainedFromClick,
+        totalPrimaMateriaEver: prev.totalPrimaMateriaEver + clickValue,
+        totalPhilosophersDewEver: prev.totalPhilosophersDewEver + dewGainedFromClick,
+        totalAlkahestEver: (prev.totalAlkahestEver || 0) + alkahestGainedFromClick,
         stats: { ...prev.stats, totalClicks: prev.stats.totalClicks + 1 },
     }));
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, };
+    const newFloatingNumber = { id: Date.now() + Math.random(), value: `+${formatNumber(clickValue)}`, x, y, isDew: false };
     setFloatingNumbers(current => [...current, newFloatingNumber]);
     setTimeout(() => setFloatingNumbers(current => current.filter(n => n.id !== newFloatingNumber.id)), 2000);
   }, [getClickValue, gameState]);
   
-  const handleOrbClick = useCallback((orbId) => {
-    const orb = clickableOrbs.find(o => o.id === orbId);
-    if (!orb) return;
+  const handleEssenceClick = useCallback((essenceId) => {
+    const essence = floatingEssences.find(o => o.id === essenceId);
+    if (!essence) return;
 
     setGameState(prev => ({
       ...prev,
-      currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + orb.value },
-      totalStardustEver: prev.totalStardustEver + orb.value,
-      stats: { ...prev.stats, orbsClicked: (prev.stats.orbsClicked || 0) + 1 },
+      currencies: { ...prev.currencies, [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + essence.value },
+      totalPrimaMateriaEver: prev.totalPrimaMateriaEver + essence.value,
+      stats: { ...prev.stats, essencesClicked: (prev.stats.essencesClicked || 0) + 1 },
     }));
     
-    setClickableOrbs(prev => prev.filter(o => o.id !== orbId));
-  }, [clickableOrbs]);
+    setFloatingEssences(prev => prev.filter(o => o.id !== essenceId));
+  }, [floatingEssences]);
 
-  const handleAsteroidClick = useCallback((asteroidId) => {
-    const asteroid = asteroids.find(a => a.id === asteroidId);
-    if (!asteroid) return;
+  const handleGolemClick = useCallback((golemId) => {
+    const golem = golems.find(a => a.id === golemId);
+    if (!golem) return;
 
     setGameState(prev => ({
       ...prev,
-      currencies: { ...prev.currencies, [Currency.Stardust]: prev.currencies[Currency.Stardust] + asteroid.value },
-      totalStardustEver: prev.totalStardustEver + asteroid.value,
-      stats: { ...prev.stats, asteroidsMined: (prev.stats.asteroidsMined || 0) + 1 },
+      currencies: { ...prev.currencies, [Currency.PrimaMateria]: prev.currencies[Currency.PrimaMateria] + golem.value },
+      totalPrimaMateriaEver: prev.totalPrimaMateriaEver + golem.value,
+      stats: { ...prev.stats, golemsMined: (prev.stats.golemsMined || 0) + 1 },
     }));
     
-    setAsteroids(prev => prev.filter(a => a.id !== asteroidId));
-  }, [asteroids]);
+    setGolems(prev => prev.filter(a => a.id !== golemId));
+  }, [golems]);
 
   const handlePurchaseUpgrade = useCallback((upgradeId) => {
     setGameState(prev => {
@@ -1286,11 +1310,11 @@ const App = () => {
 
       let cost = upgrade.cost;
       
-      if (upgrade.currency !== Currency.Antimatter) {
-          cost *= prev.upgrades.acceleratedLearning.effect(prev.upgrades.acceleratedLearning.level);
+      if (upgrade.currency !== Currency.Alkahest) {
+          cost *= prev.upgrades.ancientKnowledge.effect(prev.upgrades.ancientKnowledge.level);
       }
-      if (upgrade.currency === Currency.Stardust) {
-          cost *= prev.upgrades.gasSpectroscopy.effect(prev.upgrades.gasSpectroscopy.level);
+      if (upgrade.currency === Currency.PrimaMateria) {
+          cost *= prev.upgrades.materiaDistillation.effect(prev.upgrades.materiaDistillation.level);
       }
       
       if (prev.currencies[upgrade.currency] < cost) return prev;
@@ -1307,81 +1331,81 @@ const App = () => {
   }, []);
 
   const handlePrestige = useCallback(() => {
-    if (gameState.currencies[Currency.Stardust] < prestigeCost || supernovaPhase !== 'idle') return;
+    if (gameState.currencies[Currency.PrimaMateria] < prestigeCost || distillationPhase !== 'idle') return;
     
-    setSupernovaPhase('start');
+    setDistillationPhase('start');
 
-    setTimeout(() => setSupernovaPhase('collapse'), 1000);
+    setTimeout(() => setDistillationPhase('collapse'), 1000);
 
     setTimeout(() => {
-      setSupernovaPhase('explode');
+      setDistillationPhase('explode');
       setGameState(prev => {
-          const antimatterGained = 1 + prev.stats.supernovaCount;
+          const alkahestGained = 1 + prev.stats.distillationCount;
           const prestigeUpgrades = { ...prev.upgrades };
           
           Object.keys(INITIAL_UPGRADES).forEach(key => {
               const initialU = INITIAL_UPGRADES[key];
-              if (initialU.currency === Currency.Antimatter) return;
-              if (initialU.currency === Currency.Stardust && prev.upgrades.unlockStardustUpgrades.level > 0) return;
-              if (initialU.currency === Currency.NebulaGas && prev.upgrades.unlockNebulaUpgrades.level > 0) return;
+              if (initialU.currency === Currency.Alkahest) return;
+              if (initialU.currency === Currency.PrimaMateria && prev.upgrades.unlockMateriaUpgrades.level > 0) return;
+              if (initialU.currency === Currency.PhilosophersDew && prev.upgrades.unlockDewUpgrades.level > 0) return;
 
               prestigeUpgrades[key] = { ...INITIAL_UPGRADES[key] };
           });
 
-          const persistentProbesLevel = prev.upgrades.persistentProbes.effect(prev.upgrades.persistentProbes.level);
-          if (persistentProbesLevel > 0) {
-              const probe = prestigeUpgrades.probe;
-              probe.level = persistentProbesLevel;
-              probe.cost = Math.ceil(probe.baseCost * Math.pow(probe.costIncrease, probe.level));
+          const persistentBellowsLevel = prev.upgrades.persistentBellows.effect(prev.upgrades.persistentBellows.level);
+          if (persistentBellowsLevel > 0) {
+              const bellows = prestigeUpgrades.bellows;
+              bellows.level = persistentBellowsLevel;
+              bellows.cost = Math.ceil(bellows.baseCost * Math.pow(bellows.costIncrease, bellows.level));
           }
           
-          const startingStardust = prev.upgrades.darkMatter.effect(prev.upgrades.darkMatter.level);
-          const startingNebulaGas = prev.upgrades.quantumFoam.effect(prev.upgrades.quantumFoam.level);
+          const startingMateria = prev.upgrades.primordialSoup.effect(prev.upgrades.primordialSoup.level);
+          const startingDew = prev.upgrades.celestialDew.effect(prev.upgrades.celestialDew.level);
 
           return {
               ...prev,
               currencies: {
-                  [Currency.Stardust]: startingStardust,
-                  [Currency.NebulaGas]: startingNebulaGas,
-                  [Currency.Antimatter]: prev.currencies[Currency.Antimatter] + antimatterGained,
+                  [Currency.PrimaMateria]: startingMateria,
+                  [Currency.PhilosophersDew]: startingDew,
+                  [Currency.Alkahest]: prev.currencies[Currency.Alkahest] + alkahestGained,
               },
               upgrades: prestigeUpgrades,
-              totalStardustEver: startingStardust,
-              totalNebulaGasEver: startingNebulaGas,
-              totalAntimatterEver: (prev.totalAntimatterEver || 0) + antimatterGained,
+              totalPrimaMateriaEver: startingMateria,
+              totalPhilosophersDewEver: startingDew,
+              totalAlkahestEver: (prev.totalAlkahestEver || 0) + alkahestGained,
               stats: { 
                   ...prev.stats, 
-                  supernovaCount: prev.stats.supernovaCount + 1,
-                  orbsClicked: 0,
-                  asteroidsMined: 0,
+                  distillationCount: prev.stats.distillationCount + 1,
+                  essencesClicked: 0,
+                  golemsMined: 0,
               },
               lastTick: Date.now(),
           };
       });
-      setClickableOrbs([]);
-      setAsteroids([]);
-      setDrones([]);
-      setStardustHistory([]);
-      setNebulaHistory([]);
+      setFloatingEssences([]);
+      setGolems([]);
+      setHomunculi([]);
+      setPrimaMateriaHistory([]);
+      setPhilosophersDewHistory([]);
     }, 2000);
 
-    setTimeout(() => setSupernovaPhase('rebuild'), 3500);
-    setTimeout(() => setSupernovaPhase('idle'), 4500);
+    setTimeout(() => setDistillationPhase('rebuild'), 3500);
+    setTimeout(() => setDistillationPhase('idle'), 4500);
 
-  }, [gameState.currencies, prestigeCost, supernovaPhase]);
+  }, [gameState.currencies, prestigeCost, distillationPhase]);
 
   const handleResetSave = useCallback(() => {
-    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser votre progression ? Cette action est irréversible.")) {
+    if (window.confirm("Are you sure you want to reset your progress? This action is irreversible.")) {
         localStorage.removeItem(SAVE_KEY);
         setGameState(getInitialState());
         setFloatingNumbers([]);
-        setClickableOrbs([]);
-        setAsteroids([]);
-        setDrones([]);
-        setStardustPerSecond(0);
-        setNebulaPerSecond(0);
-        setStardustHistory([]);
-        setNebulaHistory([]);
+        setFloatingEssences([]);
+        setGolems([]);
+        setHomunculi([]);
+        setPrimaMateriaPerSecond(0);
+        setPhilosophersDewPerSecond(0);
+        setPrimaMateriaHistory([]);
+        setPhilosophersDewHistory([]);
         lastHistoryUpdate.current = Date.now();
     }
   }, []);
@@ -1399,135 +1423,134 @@ const App = () => {
     let timeDelta = (now - gameState.lastTick) / 1000;
     
     // --- Offline Progress Calculation ---
-    const temporalWarpBoost = gameState.upgrades.temporalWarp.effect(gameState.upgrades.temporalWarp.level);
+    const aevumWarpBoost = gameState.upgrades.aevumWarp.effect(gameState.upgrades.aevumWarp.level);
     if (timeDelta > 5) { // more than 5 seconds offline
-        timeDelta *= temporalWarpBoost;
+        timeDelta *= aevumWarpBoost;
     }
     timeDelta = Math.min(timeDelta, 86400); // Cap offline time to 24h to prevent exploits/overflow
     timeDelta = Math.max(0, timeDelta); // Ensure no negative time delta
 
     // --- Passive Generation Calculation ---
     const { upgrades, stats } = gameState;
-    const supernovaBoost = 1 + (stats.supernovaCount * (0.25 + upgrades.singularity.effect(upgrades.singularity.level)));
-    const solarWindsBoost = upgrades.solarWinds.effect(upgrades.solarWinds.level);
-    const cosmicEssenceBoost = upgrades.cosmicEssence.effect(upgrades.cosmicEssence.level);
-    const plasmaBoost = upgrades.plasmaConduits.effect(upgrades.plasmaConduits.level);
+    const distillationBoost = 1 + (stats.distillationCount * (0.25 + upgrades.quintessence.effect(upgrades.quintessence.level)));
+    const leyLinesBoost = upgrades.leyLines.effect(upgrades.leyLines.level);
+    const magnumOpusBoost = upgrades.magnumOpus.effect(upgrades.magnumOpus.level);
+    const plasmaBoost = upgrades.transmutationCircles.effect(upgrades.transmutationCircles.level);
     
-    const probeProduction = upgrades.probe.effect(upgrades.probe.level) * upgrades.reinforcedProbes.effect(upgrades.reinforcedProbes.level);
-    const asteroidProduction = upgrades.asteroidMining.effect(upgrades.asteroidMining.level) * upgrades.cometChasers.effect(upgrades.cometChasers.level);
-    const dysonProduction = upgrades.dysonSwarm.effect(upgrades.dysonSwarm.level) * upgrades.swarmSynergy.effect(upgrades.swarmSynergy.level, gameState);
-    const autoClickProduction = upgrades.photonicImpulse.effect(upgrades.photonicImpulse.level) * getClickValue();
+    const bellowsProduction = upgrades.bellows.effect(upgrades.bellows.level) * upgrades.reinforcedBellows.effect(upgrades.reinforcedBellows.level);
+    const golemProduction = upgrades.golemCrafting.effect(upgrades.golemCrafting.level) * upgrades.geomancy.effect(upgrades.geomancy.level);
+    const engineProduction = upgrades.philosophersEngine.effect(upgrades.philosophersEngine.level) * upgrades.engineSynergy.effect(upgrades.engineSynergy.level, gameState);
+    const autoClickProduction = upgrades.echoingStir.effect(upgrades.echoingStir.level) * getClickValue();
     
-    const sps = (probeProduction + asteroidProduction + dysonProduction + autoClickProduction) * supernovaBoost * solarWindsBoost * cosmicEssenceBoost * plasmaBoost;
-    setStardustPerSecond(sps);
+    const pmps = (bellowsProduction + golemProduction + engineProduction + autoClickProduction) * distillationBoost * leyLinesBoost * magnumOpusBoost * plasmaBoost;
+    setPrimaMateriaPerSecond(pmps);
     
-    const nebulaCondenserBoost = upgrades.nebulaCondenser.effect(upgrades.nebulaCondenser.level);
-    const stellarNurseryBoost = upgrades.stellarNursery.effect(upgrades.stellarNursery.level);
-    const nps = (upgrades.gasHarvester.effect(upgrades.gasHarvester.level) + upgrades.gasGiantSiphon.effect(upgrades.gasGiantSiphon.level)) * nebulaCondenserBoost * stellarNurseryBoost * cosmicEssenceBoost * plasmaBoost;
-    setNebulaPerSecond(nps);
+    const hermeticSealBoost = upgrades.hermeticSeal.effect(upgrades.hermeticSeal.level);
+    const worldTreeSapBoost = upgrades.worldTreeSap.effect(upgrades.worldTreeSap.level);
+    const pdps = (upgrades.alembic.effect(upgrades.alembic.level) + upgrades.moonWaterSiphon.effect(upgrades.moonWaterSiphon.level)) * hermeticSealBoost * worldTreeSapBoost * magnumOpusBoost * plasmaBoost;
+    setPhilosophersDewPerSecond(pdps);
 
     // --- Prepare for State Changes (Work on copies) ---
-    let stardustFromCollection = 0;
-    let newAsteroids = [...asteroids];
-    let newOrbs = [...clickableOrbs];
+    let materiaFromCollection = 0;
+    let newGolems = [...golems];
+    let newEssences = [...floatingEssences];
 
-    // --- Asteroid Collection by Drones ---
-    const droneSpeed = 20 * upgrades.magneticCollectors.effect(upgrades.magneticCollectors.level);
-    const moveDist = droneSpeed * timeDelta;
-    const collectedAsteroidIds = new Set();
+    // --- Golem Collection by Homunculi ---
+    const homunculusSpeed = 20 * upgrades.swiftHomunculi.effect(upgrades.swiftHomunculi.level);
+    const moveDist = homunculusSpeed * timeDelta;
+    const collectedGolemIds = new Set();
     
-    const nextDrones = drones.map(drone => {
-        const target = newAsteroids.find(a => a.id === drone.targetId);
+    const nextHomunculi = homunculi.map(homunculus => {
+        const target = newGolems.find(a => a.id === homunculus.targetId);
         if (!target) return null;
 
-        const dx = target.x - drone.x;
-        const dy = target.y - drone.y;
+        const dx = target.x - homunculus.x;
+        const dy = target.y - homunculus.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist <= moveDist) {
-            stardustFromCollection += target.value;
-            collectedAsteroidIds.add(target.id);
+            materiaFromCollection += target.value;
+            collectedGolemIds.add(target.id);
             triggerCollectionEffect(target);
-            return null; // Drone is consumed after collection
+            return null; // Homunculus is consumed after collection
         } else if (dist > 0) {
-            // Return a new drone object to respect immutability
             return {
-                ...drone,
-                x: drone.x + (dx / dist) * moveDist,
-                y: drone.y + (dy / dist) * moveDist,
+                ...homunculus,
+                x: homunculus.x + (dx / dist) * moveDist,
+                y: homunculus.y + (dy / dist) * moveDist,
             };
         }
-        return drone; // Return unmodified drone if it's already at the target
+        return homunculus;
     }).filter(Boolean);
 
 
-    if (collectedAsteroidIds.size > 0) {
-        newAsteroids = newAsteroids.filter(a => !collectedAsteroidIds.has(a.id));
+    if (collectedGolemIds.size > 0) {
+        newGolems = newGolems.filter(a => !collectedGolemIds.has(a.id));
     }
-    const numAsteroidsCollectedByDrones = collectedAsteroidIds.size;
+    const numGolemsCollected = collectedGolemIds.size;
     
-    // --- Orb Collection by Drones ---
-    const orbitalDroneLevel = upgrades.orbitalDrones.level;
-    let numOrbsCollectedByDrones = 0;
-    if (orbitalDroneLevel >= 3 && newOrbs.length > 0) {
-        const valueFromOrbs = newOrbs.reduce((sum, o) => sum + o.value, 0);
-        stardustFromCollection += valueFromOrbs;
-        newOrbs.forEach(triggerCollectionEffect);
-        numOrbsCollectedByDrones = newOrbs.length;
-        newOrbs = [];
+    // --- Essence Collection by Homunculi ---
+    const essenceHomunculiLevel = upgrades.essenceHomunculi.level;
+    let numEssencesCollected = 0;
+    if (essenceHomunculiLevel >= 3 && newEssences.length > 0) {
+        const valueFromEssences = newEssences.reduce((sum, o) => sum + o.value, 0);
+        materiaFromCollection += valueFromEssences;
+        newEssences.forEach(triggerCollectionEffect);
+        numEssencesCollected = newEssences.length;
+        newEssences = [];
     }
 
     // --- Object Spawning ---
-    const collector = upgrades.orbitalCollector;
-    if (collector.level > 0 && newOrbs.length < 10) {
+    const collector = upgrades.essenceCollector;
+    if (collector.level > 0 && newEssences.length < 10) {
         if (Math.random() < collector.effect(collector.level) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
-            newOrbs.push({
+            newEssences.push({
                 id: Date.now() + Math.random(),
-                value: (sps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.gravityWells.effect(upgrades.gravityWells.level),
+                value: (pmps + getClickValue()) * (5 + collector.level * 0.5) * upgrades.aethericWells.effect(upgrades.aethericWells.level),
                 x: 50 + Math.cos(angle) * (40 + Math.random() * 5),
                 y: 50 + Math.sin(angle) * (40 + Math.random() * 5),
             });
         }
     }
 
-    const prospector = upgrades.asteroidProspecting;
-    if (prospector.level > 0 && newAsteroids.length < 5) {
+    const prospector = upgrades.golemProspecting;
+    if (prospector.level > 0 && newGolems.length < 5) {
         if (Math.random() < prospector.effect(prospector.level) * timeDelta) {
             const angle = Math.random() * 2 * Math.PI;
-            const newAsteroid = {
+            const newGolem = {
                 id: Date.now() + Math.random(),
-                value: (sps + getClickValue()) * (10 + prospector.level) * upgrades.asteroidCracker.effect(upgrades.asteroidCracker.level),
+                value: (pmps + getClickValue()) * (10 + prospector.level) * upgrades.golemHeartstone.effect(upgrades.golemHeartstone.level),
                 x: 50 + Math.cos(angle) * (45 + Math.random() * 5),
                 y: 50 + Math.sin(angle) * (45 + Math.random() * 5),
             };
-            newAsteroids.push(newAsteroid);
-            if (upgrades.collectorDrones.level >= 3 && !nextDrones.find(d => d.targetId === newAsteroid.id)) {
-                nextDrones.push({ id: Date.now() + Math.random(), targetId: newAsteroid.id, x: 50, y: 50 });
+            newGolems.push(newGolem);
+            if (upgrades.homunculusService.level >= 3 && !nextHomunculi.find(d => d.targetId === newGolem.id)) {
+                nextHomunculi.push({ id: Date.now() + Math.random(), targetId: newGolem.id, x: 50, y: 50 });
             }
         }
     }
     
     // --- Commit All State Updates Atomically ---
-    setAsteroids(newAsteroids);
-    setClickableOrbs(newOrbs);
-    setDrones(nextDrones);
+    setGolems(newGolems);
+    setFloatingEssences(newEssences);
+    setHomunculi(nextHomunculi);
 
     setGameState(prev => {
-        const stardustFromPassive = sps * timeDelta;
-        const nebulaFromPassive = nps * timeDelta;
+        const materiaFromPassive = pmps * timeDelta;
+        const dewFromPassive = pdps * timeDelta;
 
-        const newStardust = prev.currencies[Currency.Stardust] + stardustFromPassive + stardustFromCollection;
-        const newNebulaGas = prev.currencies[Currency.NebulaGas] + nebulaFromPassive;
+        const newPrimaMateria = prev.currencies[Currency.PrimaMateria] + materiaFromPassive + materiaFromCollection;
+        const newPhilosophersDew = prev.currencies[Currency.PhilosophersDew] + dewFromPassive;
         
         if (now - lastHistoryUpdate.current >= 1000) {
             lastHistoryUpdate.current = now;
-            setStardustHistory(prevHistory => {
-                const newEntry = { timestamp: now, totalStardust: newStardust };
+            setPrimaMateriaHistory(prevHistory => {
+                const newEntry = { timestamp: now, total: newPrimaMateria };
                 return [...prevHistory, newEntry].slice(-60);
             });
-            setNebulaHistory(prevHistory => {
-                const newEntry = { timestamp: now, totalNebulaGas: newNebulaGas };
+            setPhilosophersDewHistory(prevHistory => {
+                const newEntry = { timestamp: now, total: newPhilosophersDew };
                 return [...prevHistory, newEntry].slice(-60);
             });
         }
@@ -1536,26 +1559,26 @@ const App = () => {
             ...prev,
             currencies: {
                 ...prev.currencies,
-                [Currency.Stardust]: newStardust,
-                [Currency.NebulaGas]: newNebulaGas,
+                [Currency.PrimaMateria]: newPrimaMateria,
+                [Currency.PhilosophersDew]: newPhilosophersDew,
             },
-            totalStardustEver: prev.totalStardustEver + stardustFromPassive + stardustFromCollection,
-            totalNebulaGasEver: prev.totalNebulaGasEver + nebulaFromPassive,
+            totalPrimaMateriaEver: prev.totalPrimaMateriaEver + materiaFromPassive + materiaFromCollection,
+            totalPhilosophersDewEver: prev.totalPhilosophersDewEver + dewFromPassive,
             stats: { 
                 ...prev.stats, 
                 playTime: prev.stats.playTime + timeDelta,
-                asteroidsMined: (prev.stats.asteroidsMined || 0) + numAsteroidsCollectedByDrones,
-                orbsClicked: (prev.stats.orbsClicked || 0) + numOrbsCollectedByDrones,
+                golemsMined: (prev.stats.golemsMined || 0) + numGolemsCollected,
+                essencesClicked: (prev.stats.essencesClicked || 0) + numEssencesCollected,
             },
             lastTick: now,
         };
     });
-}, [gameState, getClickValue, asteroids, clickableOrbs, drones]);
+}, [gameState, getClickValue, golems, floatingEssences, homunculi]);
 
   useGameLoop(gameTick, 100);
 
-  const starPowerLevel = useMemo(() => Object.values(gameState.upgrades)
-    .filter((u) => u.currency === Currency.Stardust)
+  const alchemicalPower = useMemo(() => Object.values(gameState.upgrades)
+    .filter((u) => u.currency === Currency.PrimaMateria)
     .reduce((sum, u) => sum + (u.level || 0), 0), [gameState.upgrades]);
 
   const detailedStats = useMemo(() => {
@@ -1564,31 +1587,37 @@ const App = () => {
       const minutes = Math.floor((playTime % 3600) / 60);
       const seconds = Math.floor(playTime % 60);
       const formattedPlayTime = `${hours}h ${minutes}m ${seconds}s`;
-      const prestigeBonusRaw = 0.25 + gameState.upgrades.singularity.effect(gameState.upgrades.singularity.level);
+      const distillationBonusRaw = 0.25 + gameState.upgrades.quintessence.effect(gameState.upgrades.quintessence.level);
 
       return {
-          stardustPerSecond: stardustPerSecond,
-          nebulaPerSecond: nebulaPerSecond,
-          stardustPerClick: getClickValue(),
+          primaMateriaPerSecond: primaMateriaPerSecond,
+          philosophersDewPerSecond: philosophersDewPerSecond,
+          primaMateriaPerClick: getClickValue(),
           totalClicks: gameState.stats.totalClicks,
-          supernovaCount: gameState.stats.supernovaCount,
+          distillationCount: gameState.stats.distillationCount,
           playTime: formattedPlayTime,
-          prestigeBonus: `${(gameState.stats.supernovaCount * prestigeBonusRaw * 100).toFixed(0)}%`,
-          totalStardustEver: formatNumber(gameState.totalStardustEver),
-          totalNebulaGasEver: formatNumber(gameState.totalNebulaGasEver),
-          orbsClicked: formatNumber(gameState.stats.orbsClicked || 0),
-          asteroidsMined: formatNumber(gameState.stats.asteroidsMined || 0),
+          distillationBonus: `${(gameState.stats.distillationCount * distillationBonusRaw * 100).toFixed(0)}%`,
+          totalPrimaMateriaEver: formatNumber(gameState.totalPrimaMateriaEver),
+          totalPhilosophersDewEver: formatNumber(gameState.totalPhilosophersDewEver),
+          essencesClicked: formatNumber(gameState.stats.essencesClicked || 0),
+          golemsMined: formatNumber(gameState.stats.golemsMined || 0),
       }
-  }, [stardustPerSecond, nebulaPerSecond, getClickValue, gameState]);
+  }, [primaMateriaPerSecond, philosophersDewPerSecond, getClickValue, gameState]);
 
   return (
     <div className="app-container">
       <style>{`
         .app-container {
-          min-height: 100vh;
+          height: 100%;
           display: flex;
           flex-direction: column;
-          background: linear-gradient(to bottom, #0f172a, black);
+          background: radial-gradient(ellipse at bottom, #292524 0%, #0c0a09 100%);
+        }
+        .distillation-phase-wrapper {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
         }
         .app-main-layout {
           flex-grow: 1;
@@ -1596,7 +1625,7 @@ const App = () => {
           flex-direction: column;
           gap: 1rem;
           padding: 1rem;
-          overflow: hidden;
+          overflow-y: auto;
         }
         .main-game-container {
           display: flex;
@@ -1607,23 +1636,23 @@ const App = () => {
             transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
         }
 
-        [data-supernova-phase="start"] .app-container {
+        [data-distillation-phase="start"] .app-container {
             animation: shake-subtle 0.5s;
         }
-        [data-supernova-phase="start"] .header-wrapper {
+        [data-distillation-phase="start"] .header-wrapper {
             animation: ui-slide-out-top 0.8s ease-in forwards;
         }
-        [data-supernova-phase="start"] .upgrades-container {
+        [data-distillation-phase="start"] .upgrades-container {
             animation: ui-slide-out-right 0.8s ease-in forwards;
         }
-        [data-supernova-phase="rebuild"] .header-wrapper {
+        [data-distillation-phase="rebuild"] .header-wrapper {
             animation: ui-slide-in-top 0.8s 0.2s ease-out forwards;
         }
-        [data-supernova-phase="rebuild"] .upgrades-container {
+        [data-distillation-phase="rebuild"] .upgrades-container {
             animation: ui-slide-in-right 0.8s 0.2s ease-out forwards;
         }
 
-        .supernova-overlay {
+        .distillation-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -1632,40 +1661,37 @@ const App = () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle, #334155 0%, #0f172a 70%);
+            background: radial-gradient(circle, var(--stone-700) 0%, var(--stone-950) 70%);
             z-index: 9999;
             pointer-events: none;
-            animation: supernova-fade-in-out 3s ease-in-out forwards;
+            animation: distillation-fade-in-out 3s ease-in-out forwards;
         }
-        .supernova-overlay::before {
+        .distillation-overlay::before {
             content: '';
             position: absolute;
             width: 1vmin;
             height: 1vmin;
             border-radius: 50%;
             background-color: white;
-            box-shadow: 0 0 60px 30px white, 0 0 100px 60px var(--cyan-300);
-            animation: supernova-core-collapse-explode 1.5s ease-in-out forwards;
+            box-shadow: 0 0 60px 30px white, 0 0 100px 60px var(--amber-300);
+            animation: distillation-burst 1.5s ease-in-out forwards;
         }
-        .supernova-overlay::after {
+        .distillation-overlay::after {
             content: '';
             position: absolute;
             width: 100vmin;
             height: 100vmin;
             border-radius: 50%;
             border: 3px solid white;
-            animation: supernova-shockwave-ring 1s 0.1s ease-out forwards;
+            animation: distillation-wave 1s 0.1s ease-out forwards;
         }
 
         @media (min-width: 1024px) {
-          .app-container {
-            height: 100vh;
-            overflow: hidden;
-          }
           .app-main-layout {
             display: grid;
             grid-template-columns: 2fr 1fr;
             height: 100%;
+            overflow: hidden; /* Prevent parent from scrolling */
           }
           .upgrades-container {
             min-height: 0; /* Fix for scrollbar on grid item child */
@@ -1673,24 +1699,24 @@ const App = () => {
         }
       `}</style>
       {offlineReport && <OfflineReportModal report={offlineReport} onClose={() => setOfflineReport(null)} />}
-      {supernovaPhase === 'explode' && <div className="supernova-overlay"></div>}
-      <div data-supernova-phase={supernovaPhase} style={{pointerEvents: supernovaPhase !== 'idle' ? 'none' : 'auto'}}>
+      {distillationPhase === 'explode' && <div className="distillation-overlay"></div>}
+      <div data-distillation-phase={distillationPhase} className="distillation-phase-wrapper" style={{pointerEvents: distillationPhase !== 'idle' ? 'none' : 'auto'}}>
           <div className="header-wrapper" style={{padding: '1rem 1rem 0 1rem', flexShrink: 0}}>
             <Header currencies={gameState.currencies} />
           </div>
           <main className="app-main-layout">
             <div className="main-game-container">
                 <MainGameArea 
-                  onClick={handleStarClick} 
+                  onClick={handleFlaskClick} 
                   floatingNumbers={floatingNumbers}
-                  starPowerLevel={starPowerLevel}
-                  clickableOrbs={clickableOrbs}
-                  onOrbClick={handleOrbClick}
-                  asteroids={asteroids}
-                  onAsteroidClick={handleAsteroidClick}
+                  alchemicalPower={alchemicalPower}
+                  floatingEssences={floatingEssences}
+                  onEssenceClick={handleEssenceClick}
+                  golems={golems}
+                  onGolemClick={handleGolemClick}
                   collectionEffects={collectionEffects}
-                  drones={drones}
-                  supernovaPhase={supernovaPhase}
+                  homunculi={homunculi}
+                  distillationPhase={distillationPhase}
                 />
             </div>
             <div className="upgrades-container">
@@ -1699,10 +1725,10 @@ const App = () => {
                   onPurchase={handlePurchaseUpgrade} 
                   currencies={gameState.currencies}
                   onPrestige={handlePrestige}
-                  canPrestige={gameState.currencies[Currency.Stardust] >= prestigeCost}
+                  canPrestige={gameState.currencies[Currency.PrimaMateria] >= prestigeCost}
                   prestigeCost={prestigeCost}
-                  stardustHistory={stardustHistory}
-                  nebulaHistory={nebulaHistory}
+                  primaMateriaHistory={primaMateriaHistory}
+                  philosophersDewHistory={philosophersDewHistory}
                   detailedStats={detailedStats}
                   onResetSave={handleResetSave}
                 />
